@@ -3,315 +3,168 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My SoundCloud Likes</title>
+  <title>Music Roulette</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* Анимированный фон */
-    .bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      background: radial-gradient(ellipse at 20% 50%, #ff550022 0%, transparent 60%),
-                  radial-gradient(ellipse at 80% 20%, #ff330015 0%, transparent 50%),
-                  radial-gradient(ellipse at 60% 80%, #ff550010 0%, transparent 50%);
-      animation: pulse 6s ease-in-out infinite alternate;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.6; }
-      100% { opacity: 1; }
-    }
-
-    /* Плавающие круги */
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.15;
-      animation: float 8s ease-in-out infinite;
-      z-index: 0;
-    }
-    .blob1 { width: 300px; height: 300px; background: #FF5500; top: -100px; left: -100px; animation-delay: 0s; }
-    .blob2 { width: 200px; height: 200px; background: #ff3300; bottom: 100px; right: -50px; animation-delay: 3s; }
-    .blob3 { width: 150px; height: 150px; background: #ff7700; top: 50%; left: 50%; animation-delay: 1.5s; }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-30px) scale(1.05); }
-    }
-
-    .content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 48px 24px 40px;
-      min-height: 100vh;
-    }
-
-    /* Логотип */
-    .logo-wrap {
-      position: relative;
-      margin-bottom: 24px;
-    }
-    .logo-ring {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      border: 2px solid #FF5500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: spin-ring 4s linear infinite;
-      box-shadow: 0 0 30px #FF550055, inset 0 0 20px #FF550011;
-    }
-    @keyframes spin-ring {
-      0% { box-shadow: 0 0 20px #FF550055, inset 0 0 20px #FF550011; }
-      50% { box-shadow: 0 0 50px #FF5500aa, inset 0 0 30px #FF550033; }
-      100% { box-shadow: 0 0 20px #FF550055, inset 0 0 20px #FF550011; }
-    }
-    .logo-icon {
-      font-size: 40px;
-      animation: bounce-icon 2s ease-in-out infinite;
-    }
-    @keyframes bounce-icon {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-    }
-
-    h1 {
-      font-size: 28px;
-      font-weight: 800;
-      text-align: center;
-      margin-bottom: 6px;
-      background: linear-gradient(135deg, #fff 0%, #FF5500 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: #888;
-      text-align: center;
-      margin-bottom: 36px;
-    }
-
-    /* Карточки статистики */
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      width: 100%;
-      max-width: 360px;
-      margin-bottom: 32px;
-    }
-    .stat-card {
-      background: #ffffff08;
-      border: 1px solid #ffffff10;
-      border-radius: 16px;
-      padding: 16px 8px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .stat-card:active { transform: scale(0.95); }
-    .stat-card:hover { border-color: #FF550033; }
-    .stat-num {
-      font-size: 22px;
-      font-weight: 800;
-      color: #FF5500;
-      display: block;
-    }
-    .stat-label {
-      font-size: 10px;
-      color: #666;
-      margin-top: 2px;
-      display: block;
-    }
-
-    /* Визуализация звука */
-    .equalizer {
-      display: flex;
-      align-items: flex-end;
-      gap: 4px;
-      height: 40px;
-      margin-bottom: 32px;
-    }
-    .bar {
-      width: 4px;
-      background: #FF5500;
-      border-radius: 2px;
-      animation: eq-bounce 0.8s ease-in-out infinite alternate;
-      opacity: 0.8;
-    }
-    .bar:nth-child(1) { animation-delay: 0s; }
-    .bar:nth-child(2) { animation-delay: 0.1s; }
-    .bar:nth-child(3) { animation-delay: 0.2s; }
-    .bar:nth-child(4) { animation-delay: 0.05s; }
-    .bar:nth-child(5) { animation-delay: 0.3s; }
-    .bar:nth-child(6) { animation-delay: 0.15s; }
-    .bar:nth-child(7) { animation-delay: 0.25s; }
-    .bar:nth-child(8) { animation-delay: 0.08s; }
-    .bar:nth-child(9) { animation-delay: 0.18s; }
-    .bar:nth-child(10) { animation-delay: 0.35s; }
-
-    @keyframes eq-bounce {
-      0% { height: 4px; }
-      100% { height: 36px; }
-    }
-
-    /* Главная кнопка */
-    .btn-main {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #FF5500;
-      color: #fff;
-      text-decoration: none;
-      padding: 18px 40px;
-      border-radius: 50px;
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      width: 100%;
-      max-width: 320px;
-      justify-content: center;
-      box-shadow: 0 8px 32px #FF550044;
-      transition: transform 0.15s, box-shadow 0.15s;
-      position: relative;
-      overflow: hidden;
-    }
-    .btn-main::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, #ffffff20, transparent);
-    }
-    .btn-main:active {
-      transform: scale(0.97);
-      box-shadow: 0 4px 16px #FF550033;
-    }
-
-    .btn-secondary {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #ffffff08;
-      color: #ccc;
-      text-decoration: none;
-      padding: 14px 32px;
-      border-radius: 50px;
-      font-size: 15px;
-      font-weight: 600;
-      border: 1px solid #ffffff15;
-      width: 100%;
-      max-width: 320px;
-      justify-content: center;
-      transition: transform 0.15s, background 0.2s;
-      margin-bottom: 40px;
-    }
-    .btn-secondary:active {
-      transform: scale(0.97);
-      background: #ffffff15;
-    }
-
-    /* Нижняя надпись */
-    .footer {
-      font-size: 12px;
-      color: #444;
-      text-align: center;
-      margin-top: auto;
-    }
-    .footer span { color: #FF5500; }
-
-    /* Появление */
-    .content > * {
-      animation: fade-up 0.5s ease both;
-    }
-    @keyframes fade-up {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .logo-wrap { animation-delay: 0s; }
-    h1 { animation-delay: 0.1s; }
-    .subtitle { animation-delay: 0.15s; }
-    .stats { animation-delay: 0.2s; }
-    .equalizer { animation-delay: 0.25s; }
-    .btn-main { animation-delay: 0.3s; }
-    .btn-secondary { animation-delay: 0.35s; }
+    body { background: #0a0a0a; font-family: sans-serif; color: #fff; min-height: 100vh; }
+    .wrap { padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    .title { font-size: 22px; font-weight: 800; text-align: center; }
+    .title span { color: #FF5500; }
+    .wheel-wrap { position: relative; width: 280px; height: 280px; }
+    canvas { border-radius: 50%; display: block; }
+    .pointer { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid #FF5500; }
+    .center-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 64px; height: 64px; border-radius: 50%; background: #FF5500; border: 4px solid #0a0a0a; cursor: pointer; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #FF550055; }
+    .result-card { width: 100%; max-width: 320px; background: #161616; border: 1px solid #ffffff15; border-radius: 20px; padding: 20px; text-align: center; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: border-color 0.3s; }
+    .result-card.lit { border-color: #FF5500; }
+    .result-emoji { font-size: 40px; animation: pop 0.4s ease; }
+    @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+    .result-genre { font-size: 20px; font-weight: 800; }
+    .result-mood { font-size: 13px; color: #888; }
+    .result-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; background: #FF5500; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 30px; font-size: 14px; font-weight: 700; }
+    .mood-btn { background: #161616; border: 1px solid #ffffff15; border-radius: 20px; padding: 8px 16px; font-size: 13px; color: #aaa; cursor: pointer; }
+    .mood-btn.active { background: #FF550022; border-color: #FF5500; color: #FF5500; }
+    .lucky-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 320px; }
+    .spin-count { font-size: 13px; color: #555; }
+    .spin-count span { color: #FF5500; font-weight: 700; }
+    .spins-row { display: flex; gap: 10px; align-items: center; }
+    .history-title { font-size: 12px; color: #444; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .history-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .hist-pill { background: #161616; border: 1px solid #ffffff10; border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #888; }
+    .history { width: 100%; max-width: 320px; }
+    .likes-btn { display: flex; align-items: center; gap: 8px; background: #FF5500; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-size: 15px; font-weight: 700; }
   </style>
 </head>
 <body>
-  <div class="bg"></div>
-  <div class="blob blob1"></div>
-  <div class="blob blob2"></div>
-  <div class="blob blob3"></div>
+<div class="wrap">
+  <div class="title">Музыкальная <span>рулетка</span> 🎰</div>
 
-  <div class="content">
-    <div class="logo-wrap">
-      <div class="logo-ring">
-        <div class="logo-icon">🎧</div>
-      </div>
-    </div>
-
-    <h1>Мои лайки</h1>
-    <p class="subtitle">Твоя музыкальная коллекция</p>
-
-    <div class="stats">
-      <div class="stat-card">
-        <span class="stat-num">∞</span>
-        <span class="stat-label">Лайков</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-num">🔥</span>
-        <span class="stat-label">Вайб</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-num">24/7</span>
-        <span class="stat-label">Музыка</span>
-      </div>
-    </div>
-
-    <div class="equalizer">
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-    </div>
-
-    <a class="btn-main" href="https://soundcloud.com/you/likes" target="_blank">
-      🎵 Открыть лайки
-    </a>
-
-    <a class="btn-secondary" href="https://soundcloud.com/discover" target="_blank">
-      🔍 Слушать новое
-    </a>
-
-    <p class="footer">Сделано с <span>♥</span> для SoundCloud</p>
+  <div class="wheel-wrap">
+    <canvas id="wheel" width="280" height="280"></canvas>
+    <div class="pointer"></div>
+    <button class="center-btn" id="spinBtn">🎵</button>
   </div>
 
-  <script>
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-  </script>
+  <div class="result-card" id="resultCard">
+    <div style="font-size:14px;color:#444">Нажми кнопку в центре колеса</div>
+  </div>
+
+  <div class="lucky-row" id="moodFilter">
+    <button class="mood-btn active" data-mood="all">Все</button>
+    <button class="mood-btn" data-mood="энергия">Энергия</button>
+    <button class="mood-btn" data-mood="расслабон">Расслабон</button>
+    <button class="mood-btn" data-mood="грусть">Грусть</button>
+    <button class="mood-btn" data-mood="концентрация">Фокус</button>
+  </div>
+
+  <div class="spins-row">
+    <div class="spin-count">Прокруток: <span id="spinCountEl">0</span></div>
+    <div class="spin-count" style="margin-left:12px">Серия: <span id="streakEl">0</span> 🔥</div>
+  </div>
+
+  <div class="history" id="historyWrap" style="display:none">
+    <div class="history-title">История</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <a class="likes-btn" href="https://soundcloud.com/you/likes" target="_blank">🎧 Мои лайки</a>
+</div>
+
+<script>
+const genres = [
+  {name:"Lo-fi",emoji:"☁️",mood:"расслабон",color:"#7F77DD",search:"lofi hip hop"},
+  {name:"Drum & Bass",emoji:"⚡",mood:"энергия",color:"#FF5500",search:"drum and bass"},
+  {name:"Ambient",emoji:"🌊",mood:"расслабон",color:"#1D9E75",search:"ambient"},
+  {name:"Trap",emoji:"🔥",mood:"энергия",color:"#D85A30",search:"trap beats"},
+  {name:"Jazz",emoji:"🎷",mood:"расслабон",color:"#BA7517",search:"jazz"},
+  {name:"Phonk",emoji:"💀",mood:"энергия",color:"#993556",search:"phonk"},
+  {name:"Chillwave",emoji:"🌅",mood:"расслабон",color:"#378ADD",search:"chillwave"},
+  {name:"Indie",emoji:"🎸",mood:"грусть",color:"#639922",search:"indie rock"},
+  {name:"Dark Ambient",emoji:"🌑",mood:"грусть",color:"#534AB7",search:"dark ambient"},
+  {name:"Study Beats",emoji:"📚",mood:"концентрация",color:"#5DCAA5",search:"study beats"},
+  {name:"Hyperpop",emoji:"🦄",mood:"энергия",color:"#D4537E",search:"hyperpop"},
+  {name:"Neo Soul",emoji:"✨",mood:"грусть",color:"#EF9F27",search:"neo soul"},
+];
+
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const spinBtn = document.getElementById('spinBtn');
+const resultCard = document.getElementById('resultCard');
+const spinCountEl = document.getElementById('spinCountEl');
+const streakEl = document.getElementById('streakEl');
+const historyList = document.getElementById('historyList');
+const historyWrap = document.getElementById('historyWrap');
+
+let angle = 0, spinning = false, spinCount = 0, streak = 0, lastMood = null, activeMood = 'all';
+
+function getFiltered() {
+  return activeMood === 'all' ? genres : genres.filter(g => g.mood === activeMood);
+}
+
+function drawWheel(items, rot) {
+  const cx = 140, cy = 140, r = 130;
+  const arc = (2 * Math.PI) / items.length;
+  ctx.clearRect(0, 0, 280, 280);
+  items.forEach((g, i) => {
+    const start = rot + i * arc, end = start + arc;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, start, end); ctx.closePath();
+    ctx.fillStyle = g.color + 'cc'; ctx.fill();
+    ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(g.name, r - 10, 4);
+    ctx.font = '14px sans-serif'; ctx.fillText(g.emoji, r - 10 - ctx.measureText(g.name).width - 4, 4);
+    ctx.restore();
+  });
+  ctx.beginPath(); ctx.arc(cx, cy, 32, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0a0a0a'; ctx.fill(); ctx.strokeStyle = '#FF5500'; ctx.lineWidth = 2; ctx.stroke();
+}
+
+function spin() {
+  if (spinning) return;
+  const filtered = getFiltered();
+  if (!filtered.length) return;
+  spinning = true; spinBtn.textContent = '⏳';
+  const extra = 6 * 2 * Math.PI + Math.random() * 2 * Math.PI;
+  const duration = 3000 + Math.random() * 1500;
+  const start = performance.now(), startAngle = angle;
+  function ease(t) { return 1 - Math.pow(1 - t, 4); }
+  function frame(now) {
+    const t = Math.min((now - start) / duration, 1);
+    angle = startAngle + extra * ease(t);
+    drawWheel(filtered, angle);
+    if (t < 1) { requestAnimationFrame(frame); return; }
+    spinning = false; spinBtn.textContent = '🎵';
+    const arc = (2 * Math.PI) / filtered.length;
+    const norm = ((-angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    const idx = Math.floor(norm / arc) % filtered.length;
+    const winner = filtered[(filtered.length - 1 - idx + filtered.length) % filtered.length];
+    resultCard.classList.add('lit');
+    resultCard.innerHTML = `<div class="result-emoji">${winner.emoji}</div><div class="result-genre">${winner.name}</div><div class="result-mood">${winner.mood}</div><a class="result-link" href="https://soundcloud.com/search?q=${encodeURIComponent(winner.search)}" target="_blank">Слушать →</a>`;
+    spinCount++; spinCountEl.textContent = spinCount;
+    streak = lastMood === winner.mood ? streak + 1 : 1;
+    lastMood = winner.mood; streakEl.textContent = streak;
+    historyWrap.style.display = 'block';
+    const pill = document.createElement('div'); pill.className = 'hist-pill';
+    pill.textContent = winner.emoji + ' ' + winner.name; historyList.prepend(pill);
+    if (historyList.children.length > 6) historyList.lastChild.remove();
+  }
+  requestAnimationFrame(frame);
+}
+
+document.querySelectorAll('.mood-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); activeMood = btn.dataset.mood;
+    drawWheel(getFiltered(), angle);
+  });
+});
+
+spinBtn.addEventListener('click', spin);
+drawWheel(genres, angle);
+
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+</script>
 </body>
 </html>
