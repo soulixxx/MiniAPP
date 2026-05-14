@@ -1,168 +1,179 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music Roulette</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; font-family: sans-serif; color: #fff; min-height: 100vh; }
-    .wrap { padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
-    .title { font-size: 22px; font-weight: 800; text-align: center; }
-    .title span { color: #FF5500; }
-    .wheel-wrap { position: relative; width: 280px; height: 280px; }
-    canvas { border-radius: 50%; display: block; }
-    .pointer { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid #FF5500; }
-    .center-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 64px; height: 64px; border-radius: 50%; background: #FF5500; border: 4px solid #0a0a0a; cursor: pointer; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #FF550055; }
-    .result-card { width: 100%; max-width: 320px; background: #161616; border: 1px solid #ffffff15; border-radius: 20px; padding: 20px; text-align: center; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: border-color 0.3s; }
-    .result-card.lit { border-color: #FF5500; }
-    .result-emoji { font-size: 40px; animation: pop 0.4s ease; }
-    @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
-    .result-genre { font-size: 20px; font-weight: 800; }
-    .result-mood { font-size: 13px; color: #888; }
-    .result-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; background: #FF5500; color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 30px; font-size: 14px; font-weight: 700; }
-    .mood-btn { background: #161616; border: 1px solid #ffffff15; border-radius: 20px; padding: 8px 16px; font-size: 13px; color: #aaa; cursor: pointer; }
-    .mood-btn.active { background: #FF550022; border-color: #FF5500; color: #FF5500; }
-    .lucky-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 320px; }
-    .spin-count { font-size: 13px; color: #555; }
-    .spin-count span { color: #FF5500; font-weight: 700; }
-    .spins-row { display: flex; gap: 10px; align-items: center; }
-    .history-title { font-size: 12px; color: #444; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
-    .history-list { display: flex; flex-wrap: wrap; gap: 6px; }
-    .hist-pill { background: #161616; border: 1px solid #ffffff10; border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #888; }
-    .history { width: 100%; max-width: 320px; }
-    .likes-btn { display: flex; align-items: center; gap: 8px; background: #FF5500; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-size: 15px; font-weight: 700; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFT Gift Roulette</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d1a;font-family:sans-serif;color:#fff;min-height:100vh}
+.page{padding:24px 16px 40px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.header{text-align:center}
+.header h1{font-size:24px;font-weight:900;background:linear-gradient(135deg,#a78bfa,#60a5fa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header p{font-size:13px;color:#555;margin-top:4px}
+.balance-bar{display:flex;gap:12px;width:100%;max-width:360px}
+.bal-card{flex:1;background:#161625;border:1px solid #ffffff0f;border-radius:14px;padding:12px;text-align:center}
+.bal-num{font-size:20px;font-weight:800;color:#a78bfa}
+.bal-label{font-size:11px;color:#555;margin-top:2px}
+.section-title{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.case-card{background:#161625;border:1px solid #ffffff0f;border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;transition:border-color 0.2s,transform 0.15s}
+.case-card:hover{border-color:#a78bfa55;transform:translateY(-2px)}
+.case-card.selected{border-color:#a78bfa;background:#a78bfa11}
+.case-icon{font-size:28px;margin-bottom:4px}
+.case-name{font-size:11px;color:#aaa;font-weight:600}
+.case-price{font-size:12px;color:#a78bfa;margin-top:2px;font-weight:700}
+.reel-wrap{background:#161625;border:1px solid #ffffff0f;border-radius:20px;padding:16px;overflow:hidden;position:relative;width:100%;max-width:360px}
+.reel-mask{overflow:hidden;border-radius:10px;position:relative}
+.reel-mask::before,.reel-mask::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:2;pointer-events:none}
+.reel-mask::before{left:0;background:linear-gradient(to right,#161625,transparent)}
+.reel-mask::after{right:0;background:linear-gradient(to left,#161625,transparent)}
+.reel-indicator{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:#a78bfa;z-index:3}
+.reel-indicator::before,.reel-indicator::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:0;height:0}
+.reel-indicator::before{top:-1px;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a78bfa}
+.reel-indicator::after{bottom:-1px;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #a78bfa}
+.reel-track{display:flex;gap:8px;width:max-content}
+.reel-item{width:80px;height:90px;background:#1e1e30;border:1px solid #ffffff0f;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0}
+.reel-item.winner{border-color:#a78bfa;background:#a78bfa15}
+.ri-emoji{font-size:32px}
+.ri-name{font-size:10px;color:#aaa;text-align:center;padding:0 4px}
+.ri-rare{font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px}
+.rare-common{background:#ffffff15;color:#888}
+.rare-rare{background:#3b82f615;color:#60a5fa}
+.rare-epic{background:#8b5cf615;color:#a78bfa}
+.rare-legendary{background:#f59e0b15;color:#f59e0b}
+.rare-mythic{background:#ec489915;color:#f472b6}
+.spin-btn{width:100%;max-width:360px;padding:16px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;transition:opacity 0.15s,transform 0.1s}
+.spin-btn:active{transform:scale(0.98)}
+.spin-btn:disabled{opacity:0.4;cursor:default}
+.result-section{width:100%;max-width:360px;display:none}
+.result-card{background:#161625;border:2px solid #a78bfa;border-radius:20px;padding:24px;text-align:center;animation:fadeUp 0.4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.result-big-emoji{font-size:64px;margin-bottom:8px;animation:pop 0.5s ease;display:block}
+@keyframes pop{0%{transform:scale(0.3) rotate(-10deg);opacity:0}60%{transform:scale(1.2) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.result-name{font-size:22px;font-weight:900;margin-bottom:4px}
+.result-rarity{display:inline-block;font-size:13px;font-weight:700;padding:4px 14px;border-radius:99px;margin-bottom:8px}
+.result-desc{font-size:13px;color:#666;line-height:1.5}
+.result-num{font-size:12px;color:#444;margin-top:6px}
+.stats-row{display:flex;gap:6px;width:100%;max-width:360px}
+.stat-pill{flex:1;background:#161625;border:1px solid #ffffff08;border-radius:10px;padding:8px 4px;text-align:center}
+.sp-num{font-size:16px;font-weight:800}
+.sp-label{font-size:9px;color:#444;margin-top:1px}
+.coll-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.coll-item{background:#161625;border:1px solid #ffffff08;border-radius:10px;padding:8px 4px;text-align:center}
+.ci-emoji{font-size:22px}
+.ci-count{font-size:10px;color:#a78bfa;font-weight:700;margin-top:2px}
+.ci-name{font-size:9px;color:#444;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty-coll{font-size:13px;color:#333;text-align:center;padding:20px}
+.case-section,.spin-section,.coll-section{width:100%;max-width:360px}
+.likes-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#FF5500;color:#fff;text-decoration:none;padding:14px;border-radius:14px;font-size:15px;font-weight:700;width:100%;max-width:360px;margin-top:4px}
+</style>
 </head>
 <body>
-<div class="wrap">
-  <div class="title">Музыкальная <span>рулетка</span> 🎰</div>
-
-  <div class="wheel-wrap">
-    <canvas id="wheel" width="280" height="280"></canvas>
-    <div class="pointer"></div>
-    <button class="center-btn" id="spinBtn">🎵</button>
+<div class="page">
+  <div class="header">
+    <h1>✦ NFT Gift Roulette</h1>
+    <p>Telegram коллекционные подарки</p>
   </div>
 
-  <div class="result-card" id="resultCard">
-    <div style="font-size:14px;color:#444">Нажми кнопку в центре колеса</div>
+  <div class="balance-bar">
+    <div class="bal-card"><div class="bal-num" id="coinsEl">1000</div><div class="bal-label">💎 Stars</div></div>
+    <div class="bal-card"><div class="bal-num" id="totalEl">0</div><div class="bal-label">🎁 Получено</div></div>
+    <div class="bal-card"><div class="bal-num" id="rareEl">0</div><div class="bal-label">⭐ Редких</div></div>
   </div>
 
-  <div class="lucky-row" id="moodFilter">
-    <button class="mood-btn active" data-mood="all">Все</button>
-    <button class="mood-btn" data-mood="энергия">Энергия</button>
-    <button class="mood-btn" data-mood="расслабон">Расслабон</button>
-    <button class="mood-btn" data-mood="грусть">Грусть</button>
-    <button class="mood-btn" data-mood="концентрация">Фокус</button>
+  <div class="case-section">
+    <div class="section-title">Выбери кейс</div>
+    <div class="cases-grid">
+      <div class="case-card selected" data-case="0" onclick="selectCase(0)">
+        <div class="case-icon">📦</div>
+        <div class="case-name">Базовый</div>
+        <div class="case-price">50 ⭐</div>
+      </div>
+      <div class="case-card" data-case="1" onclick="selectCase(1)">
+        <div class="case-icon">🎁</div>
+        <div class="case-name">Премиум</div>
+        <div class="case-price">150 ⭐</div>
+      </div>
+      <div class="case-card" data-case="2" onclick="selectCase(2)">
+        <div class="case-icon">👑</div>
+        <div class="case-name">Легенда</div>
+        <div class="case-price">500 ⭐</div>
+      </div>
+    </div>
   </div>
 
-  <div class="spins-row">
-    <div class="spin-count">Прокруток: <span id="spinCountEl">0</span></div>
-    <div class="spin-count" style="margin-left:12px">Серия: <span id="streakEl">0</span> 🔥</div>
+  <div class="spin-section">
+    <div class="section-title">Рулетка</div>
+    <div class="reel-wrap">
+      <div class="reel-indicator"></div>
+      <div class="reel-mask">
+        <div class="reel-track" id="reelTrack"></div>
+      </div>
+    </div>
   </div>
 
-  <div class="history" id="historyWrap" style="display:none">
-    <div class="history-title">История</div>
-    <div class="history-list" id="historyList"></div>
+  <button class="spin-btn" id="spinBtn" onclick="doSpin()">🎰 Открыть кейс — 50 ⭐</button>
+
+  <div class="result-section" id="resultSection">
+    <div class="section-title">Выпало!</div>
+    <div class="result-card" id="resultCard"></div>
   </div>
 
-  <a class="likes-btn" href="https://soundcloud.com/you/likes" target="_blank">🎧 Мои лайки</a>
+  <div class="stats-row">
+    <div class="stat-pill"><div class="sp-num" id="commonEl">0</div><div class="sp-label">Common</div></div>
+    <div class="stat-pill"><div class="sp-num" id="rareStatEl" style="color:#60a5fa">0</div><div class="sp-label">Rare</div></div>
+    <div class="stat-pill"><div class="sp-num" id="epicEl" style="color:#a78bfa">0</div><div class="sp-label">Epic</div></div>
+    <div class="stat-pill"><div class="sp-num" id="legEl" style="color:#f59e0b">0</div><div class="sp-label">Legendary</div></div>
+    <div class="stat-pill"><div class="sp-num" id="mythEl" style="color:#f472b6">0</div><div class="sp-label">Mythic</div></div>
+  </div>
+
+  <div class="coll-section">
+    <div class="section-title">Коллекция</div>
+    <div id="collGrid"><div class="empty-coll">Открой первый кейс 🎁</div></div>
+  </div>
+
+  <a class="likes-btn" href="https://soundcloud.com/you/likes" target="_blank">🎧 Мои лайки SoundCloud</a>
 </div>
 
 <script>
-const genres = [
-  {name:"Lo-fi",emoji:"☁️",mood:"расслабон",color:"#7F77DD",search:"lofi hip hop"},
-  {name:"Drum & Bass",emoji:"⚡",mood:"энергия",color:"#FF5500",search:"drum and bass"},
-  {name:"Ambient",emoji:"🌊",mood:"расслабон",color:"#1D9E75",search:"ambient"},
-  {name:"Trap",emoji:"🔥",mood:"энергия",color:"#D85A30",search:"trap beats"},
-  {name:"Jazz",emoji:"🎷",mood:"расслабон",color:"#BA7517",search:"jazz"},
-  {name:"Phonk",emoji:"💀",mood:"энергия",color:"#993556",search:"phonk"},
-  {name:"Chillwave",emoji:"🌅",mood:"расслабон",color:"#378ADD",search:"chillwave"},
-  {name:"Indie",emoji:"🎸",mood:"грусть",color:"#639922",search:"indie rock"},
-  {name:"Dark Ambient",emoji:"🌑",mood:"грусть",color:"#534AB7",search:"dark ambient"},
-  {name:"Study Beats",emoji:"📚",mood:"концентрация",color:"#5DCAA5",search:"study beats"},
-  {name:"Hyperpop",emoji:"🦄",mood:"энергия",color:"#D4537E",search:"hyperpop"},
-  {name:"Neo Soul",emoji:"✨",mood:"грусть",color:"#EF9F27",search:"neo soul"},
+const ALL_GIFTS=[
+  {name:"Плюшевый Пепе",emoji:"🐸",rarity:"common",desc:"Мягкий друг из мемов"},
+  {name:"Золотая рыбка",emoji:"🐟",rarity:"common",desc:"Обычная золотая рыбка"},
+  {name:"Звёздный медведь",emoji:"🐻",rarity:"common",desc:"Медведь со звёздами"},
+  {name:"Красный кот",emoji:"🐱",rarity:"common",desc:"Котик с огнём"},
+  {name:"Магический шар",emoji:"🔮",rarity:"rare",desc:"Предсказывает будущее"},
+  {name:"Кристалл льда",emoji:"❄️",rarity:"rare",desc:"Вечная мерзлота"},
+  {name:"Лунный камень",emoji:"🌙",rarity:"rare",desc:"Упал с луны"},
+  {name:"Огненный цветок",emoji:"🌺",rarity:"rare",desc:"Цветёт раз в 100 лет"},
+  {name:"Дуровская кепка",emoji:"🧢",rarity:"epic",desc:"Аксессуар основателя Telegram"},
+  {name:"Telegram звезда",emoji:"⭐",rarity:"epic",desc:"Настоящая звезда Telegram"},
+  {name:"Дракон удачи",emoji:"🐉",rarity:"epic",desc:"Приносит удачу владельцу"},
+  {name:"Феникс",emoji:"🦅",rarity:"legendary",desc:"Возрождается из пепла"},
+  {name:"Единорог",emoji:"🦄",rarity:"legendary",desc:"Существует в одном экземпляре"},
+  {name:"Корона Павла",emoji:"👑",rarity:"mythic",desc:"Носит только избранный"},
+  {name:"Infinity Gem",emoji:"💠",rarity:"mythic",desc:"Контролирует вселенную"},
 ];
-
-const canvas = document.getElementById('wheel');
-const ctx = canvas.getContext('2d');
-const spinBtn = document.getElementById('spinBtn');
-const resultCard = document.getElementById('resultCard');
-const spinCountEl = document.getElementById('spinCountEl');
-const streakEl = document.getElementById('streakEl');
-const historyList = document.getElementById('historyList');
-const historyWrap = document.getElementById('historyWrap');
-
-let angle = 0, spinning = false, spinCount = 0, streak = 0, lastMood = null, activeMood = 'all';
-
-function getFiltered() {
-  return activeMood === 'all' ? genres : genres.filter(g => g.mood === activeMood);
-}
-
-function drawWheel(items, rot) {
-  const cx = 140, cy = 140, r = 130;
-  const arc = (2 * Math.PI) / items.length;
-  ctx.clearRect(0, 0, 280, 280);
-  items.forEach((g, i) => {
-    const start = rot + i * arc, end = start + arc;
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, start, end); ctx.closePath();
-    ctx.fillStyle = g.color + 'cc'; ctx.fill();
-    ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + arc / 2);
-    ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif';
-    ctx.fillText(g.name, r - 10, 4);
-    ctx.font = '14px sans-serif'; ctx.fillText(g.emoji, r - 10 - ctx.measureText(g.name).width - 4, 4);
-    ctx.restore();
-  });
-  ctx.beginPath(); ctx.arc(cx, cy, 32, 0, 2 * Math.PI);
-  ctx.fillStyle = '#0a0a0a'; ctx.fill(); ctx.strokeStyle = '#FF5500'; ctx.lineWidth = 2; ctx.stroke();
-}
-
-function spin() {
-  if (spinning) return;
-  const filtered = getFiltered();
-  if (!filtered.length) return;
-  spinning = true; spinBtn.textContent = '⏳';
-  const extra = 6 * 2 * Math.PI + Math.random() * 2 * Math.PI;
-  const duration = 3000 + Math.random() * 1500;
-  const start = performance.now(), startAngle = angle;
-  function ease(t) { return 1 - Math.pow(1 - t, 4); }
-  function frame(now) {
-    const t = Math.min((now - start) / duration, 1);
-    angle = startAngle + extra * ease(t);
-    drawWheel(filtered, angle);
-    if (t < 1) { requestAnimationFrame(frame); return; }
-    spinning = false; spinBtn.textContent = '🎵';
-    const arc = (2 * Math.PI) / filtered.length;
-    const norm = ((-angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    const idx = Math.floor(norm / arc) % filtered.length;
-    const winner = filtered[(filtered.length - 1 - idx + filtered.length) % filtered.length];
-    resultCard.classList.add('lit');
-    resultCard.innerHTML = `<div class="result-emoji">${winner.emoji}</div><div class="result-genre">${winner.name}</div><div class="result-mood">${winner.mood}</div><a class="result-link" href="https://soundcloud.com/search?q=${encodeURIComponent(winner.search)}" target="_blank">Слушать →</a>`;
-    spinCount++; spinCountEl.textContent = spinCount;
-    streak = lastMood === winner.mood ? streak + 1 : 1;
-    lastMood = winner.mood; streakEl.textContent = streak;
-    historyWrap.style.display = 'block';
-    const pill = document.createElement('div'); pill.className = 'hist-pill';
-    pill.textContent = winner.emoji + ' ' + winner.name; historyList.prepend(pill);
-    if (historyList.children.length > 6) historyList.lastChild.remove();
-  }
-  requestAnimationFrame(frame);
-}
-
-document.querySelectorAll('.mood-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active'); activeMood = btn.dataset.mood;
-    drawWheel(getFiltered(), angle);
-  });
-});
-
-spinBtn.addEventListener('click', spin);
-drawWheel(genres, angle);
-
+const CASES=[
+  {name:"Базовый",price:50,pool:[{r:"common",w:65},{r:"rare",w:25},{r:"epic",w:8},{r:"legendary",w:1.8},{r:"mythic",w:0.2}]},
+  {name:"Премиум",price:150,pool:[{r:"common",w:35},{r:"rare",w:35},{r:"epic",w:20},{r:"legendary",w:8},{r:"mythic",w:2}]},
+  {name:"Легенда",price:500,pool:[{r:"common",w:5},{r:"rare",w:20},{r:"epic",w:35},{r:"legendary",w:30},{r:"mythic",w:10}]},
+];
+const RL={common:"Common",rare:"Rare",epic:"Epic",legendary:"Legendary",mythic:"Mythic"};
+const RC={common:"#888",rare:"#60a5fa",epic:"#a78bfa",legendary:"#f59e0b",mythic:"#f472b6"};
+const RB={common:"rgba(255,255,255,0.08)",rare:"rgba(96,165,250,0.15)",epic:"rgba(167,139,250,0.15)",legendary:"rgba(245,158,11,0.15)",mythic:"rgba(244,114,182,0.15)"};
+let coins=1000,total=0,rareCount=0,selectedCase=0,spinning=false;
+let collection={},stats={common:0,rare:0,epic:0,legendary:0,mythic:0};
+function selectCase(i){selectedCase=i;document.querySelectorAll('.case-card').forEach((c,idx)=>c.classList.toggle('selected',idx===i));document.getElementById('spinBtn').textContent=`🎰 Открыть кейс — ${CASES[i].price} ⭐`;}
+function weightedRandom(pool){const t=pool.reduce((s,p)=>s+p.w,0);let r=Math.random()*t;for(const p of pool){r-=p.w;if(r<=0)return p.r;}return pool[pool.length-1].r;}
+function getGift(rarity){const opts=ALL_GIFTS.filter(g=>g.rarity===rarity);return opts[Math.floor(Math.random()*opts.length)];}
+function buildReel(winPos,winner){const track=document.getElementById('reelTrack');track.innerHTML='';for(let i=0;i<40;i++){const g=i===winPos?winner:ALL_GIFTS[Math.floor(Math.random()*ALL_GIFTS.length)];const div=document.createElement('div');div.className='reel-item'+(i===winPos?' winner':'');div.innerHTML=`<div class="ri-emoji">${g.emoji}</div><div class="ri-name">${g.name}</div><div class="ri-rare rare-${g.rarity}">${RL[g.rarity]}</div>`;track.appendChild(div);}}
+function doSpin(){if(spinning)return;const cs=CASES[selectedCase];if(coins<cs.price){alert('Недостаточно Stars!');return;}coins-=cs.price;spinning=true;document.getElementById('spinBtn').disabled=true;document.getElementById('resultSection').style.display='none';const rarity=weightedRandom(cs.pool);const winner=getGift(rarity);const winPos=32;buildReel(winPos,winner);const track=document.getElementById('reelTrack');const itemW=88;const centerOffset=160-40;const targetX=-(winPos*itemW-centerOffset);track.style.transition='none';track.style.transform='translateX(0)';setTimeout(()=>{track.style.transition='transform 4s cubic-bezier(0.17,0.67,0.12,0.99)';track.style.transform=`translateX(${targetX}px)`;},50);setTimeout(()=>{spinning=false;document.getElementById('spinBtn').disabled=false;showResult(winner,rarity);stats[rarity]++;updateStatsUI();updateCollection(winner);total++;if(rarity!=='common')rareCount++;document.getElementById('coinsEl').textContent=coins;document.getElementById('totalEl').textContent=total;document.getElementById('rareEl').textContent=rareCount;},4200);}
+function showResult(g,rarity){const sec=document.getElementById('resultSection');const card=document.getElementById('resultCard');sec.style.display='block';card.style.borderColor=RC[rarity];card.innerHTML=`<span class="result-big-emoji">${g.emoji}</span><div class="result-name">${g.name}</div><div class="result-rarity" style="background:${RB[rarity]};color:${RC[rarity]}">${RL[rarity]}</div><div class="result-desc">${g.desc}</div><div class="result-num">#${Math.floor(Math.random()*9999+1).toString().padStart(4,'0')} / 10000</div>`;sec.scrollIntoView({behavior:'smooth',block:'center'});}
+function updateStatsUI(){document.getElementById('commonEl').textContent=stats.common;document.getElementById('rareStatEl').textContent=stats.rare;document.getElementById('epicEl').textContent=stats.epic;document.getElementById('legEl').textContent=stats.legendary;document.getElementById('mythEl').textContent=stats.mythic;}
+function updateCollection(g){collection[g.name]=collection[g.name]||{emoji:g.emoji,rarity:g.rarity,count:0};collection[g.name].count++;const grid=document.getElementById('collGrid');const order=['mythic','legendary','epic','rare','common'];const sorted=Object.entries(collection).sort((a,b)=>order.indexOf(a[1].rarity)-order.indexOf(b[1].rarity));const wrap=document.createElement('div');wrap.className='coll-grid';sorted.forEach(([name,data])=>{const item=document.createElement('div');item.className='coll-item';item.style.borderColor=RC[data.rarity]+'33';item.innerHTML=`<div class="ci-emoji">${data.emoji}</div><div class="ci-count">×${data.count}</div><div class="ci-name">${name}</div>`;wrap.appendChild(item);});grid.innerHTML='';grid.appendChild(wrap);}
+buildReel(20,ALL_GIFTS[0]);
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 </script>
