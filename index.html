@@ -3,275 +3,488 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Gift Roulette</title>
+<title>Данил Колбасенко — Кейс</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d1a;font-family:sans-serif;color:#fff;min-height:100vh}
-.page{display:flex;flex-direction:column;align-items:center;padding-bottom:80px}
-.nav{display:flex;width:100%;max-width:420px;border-bottom:1px solid #ffffff0a;background:#0d0d1a;position:sticky;top:0;z-index:10}
-.nav-btn{flex:1;padding:14px 4px;font-size:11px;color:#555;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;font-weight:600}
-.nav-btn.active{color:#a78bfa;border-bottom-color:#a78bfa}
-.tab{display:none;width:100%;max-width:420px;padding:20px 16px;flex-direction:column;align-items:center;gap:16px}
-.tab.active{display:flex}
-.profile-hero{width:100%;background:#161625;border:1px solid #ffffff0a;border-radius:20px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px}
-.avatar-wrap{position:relative;width:80px;height:80px}
-.avatar-img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #a78bfa}
-.avatar-fallback{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#fff;border:2px solid #a78bfa}
-.online-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;background:#22c55e;border-radius:50%;border:2px solid #0d0d1a}
-.profile-name{font-size:20px;font-weight:800}
-.profile-username{font-size:13px;color:#555}
-.profile-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.badge{font-size:11px;padding:4px 10px;border-radius:99px;font-weight:600}
-.badge-premium{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b33}
-.badge-collector{background:#a78bfa22;color:#a78bfa;border:1px solid #a78bfa33}
-.badge-whale{background:#60a5fa22;color:#60a5fa;border:1px solid #60a5fa33}
-.profile-stats{display:flex;gap:12px;width:100%;margin-top:4px}
-.ps-item{flex:1;background:#0d0d1a;border-radius:12px;padding:10px;text-align:center}
-.ps-num{font-size:18px;font-weight:800;color:#a78bfa}
-.ps-label{font-size:10px;color:#444;margin-top:2px}
-.section-title{font-size:11px;color:#444;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;align-self:flex-start}
-.balance-bar{display:flex;gap:10px;width:100%}
-.bal-card{flex:1;background:#161625;border:1px solid #ffffff0a;border-radius:14px;padding:10px;text-align:center}
-.bal-num{font-size:18px;font-weight:800;color:#a78bfa}
-.bal-label{font-size:10px;color:#444;margin-top:2px}
-.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
-.case-card{background:#161625;border:1px solid #ffffff0a;border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;transition:border-color 0.2s,transform 0.15s}
-.case-card:hover{border-color:#a78bfa44;transform:translateY(-2px)}
-.case-card.selected{border-color:#a78bfa;background:#a78bfa11}
-.case-icon{font-size:26px;margin-bottom:3px}
-.case-name{font-size:10px;color:#aaa;font-weight:600}
-.case-price{font-size:11px;color:#a78bfa;margin-top:2px;font-weight:700}
-.reel-wrap{background:#161625;border:1px solid #ffffff0a;border-radius:20px;padding:14px;overflow:hidden;position:relative;width:100%}
-.reel-mask{overflow:hidden;border-radius:10px;position:relative;height:100px}
-.reel-mask::before,.reel-mask::after{content:'';position:absolute;top:0;bottom:0;width:50px;z-index:2;pointer-events:none}
-.reel-mask::before{left:0;background:linear-gradient(to right,#161625,transparent)}
-.reel-mask::after{right:0;background:linear-gradient(to left,#161625,transparent)}
-.reel-ind{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:#a78bfa;z-index:3}
-.reel-ind::before,.reel-ind::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:0;height:0}
-.reel-ind::before{top:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #a78bfa}
-.reel-ind::after{bottom:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid #a78bfa}
-.reel-track{display:flex;gap:6px;width:max-content;align-items:center;height:100px}
-.reel-item{width:76px;height:88px;background:#1e1e30;border:1px solid #ffffff0a;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0}
-.reel-item.winner{border-color:#a78bfa;background:#a78bfa15}
-.ri-emoji{font-size:28px}
-.ri-name{font-size:9px;color:#aaa;text-align:center;padding:0 3px;line-height:1.2}
-.ri-rare{font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px}
-.rare-common{background:#ffffff12;color:#777}
-.rare-rare{background:#3b82f612;color:#60a5fa}
-.rare-epic{background:#8b5cf612;color:#a78bfa}
-.rare-legendary{background:#f59e0b12;color:#f59e0b}
-.rare-mythic{background:#ec489912;color:#f472b6}
-.spin-btn{width:100%;padding:15px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;transition:opacity 0.15s,transform 0.1s}
-.spin-btn:active{transform:scale(0.98)}
-.spin-btn:disabled{opacity:0.4;cursor:default}
-.result-wrap{width:100%;display:none}
-.result-card{background:#161625;border:2px solid #a78bfa;border-radius:20px;padding:20px;text-align:center;animation:fadeUp 0.4s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.result-big{font-size:56px;display:block;animation:pop 0.5s ease}
-@keyframes pop{0%{transform:scale(0.3) rotate(-10deg);opacity:0}60%{transform:scale(1.2) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-.result-name{font-size:20px;font-weight:900;margin:6px 0 4px}
-.result-rar{display:inline-block;font-size:12px;font-weight:700;padding:3px 12px;border-radius:99px;margin-bottom:6px}
-.result-desc{font-size:12px;color:#555;line-height:1.5}
-.result-num{font-size:11px;color:#333;margin-top:4px}
-.result-actions{display:flex;gap:8px;margin-top:12px}
-.btn-sell-res{flex:1;padding:10px;background:#22c55e22;color:#22c55e;border:1px solid #22c55e44;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
-.btn-keep{flex:1;padding:10px;background:#ffffff08;color:#aaa;border:1px solid #ffffff10;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
-.stats-row{display:flex;gap:6px;width:100%}
-.stat-pill{flex:1;background:#161625;border:1px solid #ffffff08;border-radius:10px;padding:6px 2px;text-align:center}
-.sp-num{font-size:15px;font-weight:800}
-.sp-label{font-size:8px;color:#333;margin-top:1px}
-.coll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
-.coll-item{background:#161625;border:1px solid #ffffff08;border-radius:14px;padding:12px 6px;text-align:center;position:relative}
-.ci-emoji{font-size:26px}
-.ci-count{font-size:10px;font-weight:700;margin-top:3px}
-.ci-name{font-size:9px;color:#444;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
-.ci-sell{position:absolute;top:4px;right:4px;background:#22c55e22;color:#22c55e;border:none;border-radius:6px;font-size:9px;font-weight:700;padding:2px 5px;cursor:pointer}
-.empty-coll{font-size:13px;color:#333;text-align:center;padding:30px;width:100%}
-.modal-overlay{display:none;position:fixed;inset:0;background:#000000bb;z-index:100;align-items:flex-end;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:#161625;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:420px;animation:slideUp 0.3s ease}
+body{background:#0e0e18;font-family:sans-serif;color:#fff;min-height:100vh;overflow-x:hidden}
+.wrap{max-width:480px;margin:0 auto;padding:0 0 60px}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #ffffff08}
+.back-btn{display:flex;align-items:center;gap:6px;color:#888;font-size:13px;cursor:pointer;background:none;border:none;color:#aaa}
+.fast-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:#aaa;cursor:pointer}
+.tog{width:38px;height:22px;border-radius:11px;background:#2a2a3a;position:relative;transition:background 0.2s;flex-shrink:0}
+.tog.on{background:#4f8ef7}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s}
+.tog.on::after{left:19px}
+
+/* 3D CASE HERO */
+.hero{display:flex;flex-direction:column;align-items:center;padding:28px 16px 16px;perspective:800px}
+.case-name{font-size:22px;font-weight:900;margin-bottom:22px;letter-spacing:-0.3px}
+
+.case-3d{width:220px;height:220px;position:relative;transform-style:preserve-3d;animation:float3d 4s ease-in-out infinite;cursor:pointer}
+.case-3d:hover{animation-play-state:paused}
+@keyframes float3d{
+  0%,100%{transform:rotateX(5deg) rotateY(-8deg) translateY(0)}
+  25%{transform:rotateX(8deg) rotateY(-15deg) translateY(-8px)}
+  50%{transform:rotateX(4deg) rotateY(-5deg) translateY(-14px)}
+  75%{transform:rotateX(7deg) rotateY(-12deg) translateY(-6px)}
+}
+
+.face{position:absolute;border-radius:16px;overflow:hidden}
+/* FRONT */
+.face-front{width:220px;height:220px;top:0;left:0;transform:translateZ(18px);background:linear-gradient(160deg,#2e1d08,#1a1108);border:1.5px solid #9B6E2A}
+.case-fire-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 90%,#d05500 0%,#8b2f00 45%,transparent 75%)}
+.case-fire-anim{position:absolute;bottom:0;left:0;right:0;height:90px}
+.case-person{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:16px;z-index:2}
+.person-avatar{font-size:78px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.9))}
+.chest-row-hero{display:flex;gap:5px;margin-top:2px}
+.ch{width:40px;height:34px;border-radius:6px;border:1.5px solid #c49a2a;display:flex;align-items:center;justify-content:center;font-size:16px;background:#6a4010}
+.ch.big{width:54px;height:46px;font-size:22px;background:#5a3008}
+.watermark{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:9px;color:#ffffff20;letter-spacing:0.1em;white-space:nowrap}
+
+/* RIGHT side */
+.face-right{width:18px;height:220px;top:0;left:220px;transform-origin:left center;transform:rotateY(90deg);background:linear-gradient(180deg,#3d2410,#1a0e06);border:1px solid #7a4e18}
+/* BOTTOM */
+.face-bottom{width:220px;height:18px;top:220px;left:0;transform-origin:top center;transform:rotateX(-90deg);background:linear-gradient(90deg,#3d2410,#2a1808,#3d2410);border:1px solid #7a4e18}
+
+/* shadow */
+.case-shadow{width:160px;height:24px;background:radial-gradient(ellipse,rgba(0,0,0,0.6) 0%,transparent 70%);border-radius:50%;margin-top:6px;animation:shadow-pulse 4s ease-in-out infinite}
+@keyframes shadow-pulse{0%,100%{transform:scaleX(1);opacity:0.6}50%{transform:scaleX(0.8);opacity:0.3}}
+
+/* glow ring */
+.case-glow{position:absolute;width:260px;height:260px;top:-20px;left:-20px;border-radius:50%;background:radial-gradient(ellipse,#c85a0a33 0%,transparent 65%);pointer-events:none;animation:glow-pulse 2s ease-in-out infinite alternate}
+@keyframes glow-pulse{0%{opacity:0.5}100%{opacity:1}}
+
+.price-badge{display:flex;align-items:center;gap:7px;background:#1e1a10;border:1.5px solid #8B5E1A66;border-radius:12px;padding:9px 24px;margin-top:14px;font-size:17px;font-weight:800}
+.star-gold{color:#f5c842}
+
+/* OPEN BTN */
+.open-btn{width:calc(100% - 32px);margin:14px 16px 0;padding:16px;background:linear-gradient(135deg,#e07820,#c85a0a);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;transition:opacity 0.15s,transform 0.1s;letter-spacing:0.3px;position:relative;overflow:hidden}
+.open-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent)}
+.open-btn:active{transform:scale(0.98);opacity:0.9}
+.open-btn:disabled{opacity:0.45;cursor:default}
+
+/* SECTION */
+.sec-hdr{display:flex;align-items:center;gap:8px;padding:22px 16px 10px;font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.07em}
+
+/* 3D ITEMS GRID */
+.items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px}
+
+.item-card-3d{perspective:500px;cursor:pointer}
+.item-inner{position:relative;border-radius:14px;background:#161622;border:1px solid #ffffff0a;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;transform-style:preserve-3d;transition:transform 0.15s,box-shadow 0.15s;transform:rotateX(0deg) rotateY(0deg)}
+.item-card-3d:hover .item-inner{transform:rotateX(-6deg) rotateY(6deg) translateZ(6px);box-shadow:8px 8px 24px rgba(0,0,0,0.5),-2px -2px 8px rgba(255,255,255,0.03)}
+.item-card-3d.legendary .item-inner{border-color:#f59e0b44;background:linear-gradient(160deg,#1e1a0a,#161208)}
+.item-card-3d.epic .item-inner{border-color:#a78bfa44;background:linear-gradient(160deg,#150e20,#100c18)}
+.item-card-3d.rare .item-inner{border-color:#60a5fa44;background:linear-gradient(160deg,#0a1020,#0d121e)}
+.item-card-3d.common .item-inner{border-color:#ffffff12}
+
+.item-3d-emoji-wrap{width:80px;height:80px;display:flex;align-items:center;justify-content:center;position:relative;transform-style:preserve-3d}
+.item-3d-emoji{font-size:52px;display:block;transform:translateZ(12px);filter:drop-shadow(0 6px 14px rgba(0,0,0,0.7));transition:transform 0.15s}
+.item-card-3d:hover .item-3d-emoji{transform:translateZ(22px) scale(1.05)}
+
+/* Glow behind emoji */
+.item-glow{position:absolute;width:60px;height:60px;border-radius:50%;opacity:0.25;filter:blur(16px);top:10px;left:10px}
+.glow-legendary{background:#f59e0b}
+.glow-epic{background:#a78bfa}
+.glow-rare{background:#60a5fa}
+.glow-common{background:#888}
+
+.item-rarity-badge{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px}
+.rb-legendary{background:rgba(245,158,11,0.15);color:#f59e0b}
+.rb-epic{background:rgba(167,139,250,0.15);color:#a78bfa}
+.rb-rare{background:rgba(96,165,250,0.15);color:#60a5fa}
+.rb-common{background:rgba(255,255,255,0.08);color:#888}
+
+.item-chance-badge{position:absolute;top:8px;left:8px;font-size:9px;background:#ffffff08;border-radius:6px;padding:2px 6px;color:#666}
+.item-name{font-size:11px;font-weight:700;text-align:center;color:#ddd;line-height:1.3}
+.item-prices{display:flex;align-items:center;gap:8px;margin-top:2px}
+.item-ton{font-size:11px;color:#5bc8ff;font-weight:600}
+.item-stars{font-size:11px;color:#f5c842;font-weight:600}
+
+/* BEST DROPS */
+.best-drops{padding:0 16px}
+.drops-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.drops-scroll::-webkit-scrollbar{height:3px}
+.drops-scroll::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:99px}
+.drop-card{flex-shrink:0;background:#161622;border:1px solid #ffffff08;border-radius:12px;padding:10px 10px 8px;text-align:center;width:86px;transition:border-color 0.15s}
+.drop-card:hover{border-color:#ffffff18}
+.drop-mult{font-size:9px;color:#f5c842;font-weight:700;margin-bottom:2px}
+.drop-emoji{font-size:30px;display:block}
+.drop-name{font-size:9px;color:#777;margin-top:3px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.drop-val{font-size:10px;color:#f5c842;font-weight:700;margin-top:4px}
+
+/* REEL MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:#000000cc;z-index:50;align-items:flex-end;justify-content:center}
+.modal-ov.open{display:flex}
+.modal-box{width:100%;max-width:480px;background:#13131f;border-radius:24px 24px 0 0;padding:20px 0 36px;animation:slideUp 0.3s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-title{font-size:18px;font-weight:800;margin-bottom:4px}
-.modal-sub{font-size:13px;color:#555;margin-bottom:20px}
-.modal-item-preview{display:flex;align-items:center;gap:14px;background:#0d0d1a;border-radius:14px;padding:14px;margin-bottom:16px}
-.mip-emoji{font-size:40px}
-.mip-name{font-size:15px;font-weight:700}
-.mip-rar{font-size:11px;margin-top:3px;font-weight:600}
-.price-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.price-opt{background:#0d0d1a;border:1px solid #ffffff0a;border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:border-color 0.2s}
-.price-opt.selected{border-color:#22c55e;background:#22c55e0a}
-.po-price{font-size:16px;font-weight:800;color:#22c55e}
-.po-label{font-size:10px;color:#444;margin-top:2px}
-.modal-btns{display:flex;gap:8px}
-.btn-confirm-sell{flex:2;padding:14px;background:#22c55e;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;cursor:pointer}
-.btn-cancel{flex:1;padding:14px;background:#ffffff08;border:none;border-radius:12px;color:#aaa;font-size:14px;font-weight:700;cursor:pointer}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#22c55e;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:700;opacity:0;transition:all 0.3s;z-index:200;white-space:nowrap}
+.modal-title{text-align:center;font-size:15px;font-weight:700;margin-bottom:16px;padding:0 16px;color:#ddd}
+
+.reel-outer{overflow:hidden;position:relative;height:108px}
+.reel-outer::before,.reel-outer::after{content:'';position:absolute;top:0;bottom:0;width:64px;z-index:2;pointer-events:none}
+.reel-outer::before{left:0;background:linear-gradient(to right,#13131f,transparent)}
+.reel-outer::after{right:0;background:linear-gradient(to left,#13131f,transparent)}
+.reel-line{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:#e07820;z-index:3}
+.reel-line::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #e07820}
+.reel-line::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #e07820}
+.reel-track{display:flex;gap:6px;width:max-content;align-items:center;height:108px}
+.reel-cell{width:80px;height:96px;flex-shrink:0;background:#1e1e2e;border:1px solid #ffffff0a;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.reel-cell.win{border-color:#e07820;background:#e0782018}
+.rc-emoji{font-size:32px}
+.rc-name{font-size:9px;color:#aaa;text-align:center;padding:0 3px;line-height:1.2}
+
+/* WIN RESULT */
+.win-wrap{display:none;padding:0 20px;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.win-wrap.show{display:flex}
+.win-emoji-3d{font-size:80px;animation:pop3d 0.6s ease;display:block;filter:drop-shadow(0 8px 24px rgba(0,0,0,0.8))}
+@keyframes pop3d{0%{transform:scale(0.2) rotateY(-90deg);opacity:0}50%{transform:scale(1.25) rotateY(10deg)}70%{transform:scale(0.95) rotateY(-5deg)}100%{transform:scale(1) rotateY(0);opacity:1}}
+.win-name{font-size:19px;font-weight:900}
+.win-rar-pill{display:inline-block;font-size:12px;font-weight:700;padding:4px 16px;border-radius:99px;margin-bottom:4px}
+.win-sub{font-size:12px;color:#444}
+.win-actions{display:flex;gap:8px;width:100%;margin-top:6px}
+.btn-sell{flex:1;padding:12px;background:#22c55e1a;color:#22c55e;border:1px solid #22c55e44;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-keep{flex:1;padding:12px;background:#ffffff08;color:#999;border:1px solid #ffffff10;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-again{width:100%;padding:14px;background:linear-gradient(135deg,#e07820,#c85a0a);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-top:6px}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:#22c55e;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;opacity:0;transition:all 0.3s;z-index:200;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="nav">
-    <div class="nav-btn active" onclick="switchTab('profile')">👤 Профиль</div>
-    <div class="nav-btn" onclick="switchTab('roulette')">🎰 Рулетка</div>
-    <div class="nav-btn" onclick="switchTab('collection')">🗂 Коллекция</div>
-  </div>
+<div class="wrap">
 
-  <div class="tab active" id="tab-profile">
-    <div class="profile-hero">
-      <div class="avatar-wrap">
-        <div class="avatar-fallback" id="avatarEl">?</div>
-        <div class="online-dot"></div>
-      </div>
-      <div class="profile-name" id="profileName">Загрузка...</div>
-      <div class="profile-username" id="profileUsername">@username</div>
-      <div class="profile-badges" id="profileBadges"></div>
-      <div class="profile-stats">
-        <div class="ps-item"><div class="ps-num" id="pStars">1000</div><div class="ps-label">💎 Stars</div></div>
-        <div class="ps-item"><div class="ps-num" id="pTotal">0</div><div class="ps-label">🎁 Открыто</div></div>
-        <div class="ps-item"><div class="ps-num" id="pRare">0</div><div class="ps-label">⭐ Редких</div></div>
-        <div class="ps-item"><div class="ps-num" id="pEarned">0</div><div class="ps-label">💚 Продано</div></div>
-      </div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Последние подарки</div>
-      <div id="recentGifts" style="display:flex;gap:8px;flex-wrap:wrap">
-        <div style="font-size:13px;color:#333;padding:10px">Ещё нет подарков — крути рулетку!</div>
-      </div>
-    </div>
-    <a href="https://soundcloud.com/you/likes" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#FF5500;color:#fff;text-decoration:none;padding:14px;border-radius:14px;font-size:14px;font-weight:700;width:100%">🎧 Мои лайки SoundCloud</a>
-  </div>
-
-  <div class="tab" id="tab-roulette">
-    <div class="balance-bar">
-      <div class="bal-card"><div class="bal-num" id="coinsEl">1000</div><div class="bal-label">💎 Stars</div></div>
-      <div class="bal-card"><div class="bal-num" id="totalEl">0</div><div class="bal-label">🎁 Открыто</div></div>
-      <div class="bal-card"><div class="bal-num" id="rareEl">0</div><div class="bal-label">⭐ Редких</div></div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Выбери кейс</div>
-      <div class="cases-grid">
-        <div class="case-card selected" onclick="selectCase(0)"><div class="case-icon">📦</div><div class="case-name">Базовый</div><div class="case-price">50 ⭐</div></div>
-        <div class="case-card" onclick="selectCase(1)"><div class="case-icon">🎁</div><div class="case-name">Премиум</div><div class="case-price">150 ⭐</div></div>
-        <div class="case-card" onclick="selectCase(2)"><div class="case-icon">👑</div><div class="case-name">Легенда</div><div class="case-price">500 ⭐</div></div>
-      </div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Рулетка</div>
-      <div class="reel-wrap">
-        <div class="reel-ind"></div>
-        <div class="reel-mask"><div class="reel-track" id="reelTrack"></div></div>
-      </div>
-    </div>
-    <button class="spin-btn" id="spinBtn" onclick="doSpin()">🎰 Открыть кейс — 50 ⭐</button>
-    <div class="result-wrap" id="resultWrap">
-      <div class="section-title">Выпало!</div>
-      <div class="result-card" id="resultCard"></div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Статистика</div>
-      <div class="stats-row">
-        <div class="stat-pill"><div class="sp-num" id="sCommon">0</div><div class="sp-label">Common</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sRare" style="color:#60a5fa">0</div><div class="sp-label">Rare</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sEpic" style="color:#a78bfa">0</div><div class="sp-label">Epic</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sLeg" style="color:#f59e0b">0</div><div class="sp-label">Legend</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sMyth" style="color:#f472b6">0</div><div class="sp-label">Mythic</div></div>
-      </div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="back-btn">&#8592; Вернуться</button>
+    <div class="fast-toggle" onclick="toggleFast()">
+      <span>&#9889; Открыть быстро</span>
+      <div class="tog" id="tog"></div>
     </div>
   </div>
 
-  <div class="tab" id="tab-collection">
-    <div id="collGrid" style="width:100%"><div class="empty-coll">Открой первый кейс 🎁</div></div>
+  <!-- 3D HERO -->
+  <div class="hero">
+    <div class="case-name">Данил Колбасенко</div>
+
+    <div style="position:relative">
+      <div class="case-glow"></div>
+      <div class="case-3d" id="case3d" onclick="openCase()">
+
+        <!-- FRONT FACE -->
+        <div class="face face-front">
+          <div class="case-fire-bg"></div>
+          <svg class="case-fire-anim" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <defs>
+              <radialGradient id="rg1" cx="50%" cy="100%"><stop offset="0%" stop-color="#ff6a00" stop-opacity="0.95"/><stop offset="100%" stop-color="#ff4400" stop-opacity="0"/></radialGradient>
+              <radialGradient id="rg2" cx="50%" cy="100%"><stop offset="0%" stop-color="#ffcc00" stop-opacity="0.8"/><stop offset="100%" stop-color="#ffaa00" stop-opacity="0"/></radialGradient>
+            </defs>
+            <ellipse cx="110" cy="85" rx="100" ry="32" fill="url(#rg1)">
+              <animate attributeName="rx" values="100;112;94;108;100" dur="2.2s" repeatCount="indefinite"/>
+            </ellipse>
+            <ellipse cx="110" cy="80" rx="60" ry="24" fill="url(#rg2)">
+              <animate attributeName="ry" values="24;30;20;28;24" dur="1.6s" repeatCount="indefinite"/>
+            </ellipse>
+            <path d="M10,90 Q25,55 50,68 Q62,30 80,58 Q90,8 110,48 Q130,8 140,58 Q158,30 170,68 Q195,55 210,90Z" fill="#e05500" opacity="0.55">
+              <animate attributeName="d" values="M10,90 Q25,55 50,68 Q62,30 80,58 Q90,8 110,48 Q130,8 140,58 Q158,30 170,68 Q195,55 210,90Z;M10,90 Q30,48 52,72 Q65,26 82,54 Q92,6 110,52 Q128,6 138,54 Q155,26 168,72 Q190,48 210,90Z;M10,90 Q25,55 50,68 Q62,30 80,58 Q90,8 110,48 Q130,8 140,58 Q158,30 170,68 Q195,55 210,90Z" dur="1.3s" repeatCount="indefinite"/>
+            </path>
+            <path d="M30,90 Q45,62 65,72 Q72,42 88,65 Q95,28 110,52 Q125,28 132,65 Q148,42 155,72 Q175,62 190,90Z" fill="#ff8800" opacity="0.35">
+              <animate attributeName="d" values="M30,90 Q45,62 65,72 Q72,42 88,65 Q95,28 110,52 Q125,28 132,65 Q148,42 155,72 Q175,62 190,90Z;M30,90 Q48,58 66,76 Q74,38 90,62 Q97,24 110,56 Q123,24 130,62 Q146,38 154,76 Q172,58 190,90Z;M30,90 Q45,62 65,72 Q72,42 88,65 Q95,28 110,52 Q125,28 132,65 Q148,42 155,72 Q175,62 190,90Z" dur="0.9s" repeatCount="indefinite"/>
+            </path>
+          </svg>
+          <div class="case-person">
+            <div class="person-avatar">🧔</div>
+            <div class="chest-row-hero">
+              <div class="ch">🧰</div>
+              <div class="ch big">📦</div>
+              <div class="ch">🔫</div>
+            </div>
+          </div>
+          <div class="watermark">GiftsBattle</div>
+        </div>
+
+        <!-- RIGHT FACE -->
+        <div class="face face-right" style="background:linear-gradient(180deg,#3d2008,#1a0e04)"></div>
+        <!-- BOTTOM FACE -->
+        <div class="face face-bottom" style="background:linear-gradient(90deg,#2a1406,#1a0e04,#2a1406)"></div>
+
+      </div>
+    </div>
+
+    <div class="case-shadow"></div>
+
+    <div class="price-badge">
+      <span class="star-gold">&#11088;</span>
+      <span>350</span>
+    </div>
+  </div>
+
+  <!-- OPEN BUTTON -->
+  <button class="open-btn" id="openBtn" onclick="openCase()">&#127381; Открыть кейс — 350 &#11088;</button>
+
+  <!-- ITEMS -->
+  <div class="sec-hdr"><span>&#129681;</span> Что в кейсе?</div>
+  <div class="items-grid" id="itemsGrid"></div>
+
+  <!-- BEST DROPS -->
+  <div class="sec-hdr" style="margin-top:8px"><span>&#127942;</span> Лучшие дропы</div>
+  <div class="best-drops"><div class="drops-scroll" id="dropsScroll"></div></div>
+
+</div>
+
+<!-- REEL MODAL -->
+<div class="modal-ov" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Открываем кейс...</div>
+    <div class="reel-outer" id="reelOuter">
+      <div class="reel-line"></div>
+      <div class="reel-track" id="reelTrack"></div>
+    </div>
+    <div class="win-wrap" id="winWrap">
+      <div class="win-emoji-3d" id="winEmoji"></div>
+      <div class="win-name" id="winName"></div>
+      <div class="win-rar-pill" id="winRar"></div>
+      <div class="win-sub" id="winSub"></div>
+      <div class="win-actions">
+        <button class="btn-sell" onclick="doSell()">&#128994; Продать</button>
+        <button class="btn-keep" onclick="closeModal()">Оставить</button>
+      </div>
+      <button class="btn-again" onclick="closeModal();setTimeout(openCase,200)">&#127381; Ещё раз</button>
+    </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="sellModal" onclick="closeSellModal(event)">
-  <div class="modal">
-    <div class="modal-title">Продать подарок</div>
-    <div class="modal-sub">Выбери цену продажи</div>
-    <div class="modal-item-preview" id="modalPreview"></div>
-    <div class="price-options" id="priceOptions"></div>
-    <div class="modal-btns">
-      <button class="btn-confirm-sell" onclick="confirmSell()">Продать 💚</button>
-      <button class="btn-cancel" onclick="document.getElementById('sellModal').classList.remove('open')">Отмена</button>
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
-const GIFTS=[
-  {name:"Плюшевый Пепе",emoji:"🐸",rarity:"common",desc:"Мягкий друг из мемов",sellBase:10},
-  {name:"Золотая рыбка",emoji:"🐟",rarity:"common",desc:"Обычная золотая рыбка",sellBase:8},
-  {name:"Звёздный медведь",emoji:"🐻",rarity:"common",desc:"Медведь со звёздами",sellBase:12},
-  {name:"Красный кот",emoji:"🐱",rarity:"common",desc:"Котик с огнём",sellBase:9},
-  {name:"Магический шар",emoji:"🔮",rarity:"rare",desc:"Предсказывает будущее",sellBase:60},
-  {name:"Кристалл льда",emoji:"❄️",rarity:"rare",desc:"Вечная мерзлота",sellBase:55},
-  {name:"Лунный камень",emoji:"🌙",rarity:"rare",desc:"Упал с луны",sellBase:70},
-  {name:"Огненный цветок",emoji:"🌺",rarity:"rare",desc:"Цветёт раз в 100 лет",sellBase:65},
-  {name:"Дуровская кепка",emoji:"🧢",rarity:"epic",desc:"Аксессуар основателя Telegram",sellBase:200},
-  {name:"Telegram звезда",emoji:"⭐",rarity:"epic",desc:"Настоящая звезда Telegram",sellBase:180},
-  {name:"Дракон удачи",emoji:"🐉",rarity:"epic",desc:"Приносит удачу владельцу",sellBase:220},
-  {name:"Феникс",emoji:"🦅",rarity:"legendary",desc:"Возрождается из пепла",sellBase:600},
-  {name:"Единорог",emoji:"🦄",rarity:"legendary",desc:"Существует в одном экземпляре",sellBase:700},
-  {name:"Корона Павла",emoji:"👑",rarity:"mythic",desc:"Носит только избранный",sellBase:1500},
-  {name:"Infinity Gem",emoji:"💠",rarity:"mythic",desc:"Контролирует вселенную",sellBase:2000},
+// ── DATA ──────────────────────────────────────────────────────
+const ITEMS=[
+  {name:"Gem Signet Feral Rage",    emoji:"💍", rarity:"legendary", ton:"1250",  stars:"125 000", chance:"0.3%",  sellBase:125000},
+  {name:"Durov's Cap Seabreeze",    emoji:"🧢", rarity:"legendary", ton:"741",   stars:"74 100",  chance:"0.7%",  sellBase:74100},
+  {name:"Mighty Arm Overlord",      emoji:"💪", rarity:"epic",      ton:"650",   stars:"65 000",  chance:"1.2%",  sellBase:65000},
+  {name:"Precious Peach Elegance",  emoji:"🍑", rarity:"epic",      ton:"235",   stars:"23 599",  chance:"2.4%",  sellBase:23599},
+  {name:"Artisan Brick Bomb",       emoji:"💣", rarity:"rare",      ton:"230",   stars:"23 000",  chance:"3.5%",  sellBase:23000},
+  {name:"Artisan Brick Ice Mammoth",emoji:"🦣", rarity:"rare",      ton:"220",   stars:"22 000",  chance:"4.2%",  sellBase:22000},
+  {name:"Genie Lamp Liquid Cat",    emoji:"🪔", rarity:"rare",      ton:"125",   stars:"12 500",  chance:"6.1%",  sellBase:12500},
+  {name:"Artisan Brick Floppa",     emoji:"🧱", rarity:"rare",      ton:"95",    stars:"9 500",   chance:"9.3%",  sellBase:9500},
+  {name:"Loot Bag (Random)",        emoji:"👜", rarity:"common",    ton:"82.99", stars:"8 299",   chance:"22%",   sellBase:8299},
+  {name:"Hanging Star Insane",      emoji:"⭐", rarity:"common",    ton:"55",    stars:"5 500",   chance:"50.3%", sellBase:5500},
 ];
-const CASES=[
-  {name:"Базовый",price:50,pool:[{r:"common",w:65},{r:"rare",w:25},{r:"epic",w:8},{r:"legendary",w:1.8},{r:"mythic",w:0.2}]},
-  {name:"Премиум",price:150,pool:[{r:"common",w:35},{r:"rare",w:35},{r:"epic",w:20},{r:"legendary",w:8},{r:"mythic",w:2}]},
-  {name:"Легенда",price:500,pool:[{r:"common",w:5},{r:"rare",w:20},{r:"epic",w:35},{r:"legendary",w:30},{r:"mythic",w:10}]},
-];
-const RL={common:"Common",rare:"Rare",epic:"Epic",legendary:"Legendary",mythic:"Mythic"};
-const RC={common:"#777",rare:"#60a5fa",epic:"#a78bfa",legendary:"#f59e0b",mythic:"#f472b6"};
-const RB={common:"rgba(255,255,255,0.08)",rare:"rgba(96,165,250,0.12)",epic:"rgba(167,139,250,0.12)",legendary:"rgba(245,158,11,0.12)",mythic:"rgba(244,114,182,0.12)"};
-let coins=1000,total=0,rareCount=0,earned=0,selectedCase=0,spinning=false;
-let collection={},stats={common:0,rare:0,epic:0,legendary:0,mythic:0},recent=[],sellTarget=null,sellPrice=0;
 
+const BEST=[
+  {emoji:"🧱",name:"Artisan Brick Fi...",  val:"9 500",  mult:"x27.14"},
+  {emoji:"👜",name:"Loot Bag (Random)",    val:"8 299",  mult:"x23.71"},
+  {emoji:"🎃",name:"Mad Pumpkin...",        val:"4 400",  mult:"x12.57"},
+  {emoji:"🦅",name:"Rare Bird Icarus",     val:"3 000",  mult:"x8.57"},
+  {emoji:"🏅",name:"Victory Medal...",     val:"2 900",  mult:"x8.29"},
+  {emoji:"🍪",name:"Cookie Heart Yam...",  val:"2 800",  mult:"x8"},
+  {emoji:"🧸",name:"Toy Bear Lapis...",    val:"2 399",  mult:"x6.85"},
+  {emoji:"💎",name:"Crystal Shard...",     val:"1 800",  mult:"x5.14"},
+];
+
+const RC={legendary:"#f59e0b",epic:"#a78bfa",rare:"#60a5fa",common:"#888"};
+const RB={legendary:"rgba(245,158,11,0.18)",epic:"rgba(167,139,250,0.18)",rare:"rgba(96,165,250,0.18)",common:"rgba(255,255,255,0.08)"};
+const RL={legendary:"Legendary",epic:"Epic",rare:"Rare",common:"Common"};
+
+// ── STATE ─────────────────────────────────────────────────────
+let fastMode=false, spinning=false, pendingWin=null;
+
+// ── INIT ──────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
   try{
     const tg=window.Telegram&&window.Telegram.WebApp;
-    if(tg){tg.ready();tg.expand();
-      const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
-      if(u){
-        const name=([u.first_name,u.last_name].filter(Boolean).join(' '))||'Пользователь';
-        const uname=u.username?('@'+u.username):'';
-        document.getElementById('profileName').textContent=name;
-        document.getElementById('profileUsername').textContent=uname||'Telegram User';
-        const av=document.getElementById('avatarEl');
-        av.textContent=name.charAt(0).toUpperCase();
-        if(u.photo_url){const img=document.createElement('img');img.src=u.photo_url;img.className='avatar-img';img.onload=()=>av.replaceWith(img);}
-        updateBadges();return;
-      }
-    }
+    if(tg){tg.ready();tg.expand();}
   }catch(e){}
-  document.getElementById('profileName').textContent='Demo User';
-  document.getElementById('profileUsername').textContent='@demo';
-  document.getElementById('avatarEl').textContent='D';
-  updateBadges();
+  renderItems();
+  renderDrops();
+  initMouseTilt();
 });
 
-function updateBadges(){const b=document.getElementById('profileBadges');b.innerHTML='';const badges=[];if(total>=10)badges.push({cls:'badge-collector',text:'🗂 Коллекционер'});if(coins>=500)badges.push({cls:'badge-premium',text:'⭐ Premium'});if(rareCount>=5)badges.push({cls:'badge-whale',text:'🐋 Whale'});if(!badges.length)badges.push({cls:'badge-collector',text:'🆕 Новичок'});badges.forEach(({cls,text})=>{const d=document.createElement('div');d.className='badge '+cls;d.textContent=text;b.appendChild(d);});}
-function switchTab(name){document.querySelectorAll('.nav-btn').forEach((b,i)=>{const n=['profile','roulette','collection'];b.classList.toggle('active',n[i]===name);});document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');if(name==='collection')renderCollection();}
-function selectCase(i){selectedCase=i;document.querySelectorAll('.case-card').forEach((c,idx)=>c.classList.toggle('selected',idx===i));document.getElementById('spinBtn').textContent=`🎰 Открыть кейс — ${CASES[i].price} ⭐`;}
-function weightedRandom(pool){const t=pool.reduce((s,p)=>s+p.w,0);let r=Math.random()*t;for(const p of pool){r-=p.w;if(r<=0)return p.r;}return pool[pool.length-1].r;}
-function getGift(rarity){const opts=GIFTS.filter(g=>g.rarity===rarity);return opts[Math.floor(Math.random()*opts.length)];}
-function buildReel(winPos,winner){const track=document.getElementById('reelTrack');track.innerHTML='';for(let i=0;i<40;i++){const g=i===winPos?winner:GIFTS[Math.floor(Math.random()*GIFTS.length)];const div=document.createElement('div');div.className='reel-item'+(i===winPos?' winner':'');div.innerHTML=`<div class="ri-emoji">${g.emoji}</div><div class="ri-name">${g.name}</div><div class="ri-rare rare-${g.rarity}">${RL[g.rarity]}</div>`;track.appendChild(div);}}
-function doSpin(){if(spinning)return;const cs=CASES[selectedCase];if(coins<cs.price){showToast('Недостаточно Stars! 💔');return;}coins-=cs.price;spinning=true;document.getElementById('spinBtn').disabled=true;document.getElementById('resultWrap').style.display='none';const rarity=weightedRandom(cs.pool);const winner=getGift(rarity);const winPos=32;buildReel(winPos,winner);const track=document.getElementById('reelTrack');const itemW=82;const center=180-38;const targetX=-(winPos*itemW-center);track.style.transition='none';track.style.transform='translateX(0)';setTimeout(()=>{track.style.transition='transform 4s cubic-bezier(0.17,0.67,0.12,0.99)';track.style.transform=`translateX(${targetX}px)`;},50);setTimeout(()=>{spinning=false;document.getElementById('spinBtn').disabled=false;showResult(winner,rarity);stats[rarity]++;updateStatsUI();addToCollection(winner);total++;if(rarity!=='common')rareCount++;recent.unshift({...winner,id:Date.now()});if(recent.length>6)recent.pop();syncUI();updateBadges();renderRecent();},4300);}
-function showResult(g,rarity){const wrap=document.getElementById('resultWrap');const card=document.getElementById('resultCard');wrap.style.display='block';card.style.borderColor=RC[rarity];card.innerHTML=`<span class="result-big">${g.emoji}</span><div class="result-name">${g.name}</div><div class="result-rar" style="background:${RB[rarity]};color:${RC[rarity]}">${RL[rarity]}</div><div class="result-desc">${g.desc}</div><div class="result-num">#${Math.floor(Math.random()*9999+1).toString().padStart(4,'0')} / 10000</div><div class="result-actions"><button class="btn-sell-res" onclick="openSellModal('${g.name}')">💚 Продать</button><button class="btn-keep" onclick="document.getElementById('resultWrap').style.display='none'">Оставить</button></div>`;wrap.scrollIntoView({behavior:'smooth',block:'center'});}
-function updateStatsUI(){document.getElementById('sCommon').textContent=stats.common;document.getElementById('sRare').textContent=stats.rare;document.getElementById('sEpic').textContent=stats.epic;document.getElementById('sLeg').textContent=stats.legendary;document.getElementById('sMyth').textContent=stats.mythic;}
-function syncUI(){document.getElementById('coinsEl').textContent=coins;document.getElementById('totalEl').textContent=total;document.getElementById('rareEl').textContent=rareCount;document.getElementById('pStars').textContent=coins;document.getElementById('pTotal').textContent=total;document.getElementById('pRare').textContent=rareCount;document.getElementById('pEarned').textContent=earned;}
-function addToCollection(g){if(!collection[g.name])collection[g.name]={...g,count:0};collection[g.name].count++;}
-function renderCollection(){const grid=document.getElementById('collGrid');const keys=Object.keys(collection);if(!keys.length){grid.innerHTML='<div class="empty-coll">Открой первый кейс 🎁</div>';return;}const order=['mythic','legendary','epic','rare','common'];const sorted=keys.sort((a,b)=>order.indexOf(collection[a].rarity)-order.indexOf(collection[b].rarity));grid.innerHTML='';const wrap=document.createElement('div');wrap.className='coll-grid';sorted.forEach(name=>{const d=collection[name];const item=document.createElement('div');item.className='coll-item';item.style.borderColor=RC[d.rarity]+'33';item.innerHTML=`<button class="ci-sell" onclick="openSellModal('${name}')">$</button><div class="ci-emoji">${d.emoji}</div><div class="ci-count" style="color:${RC[d.rarity]}">×${d.count}</div><div class="ci-name">${name}</div>`;wrap.appendChild(item);});grid.appendChild(wrap);}
-function renderRecent(){const el=document.getElementById('recentGifts');if(!recent.length){el.innerHTML='<div style="font-size:13px;color:#333;padding:10px">Ещё нет подарков!</div>';return;}el.innerHTML='';recent.forEach(g=>{const d=document.createElement('div');d.style.cssText='background:#161625;border:1px solid #ffffff08;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:6px';d.innerHTML=`<span style="font-size:20px">${g.emoji}</span><div><div style="font-size:11px;font-weight:700">${g.name}</div><div style="font-size:10px;color:${RC[g.rarity]}">${RL[g.rarity]}</div></div>`;el.appendChild(d);});}
-function openSellModal(giftName){const g=collection[giftName];if(!g||g.count<1){showToast('Нет в коллекции');return;}sellTarget=giftName;document.getElementById('modalPreview').innerHTML=`<div class="mip-emoji">${g.emoji}</div><div class="mip-info"><div class="mip-name">${g.name}</div><div class="mip-rar" style="color:${RC[g.rarity]}">${RL[g.rarity]} · ×${g.count} в коллекции</div></div>`;const base=g.sellBase;const opts=[{label:'Быстрая продажа',price:Math.floor(base*0.6),note:'Мгновенно'},{label:'Рыночная цена',price:Math.floor(base*0.9),note:'~1 час'},{label:'Выше рынка',price:Math.floor(base*1.1),note:'~6 часов'},{label:'Максимум',price:Math.floor(base*1.4),note:'~24 часа'}];const po=document.getElementById('priceOptions');po.innerHTML='';sellPrice=opts[0].price;opts.forEach((o,i)=>{const d=document.createElement('div');d.className='price-opt'+(i===0?' selected':'');d.innerHTML=`<div class="po-price">${o.price} ⭐</div><div class="po-label">${o.label}</div><div class="po-label">${o.note}</div>`;d.onclick=()=>{document.querySelectorAll('.price-opt').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');sellPrice=o.price;};po.appendChild(d);});document.getElementById('sellModal').classList.add('open');}
-function closeSellModal(e){if(e.target===document.getElementById('sellModal'))document.getElementById('sellModal').classList.remove('open');}
-function confirmSell(){if(!sellTarget||!collection[sellTarget])return;collection[sellTarget].count--;if(collection[sellTarget].count<=0)delete collection[sellTarget];coins+=sellPrice;earned+=sellPrice;document.getElementById('sellModal').classList.remove('open');syncUI();renderCollection();renderRecent();showToast(`Продано за ${sellPrice} ⭐ 💚`);}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-buildReel(20,GIFTS[0]);
-document.getElementById('reelTrack').style.transform=`translateX(-${20*82-180+38}px)`;
-syncUI();
+// ── TOGGLE FAST ───────────────────────────────────────────────
+function toggleFast(){
+  fastMode=!fastMode;
+  document.getElementById('tog').classList.toggle('on',fastMode);
+}
+
+// ── 3D MOUSE TILT ─────────────────────────────────────────────
+function initMouseTilt(){
+  const c=document.getElementById('case3d');
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width-0.5)*30;
+    const y=-((e.clientY-r.top)/r.height-0.5)*30;
+    c.style.animation='none';
+    c.style.transform=`rotateX(${y}deg) rotateY(${x}deg)`;
+  });
+  c.addEventListener('mouseleave',()=>{
+    c.style.animation='';
+    c.style.transform='';
+  });
+  c.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const t=e.touches[0];
+    const r=c.getBoundingClientRect();
+    const x=((t.clientX-r.left)/r.width-0.5)*20;
+    const y=-((t.clientY-r.top)/r.height-0.5)*20;
+    c.style.animation='none';
+    c.style.transform=`rotateX(${y}deg) rotateY(${x}deg)`;
+  },{passive:false});
+  c.addEventListener('touchend',()=>{
+    c.style.animation='';
+    c.style.transform='';
+  });
+}
+
+// ── RENDER ITEMS ──────────────────────────────────────────────
+function renderItems(){
+  const g=document.getElementById('itemsGrid');
+  ITEMS.forEach(it=>{
+    const d=document.createElement('div');
+    d.className='item-card-3d '+it.rarity;
+    d.innerHTML=`
+      <div class="item-inner">
+        <div class="item-chance-badge">${it.chance}</div>
+        <div class="item-rarity-badge rb-${it.rarity}">${RL[it.rarity]}</div>
+        <div class="item-3d-emoji-wrap">
+          <div class="item-glow glow-${it.rarity}"></div>
+          <span class="item-3d-emoji">${it.emoji}</span>
+        </div>
+        <div class="item-name">${it.name}</div>
+        <div class="item-prices">
+          <span class="item-ton">&#9685; ${it.ton}</span>
+          <span style="color:#333;font-size:10px">/</span>
+          <span class="item-stars">&#11088; ${it.stars}</span>
+        </div>
+      </div>`;
+    // 3D tilt on hover (already handled by CSS), add mouse tilt
+    const inner=d.querySelector('.item-inner');
+    d.addEventListener('mousemove',e=>{
+      const r=d.getBoundingClientRect();
+      const x=((e.clientX-r.left)/r.width-0.5)*18;
+      const y=-((e.clientY-r.top)/r.height-0.5)*18;
+      inner.style.transform=`rotateX(${y}deg) rotateY(${x}deg) translateZ(6px)`;
+    });
+    d.addEventListener('mouseleave',()=>{
+      inner.style.transform='';
+    });
+    g.appendChild(d);
+  });
+}
+
+// ── RENDER DROPS ─────────────────────────────────────────────
+function renderDrops(){
+  const s=document.getElementById('dropsScroll');
+  BEST.forEach(b=>{
+    const d=document.createElement('div');
+    d.className='drop-card';
+    d.innerHTML=`<div class="drop-mult">${b.mult}</div><span class="drop-emoji">${b.emoji}</span><div class="drop-name">${b.name}</div><div class="drop-val">&#11088; ${b.val}</div>`;
+    s.appendChild(d);
+  });
+}
+
+// ── WEIGHTED RANDOM ───────────────────────────────────────────
+function pickItem(){
+  const chances=[0.3,0.7,1.2,2.4,3.5,4.2,6.1,9.3,22,50.3];
+  const total=chances.reduce((s,c)=>s+c,0);
+  let r=Math.random()*total;
+  for(let i=0;i<chances.length;i++){r-=chances[i];if(r<=0)return ITEMS[i];}
+  return ITEMS[ITEMS.length-1];
+}
+
+// ── BUILD REEL ────────────────────────────────────────────────
+function buildReel(winPos,winner){
+  const t=document.getElementById('reelTrack');
+  t.innerHTML='';
+  for(let i=0;i<40;i++){
+    const g=i===winPos?winner:ITEMS[Math.floor(Math.random()*ITEMS.length)];
+    const d=document.createElement('div');
+    d.className='reel-cell'+(i===winPos?' win':'');
+    d.innerHTML=`<span class="rc-emoji">${g.emoji}</span><div class="rc-name">${g.name}</div>`;
+    t.appendChild(d);
+  }
+}
+
+// ── OPEN CASE ─────────────────────────────────────────────────
+function openCase(){
+  if(spinning)return;
+  spinning=true;
+  document.getElementById('openBtn').disabled=true;
+  const winner=pickItem();
+  pendingWin=winner;
+
+  if(fastMode){
+    document.getElementById('reelOuter').style.display='none';
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('modalTitle').textContent='Поздравляем! 🎉';
+    showWinUI(winner);
+    return;
+  }
+
+  document.getElementById('reelOuter').style.display='block';
+  document.getElementById('winWrap').classList.remove('show');
+  document.getElementById('modalTitle').textContent='Открываем кейс...';
+  document.getElementById('modal').classList.add('open');
+
+  const winPos=32;
+  buildReel(winPos,winner);
+  const track=document.getElementById('reelTrack');
+  const iw=86;
+  const cw=document.getElementById('reelOuter').clientWidth||360;
+  const cx=cw/2-40;
+  const tx=-(winPos*iw-cx);
+  track.style.transition='none';
+  track.style.transform='translateX(0)';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      track.style.transition='transform 4.2s cubic-bezier(0.15,0.65,0.1,1)';
+      track.style.transform=`translateX(${tx}px)`;
+    });
+  });
+  setTimeout(()=>{
+    document.getElementById('reelOuter').style.display='none';
+    document.getElementById('modalTitle').textContent='Поздравляем! 🎉';
+    showWinUI(winner);
+  },4500);
+}
+
+// ── SHOW WIN ──────────────────────────────────────────────────
+function showWinUI(w){
+  const wrap=document.getElementById('winWrap');
+  document.getElementById('winEmoji').textContent=w.emoji;
+  document.getElementById('winName').textContent=w.name;
+  const rar=document.getElementById('winRar');
+  rar.textContent=RL[w.rarity];
+  rar.style.background=RB[w.rarity];
+  rar.style.color=RC[w.rarity];
+  const n=Math.floor(Math.random()*9999+1).toString().padStart(4,'0');
+  document.getElementById('winSub').textContent=`#${n} / 10 000  ·  ⭐ ${w.stars}`;
+  wrap.classList.add('show');
+}
+
+// ── SELL ──────────────────────────────────────────────────────
+function doSell(){
+  if(!pendingWin)return;
+  const val=Math.floor(pendingWin.sellBase*(0.75+Math.random()*0.3));
+  closeModal();
+  showToast(`Продано за ⭐ ${val.toLocaleString()} 💚`);
+  pendingWin=null;
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('winWrap').classList.remove('show');
+  document.getElementById('reelOuter').style.display='block';
+  spinning=false;
+  document.getElementById('openBtn').disabled=false;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
 </script>
 </body>
 </html>
