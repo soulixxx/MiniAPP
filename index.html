@@ -1,277 +1,1239 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Gift Roulette</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d1a;font-family:sans-serif;color:#fff;min-height:100vh}
-.page{display:flex;flex-direction:column;align-items:center;padding-bottom:80px}
-.nav{display:flex;width:100%;max-width:420px;border-bottom:1px solid #ffffff0a;background:#0d0d1a;position:sticky;top:0;z-index:10}
-.nav-btn{flex:1;padding:14px 4px;font-size:11px;color:#555;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;font-weight:600}
-.nav-btn.active{color:#a78bfa;border-bottom-color:#a78bfa}
-.tab{display:none;width:100%;max-width:420px;padding:20px 16px;flex-direction:column;align-items:center;gap:16px}
-.tab.active{display:flex}
-.profile-hero{width:100%;background:#161625;border:1px solid #ffffff0a;border-radius:20px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px}
-.avatar-wrap{position:relative;width:80px;height:80px}
-.avatar-img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #a78bfa}
-.avatar-fallback{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#fff;border:2px solid #a78bfa}
-.online-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;background:#22c55e;border-radius:50%;border:2px solid #0d0d1a}
-.profile-name{font-size:20px;font-weight:800}
-.profile-username{font-size:13px;color:#555}
-.profile-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.badge{font-size:11px;padding:4px 10px;border-radius:99px;font-weight:600}
-.badge-premium{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b33}
-.badge-collector{background:#a78bfa22;color:#a78bfa;border:1px solid #a78bfa33}
-.badge-whale{background:#60a5fa22;color:#60a5fa;border:1px solid #60a5fa33}
-.profile-stats{display:flex;gap:12px;width:100%;margin-top:4px}
-.ps-item{flex:1;background:#0d0d1a;border-radius:12px;padding:10px;text-align:center}
-.ps-num{font-size:18px;font-weight:800;color:#a78bfa}
-.ps-label{font-size:10px;color:#444;margin-top:2px}
-.section-title{font-size:11px;color:#444;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;align-self:flex-start}
-.balance-bar{display:flex;gap:10px;width:100%}
-.bal-card{flex:1;background:#161625;border:1px solid #ffffff0a;border-radius:14px;padding:10px;text-align:center}
-.bal-num{font-size:18px;font-weight:800;color:#a78bfa}
-.bal-label{font-size:10px;color:#444;margin-top:2px}
-.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
-.case-card{background:#161625;border:1px solid #ffffff0a;border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;transition:border-color 0.2s,transform 0.15s}
-.case-card:hover{border-color:#a78bfa44;transform:translateY(-2px)}
-.case-card.selected{border-color:#a78bfa;background:#a78bfa11}
-.case-icon{font-size:26px;margin-bottom:3px}
-.case-name{font-size:10px;color:#aaa;font-weight:600}
-.case-price{font-size:11px;color:#a78bfa;margin-top:2px;font-weight:700}
-.reel-wrap{background:#161625;border:1px solid #ffffff0a;border-radius:20px;padding:14px;overflow:hidden;position:relative;width:100%}
-.reel-mask{overflow:hidden;border-radius:10px;position:relative;height:100px}
-.reel-mask::before,.reel-mask::after{content:'';position:absolute;top:0;bottom:0;width:50px;z-index:2;pointer-events:none}
-.reel-mask::before{left:0;background:linear-gradient(to right,#161625,transparent)}
-.reel-mask::after{right:0;background:linear-gradient(to left,#161625,transparent)}
-.reel-ind{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:#a78bfa;z-index:3}
-.reel-ind::before,.reel-ind::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:0;height:0}
-.reel-ind::before{top:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #a78bfa}
-.reel-ind::after{bottom:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid #a78bfa}
-.reel-track{display:flex;gap:6px;width:max-content;align-items:center;height:100px}
-.reel-item{width:76px;height:88px;background:#1e1e30;border:1px solid #ffffff0a;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0}
-.reel-item.winner{border-color:#a78bfa;background:#a78bfa15}
-.ri-emoji{font-size:28px}
-.ri-name{font-size:9px;color:#aaa;text-align:center;padding:0 3px;line-height:1.2}
-.ri-rare{font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px}
-.rare-common{background:#ffffff12;color:#777}
-.rare-rare{background:#3b82f612;color:#60a5fa}
-.rare-epic{background:#8b5cf612;color:#a78bfa}
-.rare-legendary{background:#f59e0b12;color:#f59e0b}
-.rare-mythic{background:#ec489912;color:#f472b6}
-.spin-btn{width:100%;padding:15px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;transition:opacity 0.15s,transform 0.1s}
-.spin-btn:active{transform:scale(0.98)}
-.spin-btn:disabled{opacity:0.4;cursor:default}
-.result-wrap{width:100%;display:none}
-.result-card{background:#161625;border:2px solid #a78bfa;border-radius:20px;padding:20px;text-align:center;animation:fadeUp 0.4s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.result-big{font-size:56px;display:block;animation:pop 0.5s ease}
-@keyframes pop{0%{transform:scale(0.3) rotate(-10deg);opacity:0}60%{transform:scale(1.2) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
-.result-name{font-size:20px;font-weight:900;margin:6px 0 4px}
-.result-rar{display:inline-block;font-size:12px;font-weight:700;padding:3px 12px;border-radius:99px;margin-bottom:6px}
-.result-desc{font-size:12px;color:#555;line-height:1.5}
-.result-num{font-size:11px;color:#333;margin-top:4px}
-.result-actions{display:flex;gap:8px;margin-top:12px}
-.btn-sell-res{flex:1;padding:10px;background:#22c55e22;color:#22c55e;border:1px solid #22c55e44;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
-.btn-keep{flex:1;padding:10px;background:#ffffff08;color:#aaa;border:1px solid #ffffff10;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer}
-.stats-row{display:flex;gap:6px;width:100%}
-.stat-pill{flex:1;background:#161625;border:1px solid #ffffff08;border-radius:10px;padding:6px 2px;text-align:center}
-.sp-num{font-size:15px;font-weight:800}
-.sp-label{font-size:8px;color:#333;margin-top:1px}
-.coll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
-.coll-item{background:#161625;border:1px solid #ffffff08;border-radius:14px;padding:12px 6px;text-align:center;position:relative}
-.ci-emoji{font-size:26px}
-.ci-count{font-size:10px;font-weight:700;margin-top:3px}
-.ci-name{font-size:9px;color:#444;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
-.ci-sell{position:absolute;top:4px;right:4px;background:#22c55e22;color:#22c55e;border:none;border-radius:6px;font-size:9px;font-weight:700;padding:2px 5px;cursor:pointer}
-.empty-coll{font-size:13px;color:#333;text-align:center;padding:30px;width:100%}
-.modal-overlay{display:none;position:fixed;inset:0;background:#000000bb;z-index:100;align-items:flex-end;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:#161625;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:420px;animation:slideUp 0.3s ease}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-title{font-size:18px;font-weight:800;margin-bottom:4px}
-.modal-sub{font-size:13px;color:#555;margin-bottom:20px}
-.modal-item-preview{display:flex;align-items:center;gap:14px;background:#0d0d1a;border-radius:14px;padding:14px;margin-bottom:16px}
-.mip-emoji{font-size:40px}
-.mip-name{font-size:15px;font-weight:700}
-.mip-rar{font-size:11px;margin-top:3px;font-weight:600}
-.price-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.price-opt{background:#0d0d1a;border:1px solid #ffffff0a;border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:border-color 0.2s}
-.price-opt.selected{border-color:#22c55e;background:#22c55e0a}
-.po-price{font-size:16px;font-weight:800;color:#22c55e}
-.po-label{font-size:10px;color:#444;margin-top:2px}
-.modal-btns{display:flex;gap:8px}
-.btn-confirm-sell{flex:2;padding:14px;background:#22c55e;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;cursor:pointer}
-.btn-cancel{flex:1;padding:14px;background:#ffffff08;border:none;border-radius:12px;color:#aaa;font-size:14px;font-weight:700;cursor:pointer}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#22c55e;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:700;opacity:0;transition:all 0.3s;z-index:200;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-</style>
-</head>
-<body>
-<div class="page">
-  <div class="nav">
-    <div class="nav-btn active" onclick="switchTab('profile')">👤 Профиль</div>
-    <div class="nav-btn" onclick="switchTab('roulette')">🎰 Рулетка</div>
-    <div class="nav-btn" onclick="switchTab('collection')">🗂 Коллекция</div>
-  </div>
+import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
 
-  <div class="tab active" id="tab-profile">
-    <div class="profile-hero">
-      <div class="avatar-wrap">
-        <div class="avatar-fallback" id="avatarEl">?</div>
-        <div class="online-dot"></div>
-      </div>
-      <div class="profile-name" id="profileName">Загрузка...</div>
-      <div class="profile-username" id="profileUsername">@username</div>
-      <div class="profile-badges" id="profileBadges"></div>
-      <div class="profile-stats">
-        <div class="ps-item"><div class="ps-num" id="pStars">1000</div><div class="ps-label">💎 Stars</div></div>
-        <div class="ps-item"><div class="ps-num" id="pTotal">0</div><div class="ps-label">🎁 Открыто</div></div>
-        <div class="ps-item"><div class="ps-num" id="pRare">0</div><div class="ps-label">⭐ Редких</div></div>
-        <div class="ps-item"><div class="ps-num" id="pEarned">0</div><div class="ps-label">💚 Продано</div></div>
-      </div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Последние подарки</div>
-      <div id="recentGifts" style="display:flex;gap:8px;flex-wrap:wrap">
-        <div style="font-size:13px;color:#333;padding:10px">Ещё нет подарков — крути рулетку!</div>
-      </div>
-    </div>
-    <a href="https://soundcloud.com/you/likes" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#FF5500;color:#fff;text-decoration:none;padding:14px;border-radius:14px;font-size:14px;font-weight:700;width:100%">🎧 Мои лайки SoundCloud</a>
-  </div>
-
-  <div class="tab" id="tab-roulette">
-    <div class="balance-bar">
-      <div class="bal-card"><div class="bal-num" id="coinsEl">1000</div><div class="bal-label">💎 Stars</div></div>
-      <div class="bal-card"><div class="bal-num" id="totalEl">0</div><div class="bal-label">🎁 Открыто</div></div>
-      <div class="bal-card"><div class="bal-num" id="rareEl">0</div><div class="bal-label">⭐ Редких</div></div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Выбери кейс</div>
-      <div class="cases-grid">
-        <div class="case-card selected" onclick="selectCase(0)"><div class="case-icon">📦</div><div class="case-name">Базовый</div><div class="case-price">50 ⭐</div></div>
-        <div class="case-card" onclick="selectCase(1)"><div class="case-icon">🎁</div><div class="case-name">Премиум</div><div class="case-price">150 ⭐</div></div>
-        <div class="case-card" onclick="selectCase(2)"><div class="case-icon">👑</div><div class="case-name">Легенда</div><div class="case-price">500 ⭐</div></div>
-      </div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Рулетка</div>
-      <div class="reel-wrap">
-        <div class="reel-ind"></div>
-        <div class="reel-mask"><div class="reel-track" id="reelTrack"></div></div>
-      </div>
-    </div>
-    <button class="spin-btn" id="spinBtn" onclick="doSpin()">🎰 Открыть кейс — 50 ⭐</button>
-    <div class="result-wrap" id="resultWrap">
-      <div class="section-title">Выпало!</div>
-      <div class="result-card" id="resultCard"></div>
-    </div>
-    <div style="width:100%">
-      <div class="section-title">Статистика</div>
-      <div class="stats-row">
-        <div class="stat-pill"><div class="sp-num" id="sCommon">0</div><div class="sp-label">Common</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sRare" style="color:#60a5fa">0</div><div class="sp-label">Rare</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sEpic" style="color:#a78bfa">0</div><div class="sp-label">Epic</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sLeg" style="color:#f59e0b">0</div><div class="sp-label">Legend</div></div>
-        <div class="stat-pill"><div class="sp-num" id="sMyth" style="color:#f472b6">0</div><div class="sp-label">Mythic</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="tab" id="tab-collection">
-    <div id="collGrid" style="width:100%"><div class="empty-coll">Открой первый кейс 🎁</div></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="sellModal" onclick="closeSellModal(event)">
-  <div class="modal">
-    <div class="modal-title">Продать подарок</div>
-    <div class="modal-sub">Выбери цену продажи</div>
-    <div class="modal-item-preview" id="modalPreview"></div>
-    <div class="price-options" id="priceOptions"></div>
-    <div class="modal-btns">
-      <button class="btn-confirm-sell" onclick="confirmSell()">Продать 💚</button>
-      <button class="btn-cancel" onclick="document.getElementById('sellModal').classList.remove('open')">Отмена</button>
-    </div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-
-<script>
-const GIFTS=[
-  {name:"Плюшевый Пепе",emoji:"🐸",rarity:"common",desc:"Мягкий друг из мемов",sellBase:10},
-  {name:"Золотая рыбка",emoji:"🐟",rarity:"common",desc:"Обычная золотая рыбка",sellBase:8},
-  {name:"Звёздный медведь",emoji:"🐻",rarity:"common",desc:"Медведь со звёздами",sellBase:12},
-  {name:"Красный кот",emoji:"🐱",rarity:"common",desc:"Котик с огнём",sellBase:9},
-  {name:"Магический шар",emoji:"🔮",rarity:"rare",desc:"Предсказывает будущее",sellBase:60},
-  {name:"Кристалл льда",emoji:"❄️",rarity:"rare",desc:"Вечная мерзлота",sellBase:55},
-  {name:"Лунный камень",emoji:"🌙",rarity:"rare",desc:"Упал с луны",sellBase:70},
-  {name:"Огненный цветок",emoji:"🌺",rarity:"rare",desc:"Цветёт раз в 100 лет",sellBase:65},
-  {name:"Дуровская кепка",emoji:"🧢",rarity:"epic",desc:"Аксессуар основателя Telegram",sellBase:200},
-  {name:"Telegram звезда",emoji:"⭐",rarity:"epic",desc:"Настоящая звезда Telegram",sellBase:180},
-  {name:"Дракон удачи",emoji:"🐉",rarity:"epic",desc:"Приносит удачу владельцу",sellBase:220},
-  {name:"Феникс",emoji:"🦅",rarity:"legendary",desc:"Возрождается из пепла",sellBase:600},
-  {name:"Единорог",emoji:"🦄",rarity:"legendary",desc:"Существует в одном экземпляре",sellBase:700},
-  {name:"Корона Павла",emoji:"👑",rarity:"mythic",desc:"Носит только избранный",sellBase:1500},
-  {name:"Infinity Gem",emoji:"💠",rarity:"mythic",desc:"Контролирует вселенную",sellBase:2000},
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const GIFTS = [
+  { id: "pepe", name: "Plush Pepe", emoji: "🐸", rarity: "common", value: 12, desc: "The original meme frog" },
+  { id: "fish", name: "Golden Fish", emoji: "🐟", rarity: "common", value: 9, desc: "Make a wish" },
+  { id: "bear", name: "Star Bear", emoji: "🐻", rarity: "common", value: 14, desc: "Fluffy with stars" },
+  { id: "cat", name: "Fire Cat", emoji: "🐱", rarity: "common", value: 10, desc: "Hot tempered kitty" },
+  { id: "ball", name: "Magic Ball", emoji: "🔮", rarity: "rare", value: 65, desc: "Sees your future" },
+  { id: "ice", name: "Ice Crystal", emoji: "❄️", rarity: "rare", value: 58, desc: "Eternal frost" },
+  { id: "moon", name: "Moon Stone", emoji: "🌙", rarity: "rare", value: 72, desc: "Fell from the moon" },
+  { id: "flower", name: "Fire Bloom", emoji: "🌺", rarity: "rare", value: 68, desc: "Blooms once a century" },
+  { id: "cap", name: "Durov Cap", emoji: "🧢", rarity: "epic", value: 210, desc: "Wear the founder's style" },
+  { id: "star", name: "TG Star", emoji: "⭐", rarity: "epic", value: 185, desc: "A real Telegram star" },
+  { id: "dragon", name: "Lucky Dragon", emoji: "🐉", rarity: "epic", value: 230, desc: "Fortune favors you" },
+  { id: "phoenix", name: "Phoenix", emoji: "🦅", rarity: "legendary", value: 620, desc: "Reborn from ash" },
+  { id: "unicorn", name: "Unicorn", emoji: "🦄", rarity: "legendary", value: 720, desc: "One of one" },
+  { id: "crown", name: "Pavel's Crown", emoji: "👑", rarity: "mythic", value: 1600, desc: "Only for the chosen" },
+  { id: "gem", name: "Infinity Gem", emoji: "💠", rarity: "mythic", value: 2100, desc: "Controls the universe" },
+  { id: "torch", name: "Chill Torch", emoji: "🔦", rarity: "common", value: 11, desc: "Light in the dark" },
+  { id: "cigar", name: "Lucky Cigar", emoji: "🚬", rarity: "rare", value: 60, desc: "Smooth operator" },
+  { id: "frog", name: "Golden Frog", emoji: "🐊", rarity: "epic", value: 195, desc: "Leap of fortune" },
+  { id: "swan", name: "White Swan", emoji: "🦢", rarity: "legendary", value: 580, desc: "Graceful and rare" },
+  { id: "cherry", name: "Cherry Heart", emoji: "🍒", rarity: "common", value: 13, desc: "Sweet and juicy" },
 ];
-const CASES=[
-  {name:"Базовый",price:50,pool:[{r:"common",w:65},{r:"rare",w:25},{r:"epic",w:8},{r:"legendary",w:1.8},{r:"mythic",w:0.2}]},
-  {name:"Премиум",price:150,pool:[{r:"common",w:35},{r:"rare",w:35},{r:"epic",w:20},{r:"legendary",w:8},{r:"mythic",w:2}]},
-  {name:"Легенда",price:500,pool:[{r:"common",w:5},{r:"rare",w:20},{r:"epic",w:35},{r:"legendary",w:30},{r:"mythic",w:10}]},
-];
-const RL={common:"Common",rare:"Rare",epic:"Epic",legendary:"Legendary",mythic:"Mythic"};
-const RC={common:"#777",rare:"#60a5fa",epic:"#a78bfa",legendary:"#f59e0b",mythic:"#f472b6"};
-const RB={common:"rgba(255,255,255,0.08)",rare:"rgba(96,165,250,0.12)",epic:"rgba(167,139,250,0.12)",legendary:"rgba(245,158,11,0.12)",mythic:"rgba(244,114,182,0.12)"};
-let coins=1000,total=0,rareCount=0,earned=0,selectedCase=0,spinning=false;
-let collection={},stats={common:0,rare:0,epic:0,legendary:0,mythic:0},recent=[],sellTarget=null,sellPrice=0;
 
-window.addEventListener('load',()=>{
-  try{
-    const tg=window.Telegram&&window.Telegram.WebApp;
-    if(tg){tg.ready();tg.expand();
-      const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
-      if(u){
-        const name=([u.first_name,u.last_name].filter(Boolean).join(' '))||'Пользователь';
-        const uname=u.username?('@'+u.username):'';
-        document.getElementById('profileName').textContent=name;
-        document.getElementById('profileUsername').textContent=uname||'Telegram User';
-        const av=document.getElementById('avatarEl');
-        av.textContent=name.charAt(0).toUpperCase();
-        if(u.photo_url){const img=document.createElement('img');img.src=u.photo_url;img.className='avatar-img';img.onload=()=>av.replaceWith(img);}
-        updateBadges();return;
+const RARITY_CONFIG = {
+  common:    { label: "Common",    color: "#9ca3af", glow: "#6b7280", bg: "rgba(156,163,175,0.12)" },
+  rare:      { label: "Rare",      color: "#60a5fa", glow: "#3b82f6", bg: "rgba(96,165,250,0.15)" },
+  epic:      { label: "Epic",      color: "#a78bfa", glow: "#7c3aed", bg: "rgba(167,139,250,0.15)" },
+  legendary: { label: "Legendary", color: "#f59e0b", glow: "#d97706", bg: "rgba(245,158,11,0.15)" },
+  mythic:    { label: "Mythic",    color: "#f472b6", glow: "#ec4899", bg: "rgba(244,114,182,0.15)" },
+};
+
+const CASES = [
+  { id: 0, name: "Basic",   icon: "📦", price: 50,  pool: [{ r:"common",w:65 },{ r:"rare",w:25 },{ r:"epic",w:8 },{ r:"legendary",w:1.8 },{ r:"mythic",w:0.2 }] },
+  { id: 1, name: "Premium", icon: "🎁", price: 150, pool: [{ r:"common",w:35 },{ r:"rare",w:35 },{ r:"epic",w:20 },{ r:"legendary",w:8 },{ r:"mythic",w:2 }] },
+  { id: 2, name: "Legend",  icon: "👑", price: 500, pool: [{ r:"common",w:5 },{ r:"rare",w:20 },{ r:"epic",w:35 },{ r:"legendary",w:30 },{ r:"mythic",w:10 }] },
+];
+
+const FAKE_USERS = ["crypto_w4le","t0n_hunter","pavel_fan","nft_king","gem_lord","moon_boy","whale_alert","durov_simp","tg_rich","star_trader","vip_player","hodl_chad","satoshi_jr","block_ninja","chain_max"];
+const FAKE_NAMES = ["Alex K","Maria V","John D","Kai L","Sara M","Dmitri P","Lena B","Omar Z","Yuki T","Nina S"];
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+function getStorageKey(uid) { return `tgcasino_${uid}`; }
+function loadData(uid) {
+  try {
+    const raw = localStorage.getItem(getStorageKey(uid));
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+function saveData(uid, data) {
+  try { localStorage.setItem(getStorageKey(uid), JSON.stringify(data)); } catch {}
+}
+function getDefaultData() {
+  return {
+    balance: 1000,
+    inventory: {},
+    upgradeStats: { attempts: 0, successes: 0 },
+    crashHistory: [],
+    rouletteHistory: [],
+    totalSpins: 0,
+    totalEarned: 0,
+    xp: 0,
+    level: 1,
+    dailyClaimedAt: 0,
+    recentWins: [],
+  };
+}
+
+// ─── CONTEXT ──────────────────────────────────────────────────────────────────
+const AppCtx = createContext(null);
+function useApp() { return useContext(AppCtx); }
+
+function weightedRandom(pool) {
+  const t = pool.reduce((s, p) => s + p.w, 0);
+  let r = Math.random() * t;
+  for (const p of pool) { r -= p.w; if (r <= 0) return p.r; }
+  return pool[pool.length - 1].r;
+}
+function giftsByRarity(rarity) { return GIFTS.filter(g => g.rarity === rarity); }
+function randomGift(rarity) { const opts = giftsByRarity(rarity); return opts[Math.floor(Math.random() * opts.length)]; }
+function lvlFromXp(xp) { return Math.floor(Math.sqrt(xp / 100)) + 1; }
+function xpForNext(lvl) { return lvl * lvl * 100; }
+
+// ─── APP PROVIDER ─────────────────────────────────────────────────────────────
+function AppProvider({ children }) {
+  const [uid, setUid] = useState("demo");
+  const [user, setUser] = useState({ name: "Demo User", username: "@demo", photo: null });
+  const [data, setDataRaw] = useState(getDefaultData());
+  const [sound, setSound] = useState(true);
+  const [notification, setNotification] = useState(null);
+  const notifTimerRef = useRef(null);
+
+  useEffect(() => {
+    let resolvedUid = "demo";
+    let resolvedUser = { name: "Demo User", username: "@demo", photo: null };
+    try {
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready(); tg.expand();
+        const u = tg.initDataUnsafe?.user;
+        if (u?.id) {
+          resolvedUid = String(u.id);
+          resolvedUser = {
+            name: [u.first_name, u.last_name].filter(Boolean).join(" ") || "User",
+            username: u.username ? `@${u.username}` : "",
+            photo: u.photo_url || null,
+          };
+        }
       }
-    }
-  }catch(e){}
-  document.getElementById('profileName').textContent='Demo User';
-  document.getElementById('profileUsername').textContent='@demo';
-  document.getElementById('avatarEl').textContent='D';
-  updateBadges();
-});
+    } catch {}
+    setUid(resolvedUid);
+    setUser(resolvedUser);
+    const saved = loadData(resolvedUid);
+    if (saved) setDataRaw({ ...getDefaultData(), ...saved });
+  }, []);
 
-function updateBadges(){const b=document.getElementById('profileBadges');b.innerHTML='';const badges=[];if(total>=10)badges.push({cls:'badge-collector',text:'🗂 Коллекционер'});if(coins>=500)badges.push({cls:'badge-premium',text:'⭐ Premium'});if(rareCount>=5)badges.push({cls:'badge-whale',text:'🐋 Whale'});if(!badges.length)badges.push({cls:'badge-collector',text:'🆕 Новичок'});badges.forEach(({cls,text})=>{const d=document.createElement('div');d.className='badge '+cls;d.textContent=text;b.appendChild(d);});}
-function switchTab(name){document.querySelectorAll('.nav-btn').forEach((b,i)=>{const n=['profile','roulette','collection'];b.classList.toggle('active',n[i]===name);});document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');if(name==='collection')renderCollection();}
-function selectCase(i){selectedCase=i;document.querySelectorAll('.case-card').forEach((c,idx)=>c.classList.toggle('selected',idx===i));document.getElementById('spinBtn').textContent=`🎰 Открыть кейс — ${CASES[i].price} ⭐`;}
-function weightedRandom(pool){const t=pool.reduce((s,p)=>s+p.w,0);let r=Math.random()*t;for(const p of pool){r-=p.w;if(r<=0)return p.r;}return pool[pool.length-1].r;}
-function getGift(rarity){const opts=GIFTS.filter(g=>g.rarity===rarity);return opts[Math.floor(Math.random()*opts.length)];}
-function buildReel(winPos,winner){const track=document.getElementById('reelTrack');track.innerHTML='';for(let i=0;i<40;i++){const g=i===winPos?winner:GIFTS[Math.floor(Math.random()*GIFTS.length)];const div=document.createElement('div');div.className='reel-item'+(i===winPos?' winner':'');div.innerHTML=`<div class="ri-emoji">${g.emoji}</div><div class="ri-name">${g.name}</div><div class="ri-rare rare-${g.rarity}">${RL[g.rarity]}</div>`;track.appendChild(div);}}
-function doSpin(){if(spinning)return;const cs=CASES[selectedCase];if(coins<cs.price){showToast('Недостаточно Stars! 💔');return;}coins-=cs.price;spinning=true;document.getElementById('spinBtn').disabled=true;document.getElementById('resultWrap').style.display='none';const rarity=weightedRandom(cs.pool);const winner=getGift(rarity);const winPos=32;buildReel(winPos,winner);const track=document.getElementById('reelTrack');const itemW=82;const center=180-38;const targetX=-(winPos*itemW-center);track.style.transition='none';track.style.transform='translateX(0)';setTimeout(()=>{track.style.transition='transform 4s cubic-bezier(0.17,0.67,0.12,0.99)';track.style.transform=`translateX(${targetX}px)`;},50);setTimeout(()=>{spinning=false;document.getElementById('spinBtn').disabled=false;showResult(winner,rarity);stats[rarity]++;updateStatsUI();addToCollection(winner);total++;if(rarity!=='common')rareCount++;recent.unshift({...winner,id:Date.now()});if(recent.length>6)recent.pop();syncUI();updateBadges();renderRecent();},4300);}
-function showResult(g,rarity){const wrap=document.getElementById('resultWrap');const card=document.getElementById('resultCard');wrap.style.display='block';card.style.borderColor=RC[rarity];card.innerHTML=`<span class="result-big">${g.emoji}</span><div class="result-name">${g.name}</div><div class="result-rar" style="background:${RB[rarity]};color:${RC[rarity]}">${RL[rarity]}</div><div class="result-desc">${g.desc}</div><div class="result-num">#${Math.floor(Math.random()*9999+1).toString().padStart(4,'0')} / 10000</div><div class="result-actions"><button class="btn-sell-res" onclick="openSellModal('${g.name}')">💚 Продать</button><button class="btn-keep" onclick="document.getElementById('resultWrap').style.display='none'">Оставить</button></div>`;wrap.scrollIntoView({behavior:'smooth',block:'center'});}
-function updateStatsUI(){document.getElementById('sCommon').textContent=stats.common;document.getElementById('sRare').textContent=stats.rare;document.getElementById('sEpic').textContent=stats.epic;document.getElementById('sLeg').textContent=stats.legendary;document.getElementById('sMyth').textContent=stats.mythic;}
-function syncUI(){document.getElementById('coinsEl').textContent=coins;document.getElementById('totalEl').textContent=total;document.getElementById('rareEl').textContent=rareCount;document.getElementById('pStars').textContent=coins;document.getElementById('pTotal').textContent=total;document.getElementById('pRare').textContent=rareCount;document.getElementById('pEarned').textContent=earned;}
-function addToCollection(g){if(!collection[g.name])collection[g.name]={...g,count:0};collection[g.name].count++;}
-function renderCollection(){const grid=document.getElementById('collGrid');const keys=Object.keys(collection);if(!keys.length){grid.innerHTML='<div class="empty-coll">Открой первый кейс 🎁</div>';return;}const order=['mythic','legendary','epic','rare','common'];const sorted=keys.sort((a,b)=>order.indexOf(collection[a].rarity)-order.indexOf(collection[b].rarity));grid.innerHTML='';const wrap=document.createElement('div');wrap.className='coll-grid';sorted.forEach(name=>{const d=collection[name];const item=document.createElement('div');item.className='coll-item';item.style.borderColor=RC[d.rarity]+'33';item.innerHTML=`<button class="ci-sell" onclick="openSellModal('${name}')">$</button><div class="ci-emoji">${d.emoji}</div><div class="ci-count" style="color:${RC[d.rarity]}">×${d.count}</div><div class="ci-name">${name}</div>`;wrap.appendChild(item);});grid.appendChild(wrap);}
-function renderRecent(){const el=document.getElementById('recentGifts');if(!recent.length){el.innerHTML='<div style="font-size:13px;color:#333;padding:10px">Ещё нет подарков!</div>';return;}el.innerHTML='';recent.forEach(g=>{const d=document.createElement('div');d.style.cssText='background:#161625;border:1px solid #ffffff08;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:6px';d.innerHTML=`<span style="font-size:20px">${g.emoji}</span><div><div style="font-size:11px;font-weight:700">${g.name}</div><div style="font-size:10px;color:${RC[g.rarity]}">${RL[g.rarity]}</div></div>`;el.appendChild(d);});}
-function openSellModal(giftName){const g=collection[giftName];if(!g||g.count<1){showToast('Нет в коллекции');return;}sellTarget=giftName;document.getElementById('modalPreview').innerHTML=`<div class="mip-emoji">${g.emoji}</div><div class="mip-info"><div class="mip-name">${g.name}</div><div class="mip-rar" style="color:${RC[g.rarity]}">${RL[g.rarity]} · ×${g.count} в коллекции</div></div>`;const base=g.sellBase;const opts=[{label:'Быстрая продажа',price:Math.floor(base*0.6),note:'Мгновенно'},{label:'Рыночная цена',price:Math.floor(base*0.9),note:'~1 час'},{label:'Выше рынка',price:Math.floor(base*1.1),note:'~6 часов'},{label:'Максимум',price:Math.floor(base*1.4),note:'~24 часа'}];const po=document.getElementById('priceOptions');po.innerHTML='';sellPrice=opts[0].price;opts.forEach((o,i)=>{const d=document.createElement('div');d.className='price-opt'+(i===0?' selected':'');d.innerHTML=`<div class="po-price">${o.price} ⭐</div><div class="po-label">${o.label}</div><div class="po-label">${o.note}</div>`;d.onclick=()=>{document.querySelectorAll('.price-opt').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');sellPrice=o.price;};po.appendChild(d);});document.getElementById('sellModal').classList.add('open');}
-function closeSellModal(e){if(e.target===document.getElementById('sellModal'))document.getElementById('sellModal').classList.remove('open');}
-function confirmSell(){if(!sellTarget||!collection[sellTarget])return;collection[sellTarget].count--;if(collection[sellTarget].count<=0)delete collection[sellTarget];coins+=sellPrice;earned+=sellPrice;document.getElementById('sellModal').classList.remove('open');syncUI();renderCollection();renderRecent();showToast(`Продано за ${sellPrice} ⭐ 💚`);}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-buildReel(20,GIFTS[0]);
-document.getElementById('reelTrack').style.transform=`translateX(-${20*82-180+38}px)`;
-syncUI();
-</script>
-</body>
-</html>
+  const setData = useCallback((updater) => {
+    setDataRaw(prev => {
+      const next = typeof updater === "function" ? updater(prev) : { ...prev, ...updater };
+      next.level = lvlFromXp(next.xp);
+      saveData(uid, next);
+      return next;
+    });
+  }, [uid]);
+
+  const notify = useCallback((msg, type = "success") => {
+    setNotification({ msg, type });
+    clearTimeout(notifTimerRef.current);
+    notifTimerRef.current = setTimeout(() => setNotification(null), 2800);
+  }, []);
+
+  const addToInventory = useCallback((gift) => {
+    setData(prev => {
+      const inv = { ...prev.inventory };
+      if (!inv[gift.id]) inv[gift.id] = { ...gift, count: 0 };
+      inv[gift.id] = { ...inv[gift.id], count: inv[gift.id].count + 1 };
+      return { ...prev, inventory: inv };
+    });
+  }, [setData]);
+
+  const removeFromInventory = useCallback((giftId) => {
+    setData(prev => {
+      const inv = { ...prev.inventory };
+      if (!inv[giftId] || inv[giftId].count < 1) return prev;
+      inv[giftId] = { ...inv[giftId], count: inv[giftId].count - 1 };
+      if (inv[giftId].count <= 0) delete inv[giftId];
+      return { ...prev, inventory: inv };
+    });
+  }, [setData]);
+
+  const claimDaily = useCallback(() => {
+    const now = Date.now();
+    if (now - data.dailyClaimedAt < 86400000) { notify("Daily already claimed!", "error"); return; }
+    const reward = 200 + Math.floor(Math.random() * 300);
+    setData(prev => ({ ...prev, balance: prev.balance + reward, xp: prev.xp + 50, dailyClaimedAt: now }));
+    notify(`Daily reward: +${reward} ⭐`, "success");
+  }, [data.dailyClaimedAt, setData, notify]);
+
+  const value = {
+    uid, user, data, setData, sound, setSound, notification,
+    notify, addToInventory, removeFromInventory, claimDaily,
+    canClaimDaily: Date.now() - data.dailyClaimedAt >= 86400000,
+  };
+
+  return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
+}
+
+// ─── STYLES ───────────────────────────────────────────────────────────────────
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#080c14;--surface:#0e1420;--card:#131a27;--border:rgba(255,255,255,0.06);
+    --accent:#7c3aed;--accent2:#4f46e5;--neon:#a78bfa;--green:#22c55e;--red:#ef4444;
+    --gold:#f59e0b;--pink:#f472b6;--text:#e2e8f0;--muted:#4b5563;--soft:#94a3b8;
+  }
+  html,body,#root{height:100%;overflow:hidden}
+  body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);overscroll-behavior:none}
+  h1,h2,h3,.font-display{font-family:'Syne',sans-serif}
+  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pop{0%{transform:scale(0.4);opacity:0}60%{transform:scale(1.15)}to{transform:scale(1);opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse-glow{0%,100%{box-shadow:0 0 12px var(--neon)}50%{box-shadow:0 0 32px var(--neon),0 0 64px var(--accent)}}
+  @keyframes crash-rise{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+  @keyframes reel{0%{transform:translateX(0)}to{transform:translateX(-100%)}}
+  @keyframes shimmer{0%{background-position:-200% 0}to{background-position:200% 0}}
+  @keyframes coinRain{0%{transform:translateY(-20px) rotate(0deg);opacity:1}to{transform:translateY(120px) rotate(720deg);opacity:0}}
+  @keyframes notif{0%{transform:translateX(120%);opacity:0}10%{transform:translateX(0);opacity:1}85%{transform:translateX(0);opacity:1}100%{transform:translateX(120%);opacity:0}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes roulette-spin{from{transform:rotate(0deg)}to{transform:rotate(var(--target-deg,1800deg))}}
+  @keyframes neon-flicker{0%,19%,21%,23%,25%,54%,56%,100%{opacity:1}20%,24%,55%{opacity:.6}}
+`;
+
+// ─── UI PRIMITIVES ────────────────────────────────────────────────────────────
+function Badge({ rarity }) {
+  const cfg = RARITY_CONFIG[rarity] || RARITY_CONFIG.common;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+      background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.color}33`,
+      fontFamily: "'Syne',sans-serif", letterSpacing: "0.05em",
+    }}>{cfg.label}</span>
+  );
+}
+
+function GlowCard({ children, style, onClick, rarity, className }) {
+  const glow = rarity ? RARITY_CONFIG[rarity]?.glow : "var(--accent)";
+  return (
+    <div onClick={onClick} className={className} style={{
+      background: "var(--card)", border: "1px solid var(--border)",
+      borderRadius: 16, position: "relative", overflow: "hidden", cursor: onClick ? "pointer" : "default",
+      transition: "transform 0.15s, box-shadow 0.2s",
+      ...style,
+    }}
+    onMouseEnter={e => { if (onClick) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 32px ${glow}30`; }}}
+    onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
+    >{children}</div>
+  );
+}
+
+function Btn({ children, onClick, style, disabled, variant = "primary" }) {
+  const base = {
+    border: "none", borderRadius: 14, padding: "13px 20px", fontSize: 14,
+    fontWeight: 700, cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.45 : 1, transition: "all 0.15s", display: "flex",
+    alignItems: "center", justifyContent: "center", gap: 6,
+    fontFamily: "'Syne',sans-serif",
+  };
+  const variants = {
+    primary: { background: "linear-gradient(135deg,#7c3aed,#4f46e5)", color: "#fff" },
+    success: { background: "linear-gradient(135deg,#16a34a,#22c55e)", color: "#fff" },
+    danger:  { background: "linear-gradient(135deg,#b91c1c,#ef4444)", color: "#fff" },
+    ghost:   { background: "rgba(255,255,255,0.06)", color: "var(--soft)", border: "1px solid var(--border)" },
+    gold:    { background: "linear-gradient(135deg,#b45309,#f59e0b)", color: "#fff" },
+  };
+  return (
+    <button style={{ ...base, ...variants[variant], ...style }} onClick={onClick} disabled={disabled}
+      onMouseDown={e => { if (!disabled) e.currentTarget.style.transform = "scale(0.97)"; }}
+      onMouseUp={e => { e.currentTarget.style.transform = ""; }}
+    >{children}</button>
+  );
+}
+
+function Pill({ label, value, color = "var(--neon)" }) {
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 12px", textAlign: "center", flex: 1 }}>
+      <div style={{ fontSize: 16, fontWeight: 800, color, fontFamily: "'Syne',sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 2, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
+    </div>
+  );
+}
+
+function Avatar({ user, size = 56 }) {
+  const [err, setErr] = useState(false);
+  const initial = (user.name || "U").charAt(0).toUpperCase();
+  if (user.photo && !err) {
+    return <img src={user.photo} onError={() => setErr(true)} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--accent)", flexShrink: 0 }} />;
+  }
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#4f46e5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.4, fontWeight: 900, color: "#fff", border: "2px solid var(--accent)", fontFamily: "'Syne',sans-serif", flexShrink: 0 }}>{initial}</div>
+  );
+}
+
+function XpBar({ xp, level }) {
+  const thisLvlXp = (level - 1) * (level - 1) * 100;
+  const nextLvlXp = level * level * 100;
+  const pct = Math.min(100, ((xp - thisLvlXp) / (nextLvlXp - thisLvlXp)) * 100);
+  return (
+    <div style={{ width: "100%", marginTop: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--muted)", marginBottom: 4 }}>
+        <span>LV {level}</span><span>{Math.round(pct)}% → LV {level + 1}</span>
+      </div>
+      <div style={{ height: 4, background: "var(--border)", borderRadius: 99, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,var(--accent),var(--neon))", borderRadius: 99, transition: "width 0.6s ease" }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── LIVE FEED ────────────────────────────────────────────────────────────────
+function useLiveFeed() {
+  const [feed, setFeed] = useState([]);
+  useEffect(() => {
+    const add = () => {
+      const gift = GIFTS[Math.floor(Math.random() * GIFTS.length)];
+      const user = FAKE_USERS[Math.floor(Math.random() * FAKE_USERS.length)];
+      setFeed(prev => [{ id: Date.now(), user, gift, time: Date.now() }, ...prev].slice(0, 30));
+    };
+    add();
+    const iv = setInterval(add, 2000 + Math.random() * 3000);
+    return () => clearInterval(iv);
+  }, []);
+  return feed;
+}
+
+function LiveTicker({ feed }) {
+  return (
+    <div style={{ overflowX: "hidden", width: "100%", position: "relative" }}>
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+        {feed.slice(0, 12).map(item => {
+          const cfg = RARITY_CONFIG[item.gift.rarity];
+          return (
+            <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--card)", border: `1px solid ${cfg.color}33`, borderRadius: 99, padding: "4px 10px", whiteSpace: "nowrap", flexShrink: 0, animation: "fadeUp 0.3s ease" }}>
+              <span style={{ fontSize: 14 }}>{item.gift.emoji}</span>
+              <span style={{ fontSize: 10, color: cfg.color, fontWeight: 700 }}>{item.user}</span>
+              <span style={{ fontSize: 10, color: "var(--muted)" }}>won {item.gift.name}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── HOME PAGE ────────────────────────────────────────────────────────────────
+function HomePage({ setPage }) {
+  const { user, data, claimDaily, canClaimDaily } = useApp();
+  const feed = useLiveFeed();
+  const online = useRef(Math.floor(1200 + Math.random() * 800));
+
+  const items = Object.values(data.inventory).sort((a, b) => GIFTS.findIndex(g => g.id === b.id) - GIFTS.findIndex(g => g.id === a.id)).slice(0, 6);
+
+  const modes = [
+    { label: "Cases", icon: "🎰", page: "roulette", color: "#7c3aed", desc: "Open cases" },
+    { label: "Crash", icon: "🚀", page: "crash", color: "#ef4444", desc: "Ride the rocket" },
+    { label: "Roulette", icon: "🎡", page: "rouletteGame", color: "#f59e0b", desc: "Red or black?" },
+    { label: "Upgrade", icon: "⚡", page: "upgrade", color: "#22c55e", desc: "Level up gifts" },
+  ];
+
+  return (
+    <div style={{ padding: "16px 16px 20px", display: "flex", flexDirection: "column", gap: 16, animation: "fadeUp 0.4s ease" }}>
+      {/* Header */}
+      <GlowCard style={{ padding: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <Avatar user={user} size={56} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, fontFamily: "'Syne',sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.name}</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>{user.username || "Telegram User"}</div>
+            <XpBar xp={data.xp} level={data.level} />
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "var(--neon)", fontFamily: "'Syne',sans-serif" }}>{data.balance.toLocaleString()}</div>
+            <div style={{ fontSize: 10, color: "var(--muted)" }}>⭐ Stars</div>
+          </div>
+        </div>
+      </GlowCard>
+
+      {/* Stats row */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <Pill label="Opened" value={data.totalSpins} />
+        <Pill label="Earned" value={data.totalEarned} color="var(--green)" />
+        <Pill label="Online" value={`${online.current.toLocaleString()}`} color="var(--gold)" />
+      </div>
+
+      {/* Daily */}
+      <GlowCard style={{ padding: 16 }} onClick={canClaimDaily ? claimDaily : undefined}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ fontSize: 36, animation: "float 3s ease-in-out infinite" }}>🎁</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontFamily: "'Syne',sans-serif" }}>Free Daily Case!</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>{canClaimDaily ? "Claim your reward now" : "Come back tomorrow"}</div>
+          </div>
+          <Btn variant={canClaimDaily ? "gold" : "ghost"} style={{ padding: "8px 14px", fontSize: 12 }} onClick={canClaimDaily ? claimDaily : undefined} disabled={!canClaimDaily}>
+            {canClaimDaily ? "Claim" : "✓"}
+          </Btn>
+        </div>
+      </GlowCard>
+
+      {/* Game modes */}
+      <div>
+        <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif" }}>Game Modes</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {modes.map(m => (
+            <GlowCard key={m.page} onClick={() => setPage(m.page)} style={{ padding: 16, cursor: "pointer" }}>
+              <div style={{ fontSize: 32, marginBottom: 6 }}>{m.icon}</div>
+              <div style={{ fontWeight: 800, fontFamily: "'Syne',sans-serif", fontSize: 15, color: m.color }}>{m.label}</div>
+              <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{m.desc}</div>
+            </GlowCard>
+          ))}
+        </div>
+      </div>
+
+      {/* Inventory preview */}
+      {items.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>Your Inventory</span>
+            <span style={{ color: "var(--neon)", cursor: "pointer", fontSize: 11 }} onClick={() => setPage("upgrade")}>View all →</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {items.map(item => {
+              const cfg = RARITY_CONFIG[item.rarity];
+              return (
+                <GlowCard key={item.id} style={{ padding: "10px 6px", textAlign: "center" }} rarity={item.rarity}>
+                  <div style={{ fontSize: 24, marginBottom: 4 }}>{item.emoji}</div>
+                  <div style={{ fontSize: 9, color: cfg.color, fontWeight: 700 }}>×{item.count}</div>
+                  <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</div>
+                </GlowCard>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Live feed */}
+      <div>
+        <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif", display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 6, height: 6, background: "#22c55e", borderRadius: "50%", display: "inline-block", animation: "pulse-glow 2s infinite" }} />
+          Live Wins
+        </div>
+        <LiveTicker feed={feed} />
+      </div>
+    </div>
+  );
+}
+
+// ─── ROULETTE (CASES) ─────────────────────────────────────────────────────────
+function RoulettePage() {
+  const { data, setData, notify, addToInventory } = useApp();
+  const [selectedCase, setSelectedCase] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+  const [result, setResult] = useState(null);
+  const [reelItems, setReelItems] = useState([]);
+  const trackRef = useRef(null);
+  const [stats, setStats] = useState({ common: 0, rare: 0, epic: 0, legendary: 0, mythic: 0 });
+
+  const buildReel = (winner, winPos) => {
+    const items = [];
+    for (let i = 0; i < 48; i++) {
+      items.push(i === winPos ? winner : GIFTS[Math.floor(Math.random() * GIFTS.length)]);
+    }
+    return items;
+  };
+
+  const doSpin = () => {
+    const cs = CASES[selectedCase];
+    if (data.balance < cs.price) { notify("Not enough Stars! 💔", "error"); return; }
+    if (spinning) return;
+    setSpinning(true);
+    setResult(null);
+    setData(prev => ({ ...prev, balance: prev.balance - cs.price }));
+    const rarity = weightedRandom(cs.pool);
+    const winner = randomGift(rarity);
+    const winPos = 36;
+    const items = buildReel(winner, winPos);
+    setReelItems(items);
+
+    setTimeout(() => {
+      if (!trackRef.current) return;
+      const itemW = 90;
+      const center = 160;
+      const targetX = -(winPos * itemW - center + itemW / 2);
+      trackRef.current.style.transition = "none";
+      trackRef.current.style.transform = "translateX(0)";
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          trackRef.current.style.transition = "transform 4.5s cubic-bezier(0.05,0.4,0.1,1)";
+          trackRef.current.style.transform = `translateX(${targetX}px)`;
+        });
+      });
+    }, 50);
+
+    setTimeout(() => {
+      setSpinning(false);
+      setResult({ ...winner, rarity });
+      setStats(prev => ({ ...prev, [rarity]: (prev[rarity] || 0) + 1 }));
+      addToInventory(winner);
+      setData(prev => ({
+        ...prev,
+        totalSpins: prev.totalSpins + 1,
+        xp: prev.xp + (rarity === "mythic" ? 100 : rarity === "legendary" ? 50 : rarity === "epic" ? 25 : rarity === "rare" ? 10 : 5),
+        recentWins: [{ ...winner, rarity, at: Date.now() }, ...prev.recentWins].slice(0, 20),
+      }));
+    }, 4800);
+  };
+
+  const sellResult = () => {
+    if (!result) return;
+    const price = result.value;
+    setData(prev => ({
+      ...prev,
+      balance: prev.balance + price,
+      totalEarned: prev.totalEarned + price,
+    }));
+    notify(`Sold for ${price} ⭐ 💚`);
+    setResult(null);
+  };
+
+  const cfg = result ? RARITY_CONFIG[result.rarity] : null;
+
+  return (
+    <div style={{ padding: "16px 16px 20px", display: "flex", flexDirection: "column", gap: 16, animation: "fadeUp 0.4s ease" }}>
+      {/* Balance */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <Pill label="Stars" value={data.balance.toLocaleString()} />
+        <Pill label="Opened" value={data.totalSpins} />
+      </div>
+
+      {/* Case selector */}
+      <div>
+        <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif" }}>Choose Case</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+          {CASES.map((c, i) => (
+            <GlowCard key={i} onClick={() => setSelectedCase(i)} style={{ padding: 12, textAlign: "center", cursor: "pointer", border: selectedCase === i ? "1px solid var(--neon)" : "1px solid var(--border)", background: selectedCase === i ? "rgba(167,139,250,0.08)" : "var(--card)" }}>
+              <div style={{ fontSize: 28, marginBottom: 4 }}>{c.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Syne',sans-serif" }}>{c.name}</div>
+              <div style={{ fontSize: 11, color: "var(--neon)", marginTop: 2, fontWeight: 700 }}>{c.price} ⭐</div>
+            </GlowCard>
+          ))}
+        </div>
+      </div>
+
+      {/* Reel */}
+      <div style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 18, padding: 14, overflow: "hidden", position: "relative" }}>
+        <div style={{ position: "absolute", top: 0, bottom: 0, left: "50%", transform: "translateX(-50%)", width: 2, background: "var(--neon)", zIndex: 3, boxShadow: "0 0 12px var(--neon)" }}>
+          <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: "10px solid var(--neon)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "10px solid var(--neon)" }} />
+        </div>
+        <div style={{ position: "absolute", top: 0, left: 0, width: 60, height: "100%", background: "linear-gradient(to right, var(--card), transparent)", zIndex: 2 }} />
+        <div style={{ position: "absolute", top: 0, right: 0, width: 60, height: "100%", background: "linear-gradient(to left, var(--card), transparent)", zIndex: 2 }} />
+        <div style={{ overflow: "hidden", height: 100, borderRadius: 10 }}>
+          <div ref={trackRef} style={{ display: "flex", gap: 8, width: "max-content", height: 100, alignItems: "center" }}>
+            {(reelItems.length ? reelItems : GIFTS.concat(GIFTS).concat(GIFTS)).map((g, i) => {
+              const rc = RARITY_CONFIG[g.rarity];
+              return (
+                <div key={i} style={{ width: 82, height: 88, background: "#1a2035", border: `1px solid ${rc.color}33`, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, flexShrink: 0 }}>
+                  <span style={{ fontSize: 26 }}>{g.emoji}</span>
+                  <span style={{ fontSize: 8, color: "var(--muted)", textAlign: "center", padding: "0 4px", lineHeight: 1.2 }}>{g.name}</span>
+                  <span style={{ fontSize: 8, fontWeight: 700, color: rc.color }}>{rc.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Spin button */}
+      <Btn onClick={doSpin} disabled={spinning || data.balance < CASES[selectedCase].price} style={{ width: "100%", padding: 15, fontSize: 15, animation: !spinning ? "pulse-glow 3s infinite" : "none" }}>
+        {spinning ? "⏳ Spinning..." : `🎰 Open Case — ${CASES[selectedCase].price} ⭐`}
+      </Btn>
+
+      {/* Result */}
+      {result && (
+        <div style={{ animation: "fadeUp 0.4s ease" }}>
+          <GlowCard rarity={result.rarity} style={{ padding: 24, textAlign: "center", border: `2px solid ${cfg.color}55` }}>
+            <div style={{ fontSize: 64, animation: "pop 0.5s ease", display: "block", marginBottom: 8 }}>{result.emoji}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "'Syne',sans-serif", marginBottom: 6 }}>{result.name}</div>
+            <Badge rarity={result.rarity} />
+            <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>{result.desc}</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+              <Btn variant="success" style={{ flex: 1 }} onClick={sellResult}>💚 Sell {result.value} ⭐</Btn>
+              <Btn variant="ghost" style={{ flex: 1 }} onClick={() => setResult(null)}>Keep</Btn>
+            </div>
+          </GlowCard>
+        </div>
+      )}
+
+      {/* Stats */}
+      <div>
+        <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif" }}>Drop Stats</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {Object.entries(stats).map(([r, v]) => (
+            <Pill key={r} label={r.slice(0, 3)} value={v} color={RARITY_CONFIG[r].color} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CRASH MODE ───────────────────────────────────────────────────────────────
+function CrashPage() {
+  const { data, setData, notify } = useApp();
+  const [phase, setPhase] = useState("waiting"); // waiting, running, crashed
+  const [multiplier, setMultiplier] = useState(1.00);
+  const [bet, setBet] = useState("100");
+  const [cashedOut, setCashedOut] = useState(false);
+  const [autoCashout, setAutoCashout] = useState("2.00");
+  const [history, setHistory] = useState([2.45, 1.12, 8.33, 15.5, 1.03, 3.21, 0.99, 4.56, 1.87, 22.1]);
+  const [players, setPlayers] = useState([]);
+  const [myBetActive, setMyBetActive] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const crashPointRef = useRef(1);
+  const startTimeRef = useRef(0);
+  const animRef = useRef(null);
+  const svgPath = useRef("");
+  const [pathD, setPathD] = useState("M 0 150");
+
+  useEffect(() => {
+    generateFakePlayers();
+    startCountdown();
+    return () => cancelAnimationFrame(animRef.current);
+  }, []);
+
+  function generateFakePlayers() {
+    const p = Array.from({ length: 6 }, (_, i) => ({
+      id: i, name: FAKE_NAMES[i % FAKE_NAMES.length],
+      bet: Math.floor(Math.random() * 900 + 100),
+      cashout: (1.2 + Math.random() * 5).toFixed(2),
+      status: "playing",
+    }));
+    setPlayers(p);
+  }
+
+  function startCountdown() {
+    let c = 5;
+    setCountdown(c);
+    setPhase("waiting");
+    setMultiplier(1.00);
+    setCashedOut(false);
+    setMyBetActive(false);
+    setPathD("M 0 150");
+    const iv = setInterval(() => {
+      c--;
+      setCountdown(c);
+      if (c <= 0) { clearInterval(iv); startRound(); }
+    }, 1000);
+  }
+
+  function startRound() {
+    // crash point: 0.97 / (1 - random) capped
+    const rand = Math.random();
+    const crash = rand < 0.01 ? 1.0 : Math.max(1.01, 0.97 / (1 - Math.random() * 0.95));
+    crashPointRef.current = crash;
+    startTimeRef.current = performance.now();
+    setPhase("running");
+    let pts = [{ x: 0, y: 150 }];
+
+    const tick = (now) => {
+      const elapsed = (now - startTimeRef.current) / 1000;
+      const m = Math.pow(Math.E, 0.15 * elapsed);
+      if (m >= crashPointRef.current) {
+        const finalM = crashPointRef.current;
+        setMultiplier(parseFloat(finalM.toFixed(2)));
+        setPhase("crashed");
+        setHistory(prev => [parseFloat(finalM.toFixed(2)), ...prev].slice(0, 15));
+        generateFakePlayers();
+        if (myBetActive && !cashedOut) {
+          setMyBetActive(false);
+          notify(`Crashed at ${finalM.toFixed(2)}x 💀`, "error");
+        }
+        setTimeout(startCountdown, 3000);
+        return;
+      }
+      setMultiplier(parseFloat(m.toFixed(2)));
+      // Auto cashout
+      if (myBetActive && !cashedOut && parseFloat(autoCashout) <= m) {
+        doCashout(m);
+      }
+      // Update path
+      const W = 300, H = 150;
+      const xPct = Math.min(1, elapsed / 15);
+      const yPct = Math.min(1, (m - 1) / 20);
+      const px = xPct * W;
+      const py = H - yPct * H;
+      pts.push({ x: px, y: py });
+      const d = "M " + pts.map(p => `${p.x} ${p.y}`).join(" L ");
+      setPathD(d);
+      animRef.current = requestAnimationFrame(tick);
+    };
+    animRef.current = requestAnimationFrame(tick);
+  }
+
+  function placeBet() {
+    const amount = parseInt(bet) || 0;
+    if (amount < 10) { notify("Min bet is 10 ⭐", "error"); return; }
+    if (amount > data.balance) { notify("Not enough Stars!", "error"); return; }
+    if (phase !== "waiting") { notify("Wait for next round", "error"); return; }
+    setData(prev => ({ ...prev, balance: prev.balance - amount }));
+    setMyBetActive(true);
+    notify(`Bet placed: ${amount} ⭐`);
+  }
+
+  function doCashout(currentM) {
+    if (!myBetActive || cashedOut) return;
+    const amount = parseInt(bet) || 0;
+    const won = Math.floor(amount * (currentM || multiplier));
+    setData(prev => ({ ...prev, balance: prev.balance + won, totalEarned: prev.totalEarned + won - amount, xp: prev.xp + 20 }));
+    setCashedOut(true);
+    setMyBetActive(false);
+    notify(`Cashed out ${won} ⭐ at ${(currentM || multiplier).toFixed(2)}x 🚀`);
+  }
+
+  const crashed = phase === "crashed";
+  const mColor = multiplier >= 2 ? "#22c55e" : multiplier >= 1.5 ? "#f59e0b" : "#ef4444";
+
+  return (
+    <div style={{ padding: "16px 16px 20px", display: "flex", flexDirection: "column", gap: 14, animation: "fadeUp 0.4s ease" }}>
+      {/* History */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+        {history.map((h, i) => {
+          const c = h >= 2 ? "#22c55e" : h >= 1.5 ? "#f59e0b" : "#ef4444";
+          return (
+            <div key={i} style={{ background: `${c}18`, border: `1px solid ${c}44`, borderRadius: 8, padding: "3px 8px", fontSize: 11, fontWeight: 700, color: c, flexShrink: 0, fontFamily: "'Syne',sans-serif" }}>{h.toFixed(2)}x</div>
+          );
+        })}
+      </div>
+
+      {/* Chart */}
+      <GlowCard style={{ padding: 16, position: "relative", overflow: "hidden", minHeight: 200 }}>
+        <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "center" }}>
+          <div style={{ fontSize: 56, fontWeight: 900, fontFamily: "'Syne',sans-serif", color: crashed ? "#ef4444" : mColor, textShadow: `0 0 40px ${crashed ? "#ef4444" : mColor}`, transition: "color 0.2s, text-shadow 0.2s", letterSpacing: "-0.02em" }}>
+            {crashed ? "CRASH" : `${multiplier.toFixed(2)}x`}
+          </div>
+        </div>
+        {phase === "waiting" && (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 8 }}>
+            <div style={{ fontSize: 64, animation: "float 2s ease-in-out infinite" }}>🚀</div>
+            <div style={{ fontSize: 16, color: "var(--muted)", fontFamily: "'Syne',sans-serif" }}>Next round in <span style={{ color: "var(--neon)", fontWeight: 800 }}>{countdown}s</span></div>
+          </div>
+        )}
+        {phase !== "waiting" && (
+          <svg viewBox="0 0 300 150" style={{ width: "100%", height: 150, marginTop: 60 }}>
+            <defs>
+              <linearGradient id="cgr" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={mColor} stopOpacity="0.2" />
+                <stop offset="100%" stopColor={mColor} stopOpacity="0.8" />
+              </linearGradient>
+            </defs>
+            <path d={pathD} stroke={mColor} strokeWidth={2.5} fill="none" style={{ filter: `drop-shadow(0 0 6px ${mColor})` }} />
+          </svg>
+        )}
+      </GlowCard>
+
+      {/* Controls */}
+      <GlowCard style={{ padding: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 4 }}>BET (⭐)</div>
+            <input value={bet} onChange={e => setBet(e.target.value.replace(/\D/g, ""))} style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px", color: "var(--text)", fontSize: 15, fontFamily: "'Syne',sans-serif", fontWeight: 700 }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 4 }}>AUTO CASHOUT</div>
+            <input value={autoCashout} onChange={e => setAutoCashout(e.target.value)} style={{ width: "100%", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px", color: "var(--text)", fontSize: 15, fontFamily: "'Syne',sans-serif", fontWeight: 700 }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {myBetActive && phase === "running" ? (
+            <Btn variant="success" style={{ flex: 1, fontSize: 15, padding: 14, animation: "pulse-glow 1s infinite" }} onClick={() => doCashout()}>
+              💰 Cash Out {(parseInt(bet) * multiplier).toFixed(0)} ⭐
+            </Btn>
+          ) : (
+            <Btn style={{ flex: 1, fontSize: 15, padding: 14 }} onClick={placeBet} disabled={phase !== "waiting" || myBetActive}>
+              {myBetActive ? "✓ Bet Placed" : "🚀 Place Bet"}
+            </Btn>
+          )}
+          {["×½","×2","Max"].map((l, i) => (
+            <Btn key={l} variant="ghost" style={{ padding: "14px 12px", fontSize: 13 }} onClick={() => {
+              if (i === 0) setBet(b => String(Math.max(10, Math.floor(parseInt(b||10)/2))));
+              if (i === 1) setBet(b => String(Math.min(data.balance, (parseInt(b||10))*2)));
+              if (i === 2) setBet(String(data.balance));
+            }}>{l}</Btn>
+          ))}
+        </div>
+      </GlowCard>
+
+      {/* Players */}
+      <div>
+        <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif" }}>Live Players</div>
+        <GlowCard style={{ padding: 0, overflow: "hidden" }}>
+          {players.map((p, i) => (
+            <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: i < players.length - 1 ? "1px solid var(--border)" : "none" }}>
+              <div style={{ width: 30, height: 30, borderRadius: "50%", background: `hsl(${p.id * 60}, 60%, 50%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, fontFamily: "'Syne',sans-serif" }}>{p.name.charAt(0)}</div>
+              <div style={{ flex: 1, fontSize: 12, fontWeight: 600 }}>{p.name}</div>
+              <div style={{ fontSize: 12, color: "var(--neon)" }}>⭐ {p.bet}</div>
+              <div style={{ fontSize: 12, color: "var(--green)", fontWeight: 700 }}>@{p.cashout}x</div>
+            </div>
+          ))}
+        </GlowCard>
+      </div>
+    </div>
+  );
+}
+
+// ─── ROULETTE GAME ────────────────────────────────────────────────────────────
+function RouletteGamePage() {
+  const { data, setData, notify } = useApp();
+  const [bets, setBets] = useState({ red: 0, black: 0, green: 0 });
+  const [spinning, setSpinning] = useState(false);
+  const [result, setResult] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [selectedColor, setSelectedColor] = useState("red");
+  const [betAmount, setBetAmount] = useState("50");
+  const wheelRef = useRef(null);
+  const [wheelDeg, setWheelDeg] = useState(0);
+
+  // 18 red, 18 black, 2 green
+  const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26, 0];
+  const colorOf = n => n === 0 ? "green" : n % 2 === 0 ? "black" : "red";
+
+  const placeBet = () => {
+    const amount = parseInt(betAmount) || 0;
+    if (amount < 5) { notify("Min bet 5 ⭐", "error"); return; }
+    if (amount > data.balance) { notify("Not enough Stars!", "error"); return; }
+    if (spinning) return;
+    setData(prev => ({ ...prev, balance: prev.balance - amount }));
+    setBets(prev => ({ ...prev, [selectedColor]: prev[selectedColor] + amount }));
+    notify(`+${amount} ⭐ on ${selectedColor}`);
+  };
+
+  const spin = () => {
+    if (spinning) return;
+    if (!bets.red && !bets.black && !bets.green) { notify("Place a bet first!", "error"); return; }
+    setSpinning(true);
+    setResult(null);
+    const winNum = numbers[Math.floor(Math.random() * numbers.length)];
+    const winColor = colorOf(winNum);
+    const extraSpins = 5 + Math.floor(Math.random() * 5);
+    const targetDeg = wheelDeg + extraSpins * 360 + Math.random() * 360;
+    setWheelDeg(targetDeg);
+
+    setTimeout(() => {
+      setSpinning(false);
+      setResult({ num: winNum, color: winColor });
+      setHistory(prev => [{ num: winNum, color: winColor }, ...prev].slice(0, 20));
+
+      const myBet = bets[winColor] || 0;
+      let won = 0;
+      if (winColor === "green" && bets.green > 0) won = bets.green * 14;
+      else if (winColor === "red" && bets.red > 0) won = bets.red * 2;
+      else if (winColor === "black" && bets.black > 0) won = bets.black * 2;
+
+      if (won > 0) {
+        setData(prev => ({ ...prev, balance: prev.balance + won, totalEarned: prev.totalEarned + won - myBet, xp: prev.xp + 15, rouletteHistory: [{ num: winNum, color: winColor, won: true }, ...prev.rouletteHistory].slice(0, 50) }));
+        notify(`🎉 Won ${won} ⭐! (${winColor} ${winNum})`);
+      } else {
+        setData(prev => ({ ...prev, xp: prev.xp + 5, rouletteHistory: [{ num: winNum, color: winColor, won: false }, ...prev.rouletteHistory].slice(0, 50) }));
+        notify(`${winColor === "green" ? "🟢" : winColor === "red" ? "🔴" : "⚫"} ${winNum} — You lost`, "error");
+      }
+      setBets({ red: 0, black: 0, green: 0 });
+    }, 4500);
+  };
+
+  const totalBet = bets.red + bets.black + bets.green;
+  const colorConfig = { red: { color: "#ef4444", label: "Red ×2", mult: "2x" }, black: { color: "#374151", label: "Black ×2", mult: "2x" }, green: { color: "#22c55e", label: "Zero ×14", mult: "14x" } };
+
+  return (
+    <div style={{ padding: "16px 16px 20px", display: "flex", flexDirection: "column", gap: 14, animation: "fadeUp 0.4s ease" }}>
+      {/* History */}
+      <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none" }}>
+        {history.map((h, i) => (
+          <div key={i} style={{ width: 28, height: 28, borderRadius: "50%", background: h.color === "green" ? "#22c55e" : h.color === "red" ? "#ef4444" : "#374151", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff", flexShrink: 0, fontFamily: "'Syne',sans-serif" }}>{h.num}</div>
+        ))}
+      </div>
+
+      {/* Wheel */}
+      <GlowCard style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        <div style={{ position: "relative", width: 200, height: 200 }}>
+          {/* Wheel visual */}
+          <div ref={wheelRef} style={{ width: 200, height: 200, borderRadius: "50%", border: "4px solid var(--neon)", background: `conic-gradient(from 0deg, #ef4444 0% 48.6%, #374151 48.6% 97.2%, #22c55e 97.2% 100%)`, transition: spinning ? "transform 4.5s cubic-bezier(0.17,0.67,0.12,0.99)" : "none", transform: `rotate(${wheelDeg}deg)`, boxShadow: "0 0 40px rgba(167,139,250,0.3)" }}>
+            {/* Inner */}
+            <div style={{ position: "absolute", inset: "20%", borderRadius: "50%", background: "var(--card)", border: "3px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 24, animation: spinning ? "spin 0.5s linear infinite" : "none" }}>🎡</span>
+            </div>
+          </div>
+          {/* Pointer */}
+          <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: "16px solid var(--neon)", filter: "drop-shadow(0 0 8px var(--neon))" }} />
+        </div>
+
+        {result && (
+          <div style={{ textAlign: "center", animation: "pop 0.5s ease" }}>
+            <div style={{ fontSize: 32, fontWeight: 900, fontFamily: "'Syne',sans-serif", color: result.color === "red" ? "#ef4444" : result.color === "green" ? "#22c55e" : "#94a3b8" }}>
+              {result.color === "green" ? "🟢" : result.color === "red" ? "🔴" : "⚫"} {result.num}
+            </div>
+          </div>
+        )}
+
+        {spinning && <div style={{ fontSize: 13, color: "var(--neon)", fontFamily: "'Syne',sans-serif" }}>Spinning...</div>}
+      </GlowCard>
+
+      {/* Bet controls */}
+      <GlowCard style={{ padding: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+          {Object.entries(colorConfig).map(([c, cfg]) => (
+            <div key={c} onClick={() => setSelectedColor(c)} style={{ border: `2px solid ${selectedColor === c ? cfg.color : "var(--border)"}`, background: selectedColor === c ? `${cfg.color}18` : "var(--bg)", borderRadius: 12, padding: "10px 6px", textAlign: "center", cursor: "pointer", transition: "all 0.15s" }}>
+              <div style={{ width: 20, height: 20, borderRadius: "50%", background: cfg.color, margin: "0 auto 6px", border: "2px solid rgba(255,255,255,0.2)" }} />
+              <div style={{ fontSize: 10, fontWeight: 700, color: selectedColor === c ? cfg.color : "var(--muted)" }}>{cfg.mult}</div>
+              {bets[c] > 0 && <div style={{ fontSize: 9, color: cfg.color, marginTop: 2 }}>⭐{bets[c]}</div>}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <input value={betAmount} onChange={e => setBetAmount(e.target.value.replace(/\D/g, ""))} style={{ flex: 1, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px", color: "var(--text)", fontSize: 15, fontFamily: "'Syne',sans-serif", fontWeight: 700 }} />
+          {["50","100","250","500"].map(v => (
+            <Btn key={v} variant="ghost" style={{ padding: "10px 10px", fontSize: 11 }} onClick={() => setBetAmount(v)}>{v}</Btn>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Btn onClick={placeBet} disabled={spinning} style={{ flex: 1 }}>🎯 Bet on {selectedColor}</Btn>
+          <Btn variant="success" onClick={spin} disabled={spinning || totalBet === 0} style={{ flex: 1 }}>
+            🎡 {spinning ? "Spinning..." : `Spin! (${totalBet}⭐)`}
+          </Btn>
+        </div>
+      </GlowCard>
+
+      {/* Roulette history */}
+      {data.rouletteHistory.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif" }}>History</div>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            {data.rouletteHistory.slice(0, 20).map((h, i) => (
+              <div key={i} style={{ width: 26, height: 26, borderRadius: "50%", background: h.color === "green" ? "#22c55e" : h.color === "red" ? "#ef4444" : "#374151", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff", border: h.won ? "2px solid #f59e0b" : "none" }}>{h.num}</div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── UPGRADE PAGE ──────────────────────────────────────────────────────────────
+function UpgradePage() {
+  const { data, setData, notify, addToInventory, removeFromInventory } = useApp();
+  const [source, setSource] = useState(null);
+  const [target, setTarget] = useState(null);
+  const [upgrading, setUpgrading] = useState(false);
+  const [upgradeResult, setUpgradeResult] = useState(null);
+  const [chance, setChance] = useState(50);
+
+  const inventoryItems = Object.values(data.inventory).filter(i => i.count > 0);
+  const availableTargets = GIFTS.filter(g => {
+    if (!source) return g.value > 10;
+    return g.value > source.value;
+  }).sort((a, b) => a.value - b.value);
+
+  const sourceRarityOrder = ["common", "rare", "epic", "legendary", "mythic"];
+
+  useEffect(() => {
+    if (source && target) {
+      const ratio = source.value / target.value;
+      const c = Math.max(5, Math.min(90, Math.floor(ratio * 100)));
+      setChance(c);
+    }
+  }, [source, target]);
+
+  const doUpgrade = () => {
+    if (!source || !target) { notify("Select source and target!", "error"); return; }
+    if (!data.inventory[source.id] || data.inventory[source.id].count < 1) { notify("Not in inventory!", "error"); return; }
+    setUpgrading(true);
+    setUpgradeResult(null);
+
+    setTimeout(() => {
+      const success = Math.random() * 100 < chance;
+      removeFromInventory(source.id);
+      setData(prev => ({
+        ...prev,
+        upgradeStats: { attempts: prev.upgradeStats.attempts + 1, successes: prev.upgradeStats.successes + (success ? 1 : 0) },
+        xp: prev.xp + (success ? 40 : 10),
+      }));
+      if (success) {
+        addToInventory(target);
+        notify(`⚡ Upgraded to ${target.name}! 🎉`);
+      } else {
+        notify(`❌ Upgrade failed...`, "error");
+      }
+      setUpgradeResult(success ? "success" : "fail");
+      setUpgrading(false);
+    }, 2500);
+  };
+
+  const rarityOrder = ["common","rare","epic","legendary","mythic"];
+
+  return (
+    <div style={{ padding: "16px 16px 20px", display: "flex", flexDirection: "column", gap: 16, animation: "fadeUp 0.4s ease" }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <Pill label="Attempts" value={data.upgradeStats.attempts} />
+        <Pill label="Successes" value={data.upgradeStats.successes} color="var(--green)" />
+        <Pill label="Rate" value={data.upgradeStats.attempts > 0 ? `${Math.round(data.upgradeStats.successes / data.upgradeStats.attempts * 100)}%` : "–"} color="var(--gold)" />
+      </div>
+
+      {/* Upgrade arena */}
+      <GlowCard style={{ padding: 20 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
+          {/* Source */}
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Your Item</div>
+            <div style={{ border: `2px dashed ${source ? RARITY_CONFIG[source.rarity].color : "var(--border)"}`, borderRadius: 14, padding: 16, minHeight: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: source ? RARITY_CONFIG[source.rarity].bg : "var(--bg)", transition: "all 0.3s" }}>
+              {source ? (
+                <>
+                  <div style={{ fontSize: 36, animation: upgrading ? "spin 1s linear infinite" : "none" }}>{source.emoji}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Syne',sans-serif" }}>{source.name}</div>
+                  <Badge rarity={source.rarity} />
+                  <div style={{ fontSize: 10, color: RARITY_CONFIG[source.rarity].color }}>⭐ {source.value}</div>
+                </>
+              ) : <div style={{ fontSize: 28, color: "var(--muted)" }}>➕</div>}
+            </div>
+          </div>
+
+          {/* Arrow + Chance */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <div style={{ fontSize: 20 }}>⚡</div>
+            {source && target && (
+              <div style={{ fontSize: 13, fontWeight: 900, fontFamily: "'Syne',sans-serif", color: chance > 50 ? "var(--green)" : chance > 25 ? "var(--gold)" : "var(--red)" }}>{chance}%</div>
+            )}
+            <div style={{ fontSize: 20 }}>→</div>
+          </div>
+
+          {/* Target */}
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Target</div>
+            <div style={{ border: `2px dashed ${target ? RARITY_CONFIG[target.rarity].color : "var(--border)"}`, borderRadius: 14, padding: 16, minHeight: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, background: target ? RARITY_CONFIG[target.rarity].bg : "var(--bg)", transition: "all 0.3s" }}>
+              {target ? (
+                <>
+                  <div style={{ fontSize: 36 }}>{target.emoji}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Syne',sans-serif" }}>{target.name}</div>
+                  <Badge rarity={target.rarity} />
+                  <div style={{ fontSize: 10, color: RARITY_CONFIG[target.rarity].color }}>⭐ {target.value}</div>
+                </>
+              ) : <div style={{ fontSize: 28, color: "var(--muted)" }}>➕</div>}
+            </div>
+          </div>
+        </div>
+
+        {/* Upgrade result */}
+        {upgradeResult && (
+          <div style={{ textAlign: "center", padding: 16, background: upgradeResult === "success" ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", borderRadius: 12, marginBottom: 12, animation: "pop 0.5s ease", border: `1px solid ${upgradeResult === "success" ? "#22c55e44" : "#ef444444"}` }}>
+            <div style={{ fontSize: 32, marginBottom: 4 }}>{upgradeResult === "success" ? "🎉" : "💔"}</div>
+            <div style={{ fontWeight: 800, fontFamily: "'Syne',sans-serif", color: upgradeResult === "success" ? "var(--green)" : "var(--red)" }}>
+              {upgradeResult === "success" ? `Upgraded to ${target?.name}!` : "Upgrade Failed"}
+            </div>
+          </div>
+        )}
+
+        <Btn onClick={doUpgrade} disabled={upgrading || !source || !target} style={{ width: "100%", padding: 14, fontSize: 14, animation: source && target && !upgrading ? "pulse-glow 3s infinite" : "none" }}>
+          {upgrading ? "⚡ Upgrading..." : source && target ? `⚡ Upgrade (${chance}% chance)` : "Select items to upgrade"}
+        </Btn>
+      </GlowCard>
+
+      {/* Inventory */}
+      {inventoryItems.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif" }}>Select Source (Your Items)</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {inventoryItems.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity)).map(item => {
+              const cfg = RARITY_CONFIG[item.rarity];
+              const isSelected = source?.id === item.id;
+              return (
+                <GlowCard key={item.id} onClick={() => setSource(isSelected ? null : item)} rarity={item.rarity}
+                  style={{ padding: "10px 6px", textAlign: "center", cursor: "pointer", border: isSelected ? `2px solid ${cfg.color}` : "1px solid var(--border)", background: isSelected ? cfg.bg : "var(--card)" }}>
+                  <div style={{ fontSize: 24, marginBottom: 4 }}>{item.emoji}</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: cfg.color }}>×{item.count}</div>
+                  <div style={{ fontSize: 9, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 }}>{item.name}</div>
+                </GlowCard>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Target picker */}
+      {source && (
+        <div>
+          <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontFamily: "'Syne',sans-serif" }}>Select Target</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {availableTargets.map(item => {
+              const cfg = RARITY_CONFIG[item.rarity];
+              const isSelected = target?.id === item.id;
+              const r = Math.max(5, Math.min(90, Math.floor(source.value / item.value * 100)));
+              return (
+                <GlowCard key={item.id} onClick={() => setTarget(isSelected ? null : item)} rarity={item.rarity}
+                  style={{ padding: "10px 6px", textAlign: "center", cursor: "pointer", border: isSelected ? `2px solid ${cfg.color}` : "1px solid var(--border)", background: isSelected ? cfg.bg : "var(--card)" }}>
+                  <div style={{ fontSize: 24, marginBottom: 4 }}>{item.emoji}</div>
+                  <div style={{ fontSize: 9, color: r > 50 ? "var(--green)" : r > 25 ? "var(--gold)" : "var(--red)", fontWeight: 700 }}>{r}%</div>
+                  <div style={{ fontSize: 9, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 }}>{item.name}</div>
+                </GlowCard>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {inventoryItems.length === 0 && (
+        <div style={{ textAlign: "center", padding: 40, color: "var(--muted)" }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>📦</div>
+          <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700 }}>No items to upgrade</div>
+          <div style={{ fontSize: 12, marginTop: 6 }}>Open some cases first!</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
+function ProfilePage() {
+  const { user, data, setData, sound, setSound, notify } = useApp();
+
+  const resetProgress = () => {
+    if (!window.confirm("Reset all progress?")) return;
+    setData(getDefaultData());
+    notify("Progress reset!");
+  };
+
+  return (
+    <div style={{ padding: "16px 16px 20px", display: "flex", flexDirection: "column", gap: 16, animation: "fadeUp 0.4s ease" }}>
+      <GlowCard style={{ padding: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+        <Avatar user={user} size={80} />
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 20, fontWeight: 900, fontFamily: "'Syne',sans-serif" }}>{user.name}</div>
+          <div style={{ fontSize: 13, color: "var(--muted)" }}>{user.username}</div>
+          <div style={{ marginTop: 8 }}>
+            <span style={{ background: "rgba(167,139,250,0.15)", color: "var(--neon)", border: "1px solid rgba(167,139,250,0.3)", borderRadius: 99, fontSize: 11, fontWeight: 700, padding: "3px 12px" }}>LV {data.level} Player</span>
+          </div>
+        </div>
+        <XpBar xp={data.xp} level={data.level} />
+      </GlowCard>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <Pill label="Balance" value={`⭐ ${data.balance.toLocaleString()}`} />
+        <Pill label="Total Earned" value={`⭐ ${data.totalEarned.toLocaleString()}`} color="var(--green)" />
+        <Pill label="Cases Opened" value={data.totalSpins} color="var(--gold)" />
+        <Pill label="XP" value={data.xp.toLocaleString()} color="var(--pink)" />
+      </div>
+
+      <GlowCard style={{ padding: 16 }}>
+        <div style={{ fontWeight: 800, fontFamily: "'Syne',sans-serif", marginBottom: 12 }}>Settings</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 14 }}>🔊 Sound Effects</span>
+            <div onClick={() => setSound(!sound)} style={{ width: 44, height: 24, borderRadius: 99, background: sound ? "var(--accent)" : "var(--border)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+              <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: sound ? 22 : 2, transition: "left 0.2s" }} />
+            </div>
+          </div>
+          <div style={{ height: 1, background: "var(--border)" }} />
+          <Btn variant="danger" onClick={resetProgress} style={{ fontSize: 13 }}>🗑️ Reset Progress</Btn>
+        </div>
+      </GlowCard>
+
+      {/* Upgrade stats */}
+      <GlowCard style={{ padding: 16 }}>
+        <div style={{ fontWeight: 800, fontFamily: "'Syne',sans-serif", marginBottom: 12 }}>Upgrade Stats</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Pill label="Attempts" value={data.upgradeStats.attempts} />
+          <Pill label="Wins" value={data.upgradeStats.successes} color="var(--green)" />
+          <Pill label="Win Rate" value={data.upgradeStats.attempts > 0 ? `${Math.round(data.upgradeStats.successes / data.upgradeStats.attempts * 100)}%` : "–"} color="var(--gold)" />
+        </div>
+      </GlowCard>
+
+      {/* Roulette history */}
+      {data.rouletteHistory.length > 0 && (
+        <GlowCard style={{ padding: 16 }}>
+          <div style={{ fontWeight: 800, fontFamily: "'Syne',sans-serif", marginBottom: 12 }}>Roulette History</div>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            {data.rouletteHistory.slice(0, 30).map((h, i) => (
+              <div key={i} style={{ width: 26, height: 26, borderRadius: "50%", background: h.color === "green" ? "#22c55e" : h.color === "red" ? "#ef4444" : "#374151", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff", border: h.won ? "2px solid var(--gold)" : "none" }}>{h.num}</div>
+            ))}
+          </div>
+        </GlowCard>
+      )}
+    </div>
+  );
+}
+
+// ─── NOTIFICATION ──────────────────────────────────────────────────────────────
+function Notification() {
+  const { notification } = useApp();
+  if (!notification) return null;
+  const colors = { success: "#22c55e", error: "#ef4444", info: "#a78bfa" };
+  const c = colors[notification.type] || colors.info;
+  return (
+    <div style={{ position: "fixed", top: 20, right: 16, zIndex: 999, background: c, color: "#fff", padding: "10px 18px", borderRadius: 99, fontSize: 13, fontWeight: 700, fontFamily: "'Syne',sans-serif", animation: "notif 2.8s ease forwards", boxShadow: `0 4px 20px ${c}66`, maxWidth: "80vw" }}>
+      {notification.msg}
+    </div>
+  );
+}
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
+const NAV_ITEMS = [
+  { page: "home", icon: "🏠", label: "Home" },
+  { page: "roulette", icon: "🎰", label: "Cases" },
+  { page: "crash", icon: "🚀", label: "Crash" },
+  { page: "rouletteGame", icon: "🎡", label: "Roulette" },
+  { page: "upgrade", icon: "⚡", label: "Upgrade" },
+  { page: "profile", icon: "👤", label: "Profile" },
+];
+
+function BottomNav({ page, setPage }) {
+  return (
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "var(--surface)", borderTop: "1px solid var(--border)", display: "flex", zIndex: 50, paddingBottom: "env(safe-area-inset-bottom, 0)" }}>
+      {NAV_ITEMS.map(item => {
+        const active = page === item.page;
+        return (
+          <div key={item.page} onClick={() => setPage(item.page)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "8px 4px 10px", cursor: "pointer", transition: "color 0.2s", color: active ? "var(--neon)" : "var(--muted)", borderTop: active ? "2px solid var(--neon)" : "2px solid transparent" }}>
+            <span style={{ fontSize: 18 }}>{item.icon}</span>
+            <span style={{ fontSize: 9, marginTop: 2, fontWeight: active ? 700 : 500, fontFamily: "'Syne',sans-serif", letterSpacing: "0.02em" }}>{item.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function TopBar({ page, data }) {
+  const titles = { home: "🎰 TonCasino", roulette: "🎰 Cases", crash: "🚀 Crash", rouletteGame: "🎡 Roulette", upgrade: "⚡ Upgrade", profile: "👤 Profile" };
+  return (
+    <div style={{ position: "sticky", top: 0, zIndex: 40, background: "var(--surface)", borderBottom: "1px solid var(--border)", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ fontSize: 15, fontWeight: 900, fontFamily: "'Syne',sans-serif" }}>{titles[page] || "🎰 TonCasino"}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 99, padding: "5px 12px" }}>
+        <span style={{ fontSize: 13 }}>⭐</span>
+        <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "'Syne',sans-serif", color: "var(--neon)" }}>{data.balance.toLocaleString()}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+function MainApp() {
+  const [page, setPage] = useState("home");
+  const { data } = useApp();
+
+  const pages = { home: HomePage, roulette: RoulettePage, crash: CrashPage, rouletteGame: RouletteGamePage, upgrade: UpgradePage, profile: ProfilePage };
+  const PageComponent = pages[page] || HomePage;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "var(--bg)" }}>
+      <TopBar page={page} data={data} />
+      <div style={{ flex: 1, overflowY: "auto", paddingBottom: 70 }}>
+        <PageComponent setPage={setPage} />
+      </div>
+      <BottomNav page={page} setPage={setPage} />
+      <Notification />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <style>{css}</style>
+      <AppProvider>
+        <MainApp />
+      </AppProvider>
+    </>
+  );
+}
