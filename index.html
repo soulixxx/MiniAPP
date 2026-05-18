@@ -40,6 +40,16 @@ input,button{outline:none;-webkit-appearance:none}button{cursor:pointer}
 @keyframes rankSlide{from{transform:translateX(-20px);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes eggShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(5deg)}}
 @keyframes particleUp{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-60px) scale(0);opacity:0}}
+@keyframes jackpotRumble{0%,100%{transform:scale(1) rotate(0)}25%{transform:scale(1.05) rotate(-2deg)}50%{transform:scale(1.1) rotate(2deg)}75%{transform:scale(1.05) rotate(-2deg)}}
+@keyframes hologramGlow{0%{filter:drop-shadow(0 0 4px currentColor)}50%{filter:drop-shadow(0 0 20px currentColor)}100%{filter:drop-shadow(0 0 4px currentColor)}}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+@keyframes neonFlicker{0%,100%{opacity:1}6%{opacity:0.8}11%{opacity:1}15%{opacity:0.7}20%{opacity:1}}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 10px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
+@keyframes marketEvent{0%{left:-100%}100%{left:100%}}
+@keyframes trophyBounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-20px)}}
+@keyframes coinSpin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+@keyframes missionComplete{0%{transform:scale(0) rotate(-180deg)}50%{transform:scale(1.1)}100%{transform:scale(1) rotate(0)}}
 
 .page-enter{animation:fadeUp 0.3s ease}
 .glow-text{text-shadow:0 0 20px currentColor}
@@ -111,6 +121,43 @@ const CRAFT_RECIPES = [
   {id:"c5", inputs:[{rarity:"mythic",count:2}],   output:{rarity:"exclusive", chance:40},  label:"2× Mythic → Exclusive (40%)"},
 ];
 
+const MISSIONS = [
+  {id:"m1", title:"Open 10 Cases", progress:"cases", target:10, reward:500, xp:100, claimed:false},
+  {id:"m2", title:"Win 5 PvP Battles", progress:"pvp_wins", target:5, reward:750, xp:150, claimed:false},
+  {id:"m3", title:"Upgrade 3 NFTs", progress:"upgrades", target:3, reward:400, xp:80, claimed:false},
+  {id:"m4", title:"Invite 2 Friends", progress:"referrals", target:2, reward:1000, xp:200, claimed:false},
+  {id:"m5", title:"Earn 5,000 Stars", progress:"earned", target:5000, reward:1, xp:300, claimed:false},
+  {id:"m6", title:"Complete Spin Quest", progress:"spins", target:1, reward:2000, xp:400, claimed:false},
+  {id:"m7", title:"Reach 3,000 XP", progress:"xp", target:3000, reward:1500, xp:0, claimed:false},
+  {id:"m8", title:"Craft 5 Items", progress:"crafts", target:5, reward:800, xp:160, claimed:false},
+];
+
+const BATTLE_PASS_TIERS = Array.from({length:50},(_,i)=>({
+  tier:i+1,
+  xpRequired:(i+1)*200,
+  freeReward:{currency:Math.floor((i+1)*10)},
+  premiumReward:{gift:randomGift("common"),currency:Math.floor((i+1)*25)},
+  unlocked:i<10,
+}));
+
+const ACHIEVEMENTS = [
+  {id:"a1", title:"First Steps", desc:"Open your first case", icon:"🎰", earned:false, reward:100},
+  {id:"a2", title:"Lucky Winner", desc:"Win a Roulette spin", icon:"💰", earned:false, reward:150},
+  {id:"a3", title:"Millionaire", desc:"Reach 1M Stars balance", icon:"💎", earned:false, reward:500},
+  {id:"a4", title:"Battle Royale", desc:"Win 10 PvP battles", icon:"⚔️", earned:false, reward:750},
+  {id:"a5", title:"Crafting Master", desc:"Craft 20 items successfully", icon:"⚗️", earned:false, reward:600},
+  {id:"a6", title:"Egg Master", desc:"Crack 50 eggs", icon:"🥚", earned:false, reward:400},
+  {id:"a7", title:"Social Butterfly", desc:"Invite 10 friends", icon:"🦋", earned:false, reward:2000},
+  {id:"a8", title:"Consistent Player", desc:"Play 30 days in a row", icon:"📅", earned:false, reward:1000},
+  {id:"a9", title:"Big Spender", desc:"Spend 100K Stars", icon:"💸", earned:false, reward:1500},
+  {id:"a10", title:"Mythic Collector", desc:"Own a Mythic item", icon:"👑", earned:false, reward:2500},
+];
+
+const CLANS = [
+  {id:"c1", name:"Whale Warriors", owner:"CryptoKing", members:42, level:15, banner:"🐋", description:"Serious players only", joinable:false},
+  {id:"c2", name:"Moon Boys", owner:"ToTheMoon", members:28, level:10, banner:"🚀", description:"Community first", joinable:true},
+];
+
 const FNAMES = ["Alex K","Maria V","John D","Kai L","Sara M","Dmitri P","Lena B","Omar Z","Yuki T","Nina S","Pavel R","Mia C","Rex T","Hana W","Ivan B"];
 const FUSERS = ["crypto_whale","ton_hunter","nft_king","gem_lord","moon_boy","whale_alert","star_trader","hodl_chad","block_ninja","vip_player","web3_god","ape_king"];
 
@@ -120,9 +167,10 @@ const NAV = [
   {page:"crash",   icon:"🚀",  label:"Crash"},
   {page:"wheel",   icon:"🎡",  label:"Wheel"},
   {page:"pvp",     icon:"⚔️",   label:"PvP"},
-  {page:"eggs",    icon:"🥚",  label:"Eggs"},
-  {page:"craft",   icon:"⚗️",   label:"Craft"},
-  {page:"upgrade", icon:"⚡",  label:"Up"},
+  {page:"market",  icon:"💰",  label:"Market"},
+  {page:"missions",icon:"⚡",  label:"Mission"},
+  {page:"clans",   icon:"👥",  label:"Clan"},
+  {page:"events",  icon:"🎉",  label:"Events"},
   {page:"profile", icon:"👤",  label:"Profile"},
 ];
 
@@ -149,6 +197,7 @@ function saveData(uid,data){
 }
 function defaultData(){
   return {
+    // Core
     balance:1000, ton:0.00, inventory:{}, xp:0, level:1,
     dailyAt:0, totalSpins:0, totalEarned:0,
     upgradeStats:{attempts:0,successes:0},
@@ -161,6 +210,56 @@ function defaultData(){
     withdrawals:[],
     recentWins:[], sound:true,
     leaderStats:{balance:0,wins:0,cases:0},
+    
+    // Marketplace
+    marketplaceListings:[],
+    marketplaceOffers:[],
+    favoriteItems:[],
+    
+    // Clans
+    clanId:null,
+    clanName:null,
+    clanRole:null, // member, officer, leader
+    clanMessages:[],
+    
+    // Missions
+    activeMissions: MISSIONS.map(m=>({...m})),
+    missionProgress:{cases:0,pvp_wins:0,upgrades:0,referrals:0,earned:0,spins:0,xp:0,crafts:0},
+    completedMissions:[],
+    
+    // Battle Pass
+    battlePassTier:1,
+    battlePassXp:0,
+    premiumPass:false,
+    premiumAt:0,
+    
+    // Events
+    activeEvents:[],
+    eventParticipations:{},
+    
+    // Jackpot
+    jackpotBalance:0,
+    jackpotEntries:[],
+    
+    // Achievements
+    achievements: ACHIEVEMENTS.map(a=>({...a})),
+    
+    // Streamer Mode
+    streamerMode:false,
+    
+    // Chat
+    globalMessages:[],
+    
+    // Notifications
+    notifications:[],
+    
+    // Replays
+    spinReplays:[],
+    battleReplays:[],
+    
+    // Anti-fraud
+    seedHistory:[],
+    verificationCode:Math.random().toString(36).slice(2,12).toUpperCase(),
   };
 }
 
@@ -404,20 +503,20 @@ function WalletBanner(){
 // HOME
 // ═══════════════════════════════════════════
 function HomePage({setPage}){
-  const {user,data,claimDaily,canDaily}=useApp();
+  const {user,data,claimDaily,canDaily,setData}=useApp();
   const feed=useLiveFeed();
   const onlineRef=useRef(1247+Math.floor(Math.random()*600));
   const invItems=Object.values(data.inventory).slice(0,6);
 
-  const modes=[
-    {page:"cases",   icon:"🎰",label:"Cases",    color:"#b57bff",desc:"Open prize cases"},
-    {page:"crash",   icon:"🚀",label:"Crash",    color:"#ff3e5c",desc:"Ride the rocket"},
-    {page:"wheel",   icon:"🎡",label:"Roulette", color:"#ffca28",desc:"Red or black?"},
-    {page:"pvp",     icon:"⚔️", label:"PvP",      color:"#7de8ff",desc:"Battle for NFTs"},
-    {page:"eggs",    icon:"🥚",label:"Eggs",     color:"#ffd700",desc:"Scratch & win"},
-    {page:"craft",   icon:"⚗️", label:"Craft",    color:"#1adf7a",desc:"Fuse your gifts"},
-    {page:"upgrade", icon:"⚡",label:"Upgrade",  color:"#ff4eb8",desc:"Level up gifts"},
-    {page:"profile", icon:"👤",label:"Profile",  color:"#94a3b8",desc:"Stats & settings"},
+  // Battle Pass progress
+  const bpProgress=Math.min(100,Math.floor((data.battlePassXp/500)*100));
+  
+  // Quick actions
+  const quickModes=[
+    {page:"cases",   icon:"🎰",label:"Cases",    color:"#b57bff"},
+    {page:"crash",   icon:"🚀",label:"Crash",    color:"#ff3e5c"},
+    {page:"wheel",   icon:"🎡",label:"Roulette", color:"#ffca28"},
+    {page:"pvp",     icon:"⚔️", label:"PvP",      color:"#7de8ff"},
   ];
 
   return(
@@ -450,6 +549,24 @@ function HomePage({setPage}){
         <Pill label="PvP Wins" value={data.pvpStats.wins} color="var(--neon2)"/>
       </div>
 
+      {/* Battle Pass Card */}
+      <Card style={{padding:14,background:"linear-gradient(135deg,rgba(255,202,40,0.1),rgba(181,123,255,0.1))",border:"1px solid rgba(255,202,40,0.2)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
+          <div style={{fontSize:28}}>🏆</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,fontWeight:700,fontFamily:'"Exo 2",sans-serif'}}>Battle Pass Season 3</div>
+            <div style={{fontSize:9,color:"var(--muted)"}}>Tier {data.battlePassTier}/50 {data.premiumPass?"(Premium)":"(Free)"}</div>
+          </div>
+          <Btn size="sm" variant="gold" onClick={()=>setData(p=>({...p,premiumPass:!p.premiumPass}))}>
+            {data.premiumPass?"✓":"Upgrade"}
+          </Btn>
+        </div>
+        <div style={{height:4,background:"var(--border)",borderRadius:99,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${bpProgress}%`,background:"linear-gradient(90deg,var(--gold),var(--neon))",transition:"width 0.3s ease"}}/>
+        </div>
+        <div style={{fontSize:8,color:"var(--muted)",marginTop:4,textAlign:"right"}}>{bpProgress}% to next tier</div>
+      </Card>
+
       {/* Daily */}
       <div onClick={canDaily?claimDaily:undefined} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",background:canDaily?"rgba(255,202,40,0.07)":"var(--card)",border:canDaily?"1px solid rgba(255,202,40,0.25)":"1px solid var(--border)",borderRadius:13,cursor:canDaily?"pointer":"default"}}>
         <span style={{fontSize:34,animation:"float 3s ease-in-out infinite"}}>🎁</span>
@@ -460,24 +577,37 @@ function HomePage({setPage}){
         <Btn variant={canDaily?"gold":"ghost"} size="sm" disabled={!canDaily}>{canDaily?"Claim":"✓"}</Btn>
       </div>
 
-      {/* Game modes grid */}
+      {/* Quick play grid */}
       <div>
-        <SectionTitle>Game Modes</SectionTitle>
+        <SectionTitle>Quick Play</SectionTitle>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-          {modes.map(m=>(
+          {quickModes.map(m=>(
             <Card key={m.page} onClick={()=>setPage(m.page)} style={{padding:"14px 12px",cursor:"pointer"}}>
               <div style={{fontSize:26,marginBottom:6}}>{m.icon}</div>
               <div style={{fontWeight:800,fontFamily:'"Exo 2",sans-serif',fontSize:13,color:m.color}}>{m.label}</div>
-              <div style={{fontSize:10,color:"var(--muted)",marginTop:2}}>{m.desc}</div>
             </Card>
           ))}
         </div>
       </div>
 
+      {/* Active missions bar */}
+      {data.activeMissions.filter(m=>!m.claimed).length>0&&(
+        <Card style={{padding:12,background:"rgba(181,123,255,0.08)",border:"1px solid rgba(181,123,255,0.2)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:18}}>⚡</span>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:10,fontWeight:700,fontFamily:'"Exo 2",sans-serif',color:"var(--neon)"}}>Active Missions</div>
+              <div style={{fontSize:9,color:"var(--muted)"}}>Complete {data.activeMissions.filter(m=>!m.claimed).length} missions for rewards</div>
+            </div>
+            <Btn size="sm" variant="primary" onClick={()=>setPage("missions")}>Go →</Btn>
+          </div>
+        </Card>
+      )}
+
       {/* Inventory preview */}
       {invItems.length>0&&(
         <div>
-          <SectionTitle action="All →" onAction={()=>setPage("upgrade")}>Inventory</SectionTitle>
+          <SectionTitle action="All →" onAction={()=>setPage("profile")}>Inventory</SectionTitle>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
             {invItems.map(item=>{
               const c=RARITY[item.rarity];
@@ -492,6 +622,17 @@ function HomePage({setPage}){
           </div>
         </div>
       )}
+
+      {/* Global Jackpot CTA */}
+      <Card style={{padding:14,background:"linear-gradient(135deg,rgba(26,223,122,0.1),rgba(125,232,255,0.1))",border:"1px solid rgba(26,223,122,0.2)",cursor:"pointer"}} onClick={()=>setPage("events")}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:24,animation:"hologramGlow 2s ease infinite"}}>🎰</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,fontWeight:700,fontFamily:'"Exo 2",sans-serif'}}>Global Jackpot: ⭐{fmt(Math.floor(Math.random()*100000)+50000)}</div>
+            <div style={{fontSize:9,color:"var(--muted)"}}>Tap to participate and win big</div>
+          </div>
+        </div>
+      </Card>
 
       {/* Live feed */}
       <div style={{paddingBottom:16}}>
@@ -1558,8 +1699,507 @@ function UpgradePage(){
 }
 
 // ═══════════════════════════════════════════
-// PROFILE (includes Referral + Leaderboard + Withdraw History)
+// LIVE MARKETPLACE PAGE
 // ═══════════════════════════════════════════
+function MarketplacePage(){
+  const {data,setData,notify,addItem,removeItem}=useApp();
+  const [tab,setTab]=useState("buy"); // buy, sell, favorites
+  const [listingPrice,setListingPrice]=useState("0");
+  const [selectedItem,setSelectedItem]=useState(null);
+  const [marketItems,setMarketItems]=useState(()=>Array.from({length:24},(_,i)=>{
+    const g=GIFTS[Math.floor(Math.random()*GIFTS.length)];
+    return {id:Math.random(),seller:FUSERS[i%FUSERS.length],gift:g,price:Math.floor(g.value*0.8+Math.random()*g.value*0.4),listed:Date.now()-Math.random()*3600000,bids:Math.floor(Math.random()*8)};
+  }));
+  const [marketTrends,setMarketTrends]=useState({
+    trending:[{name:"Golden Frog",price:195,change:"+12%",icon:"🐊",trend:"hot"},{name:"Phoenix",price:620,change:"+8%",icon:"🦅",trend:"hot"}],
+    crash:[{name:"Bronze Items",price:45,change:"-18%",icon:"📉",trend:"cold"}],
+  });
+
+  const invItems=Object.values(data.inventory).filter(i=>i.count>0);
+
+  const sellItem=()=>{
+    if(!selectedItem){notify("Select item to list","error");return;}
+    const price=parseInt(listingPrice);
+    if(!price||price<selectedItem.value*0.5){notify("Price too low (min 50% of value)","error");return;}
+    
+    const listing={id:Date.now(),item:selectedItem,price,listed:Date.now(),seller:data.username||"Anonymous"};
+    setData(p=>({...p,marketplaceListings:[...p.marketplaceListings,listing]}));
+    removeItem(selectedItem.id);
+    notify(`📍 Listed ${selectedItem.name} for ${price} ⭐`);
+    setSelectedItem(null);
+    setListingPrice("0");
+  };
+
+  const buyItem=(item)=>{
+    if(data.balance<item.price){notify("Not enough Stars!","error");return;}
+    setData(p=>({...p,balance:p.balance-item.price-Math.floor(item.price*0.05)}));
+    addItem(item.gift);
+    notify(`🛒 Purchased ${item.gift.name} for ${item.price} ⭐`);
+  };
+
+  const toggleFav=(item)=>{
+    const has=data.favoriteItems.find(f=>f.id===item.id);
+    setData(p=>({...p,favoriteItems:has?p.favoriteItems.filter(f=>f.id!==item.id):[...p.favoriteItems,item]}));
+  };
+
+  return(
+    <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:14}} className="page-enter">
+      {/* Market trends banner */}
+      <Card style={{padding:14,overflow:"hidden",position:"relative",height:70}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:"linear-gradient(90deg,transparent,var(--a)20,transparent)",animation:"marketEvent 3s infinite",pointerEvents:"none"}}/>
+        <SectionTitle>📊 Market Trends</SectionTitle>
+        <div style={{display:"flex",gap:8,overflowX:"auto",scrollbarWidth:"none"}}>
+          {marketTrends.trending.map((t,i)=>(
+            <div key={i} style={{background:"rgba(26,223,122,0.1)",border:"1px solid #1adf7a44",borderRadius:8,padding:"6px 10px",whiteSpace:"nowrap",flexShrink:0}}>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--green)"}}>{t.icon} {t.name}</span>
+              <span style={{fontSize:10,color:"var(--green)",marginLeft:4}}>⭐{t.price} {t.change}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Tab selector */}
+      <div style={{display:"flex",gap:6}}>
+        {["buy","sell","favorites"].map(t=>(
+          <Btn key={t} variant={tab===t?"primary":"ghost"} size="sm" style={{flex:1,textTransform:"capitalize",fontSize:11}} onClick={()=>setTab(t)}>
+            {t===("buy")?"🛒 Buy":t===("sell")?"📍 Sell":"❤️ Likes"}
+          </Btn>
+        ))}
+      </div>
+
+      {tab==="buy"&&(
+        <>
+          <div style={{display:"flex",gap:6,overflowX:"auto",scrollbarWidth:"none",paddingBottom:4}}>
+            {["All","Common","Rare","Epic","Legendary","Mythic"].map((f,i)=>(
+              <Btn key={f} variant="ghost" size="sm" style={{fontSize:10}}>{f}</Btn>
+            ))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,paddingBottom:16}}>
+            {marketItems.map((item,i)=>(
+              <Card key={i} rarity={item.gift.rarity} style={{padding:10,cursor:"pointer"}} onClick={()=>buyItem(item)}>
+                <div style={{fontSize:24,marginBottom:4}}>{item.gift.emoji}</div>
+                <div style={{fontSize:9,fontWeight:700,color:RARITY[item.gift.rarity].color,marginBottom:4}}>{RARITY[item.gift.rarity].label}</div>
+                <div style={{fontSize:9,color:"var(--muted)",marginBottom:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.gift.name}</div>
+                <div style={{fontSize:12,fontWeight:800,color:"var(--neon)"}}>⭐ {item.price}</div>
+                <div style={{fontSize:8,color:"var(--muted)",marginTop:2}}>@{item.seller}</div>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
+
+      {tab==="sell"&&(
+        <>
+          {selectedItem?(
+            <Card style={{padding:14,border:`2px solid ${RARITY[selectedItem.rarity].color}`,background:RARITY[selectedItem.rarity].bg}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                <div style={{fontSize:32}}>{selectedItem.emoji}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:800,fontFamily:'"Exo 2",sans-serif'}}>{selectedItem.name}</div>
+                  <div style={{fontSize:10,color:"var(--muted)"}}>Base value: ⭐{selectedItem.value}</div>
+                </div>
+              </div>
+              <input value={listingPrice} onChange={e=>setListingPrice(e.target.value.replace(/\D/g,""))} placeholder="Set selling price" style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 12px",color:"var(--text)",fontSize:13,marginBottom:10}}/>
+              <div style={{fontSize:10,color:"var(--muted)",marginBottom:10}}>Marketplace fee: 5% | Profit: ⭐{Math.max(0,parseInt(listingPrice||0)-Math.floor((parseInt(listingPrice||0))*0.05))}</div>
+              <Btn style={{width:"100%"}} onClick={sellItem}>📍 List for Sale</Btn>
+            </Card>
+          ):(
+            <>
+              <Card style={{padding:14,background:"var(--card2)",border:"1px solid var(--border)"}}>
+                <div style={{fontSize:11,color:"var(--muted)",textAlign:"center"}}>Select an item from your inventory to list</div>
+              </Card>
+            </>
+          )}
+          
+          {invItems.length>0&&(
+            <div>
+              <SectionTitle>Your Inventory</SectionTitle>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,paddingBottom:16}}>
+                {invItems.map(item=>{
+                  const c=RARITY[item.rarity];
+                  const sel=selectedItem?.id===item.id;
+                  return(
+                    <Card key={item.id} onClick={()=>setSelectedItem(sel?null:item)} rarity={item.rarity} style={{padding:"10px 6px",textAlign:"center",border:sel?`2px solid ${c.color}`:"1px solid var(--border)",background:sel?c.bg:"var(--card)",cursor:"pointer"}}>
+                      <div style={{fontSize:22,marginBottom:3}}>{item.emoji}</div>
+                      <div style={{fontSize:8,color:c.color,fontWeight:700}}>×{item.count}</div>
+                      <div style={{fontSize:7,color:"var(--muted)",marginTop:1}}>⭐{item.value}</div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {tab==="favorites"&&(
+        <>
+          {data.favoriteItems.length===0?(
+            <div style={{textAlign:"center",padding:40,color:"var(--muted)"}}>
+              <div style={{fontSize:40,marginBottom:10}}>❤️</div>
+              <div style={{fontFamily:'"Exo 2",sans-serif',fontWeight:700}}>No favorites yet</div>
+              <div style={{fontSize:11,marginTop:4}}>Heart items you want to track</div>
+            </div>
+          ):(
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,paddingBottom:16}}>
+              {data.favoriteItems.map((item,i)=>(
+                <Card key={i} rarity={item.gift?.rarity} style={{padding:10}}>
+                  <div style={{fontSize:24,marginBottom:4}}>{item.gift?.emoji}</div>
+                  <div style={{fontSize:9,fontWeight:700,color:"var(--red)"}}>❤️ Favorite</div>
+                  <div style={{fontSize:8,color:"var(--muted)",marginTop:4}}>{item.gift?.name}</div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// MISSIONS PAGE
+// ═══════════════════════════════════════════
+function MissionsPage(){
+  const {data,setData,notify}=useApp();
+  const [tab,setTab]=useState("active"); // active, completed
+  
+  const getProgress=(mission)=>{
+    const prog=data.missionProgress[mission.progress]||0;
+    return Math.min(100,Math.floor((prog/mission.target)*100));
+  };
+
+  const claimMission=(mission)=>{
+    if(mission.claimed){notify("Already claimed","error");return;}
+    const prog=getProgress(mission);
+    if(prog<100){notify("Mission not complete","error");return;}
+    
+    setData(p=>{
+      const upd={...p};
+      upd.activeMissions=upd.activeMissions.map(m=>m.id===mission.id?{...m,claimed:true}:m);
+      upd.balance+=mission.reward;
+      upd.xp+=mission.xp;
+      upd.completedMissions=[...upd.completedMissions,mission];
+      return upd;
+    });
+    notify(`🎯 Mission complete! +${mission.reward} ⭐ +${mission.xp} XP`);
+  };
+
+  const activeMissions=data.activeMissions.filter(m=>!m.claimed);
+  const completedMissions=data.activeMissions.filter(m=>m.claimed);
+
+  return(
+    <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:14}} className="page-enter">
+      <div style={{display:"flex",gap:6}}>
+        <Btn variant={tab==="active"?"primary":"ghost"} size="sm" style={{flex:1}} onClick={()=>setTab("active")}>📌 Active {activeMissions.length}</Btn>
+        <Btn variant={tab==="completed"?"success":"ghost"} size="sm" style={{flex:1}} onClick={()=>setTab("completed")}>✓ Completed {completedMissions.length}</Btn>
+      </div>
+
+      {tab==="active"&&(
+        activeMissions.length===0?(
+          <Card style={{padding:30,textAlign:"center",color:"var(--muted)"}}>
+            <div style={{fontSize:36,marginBottom:10}}>🎯</div>
+            <div style={{fontFamily:'"Exo 2",sans-serif',fontWeight:700}}>No active missions</div>
+          </Card>
+        ):(
+          <div style={{display:"flex",flexDirection:"column",gap:8,paddingBottom:16}}>
+            {activeMissions.map(mission=>{
+              const pct=getProgress(mission);
+              return(
+                <Card key={mission.id} style={{padding:14}}>
+                  <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+                    <span style={{fontSize:24,flexShrink:0}}>⚡</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:800,fontFamily:'"Exo 2",sans-serif',marginBottom:4}}>{mission.title}</div>
+                      <div style={{height:4,background:"var(--border)",borderRadius:99,overflow:"hidden",marginBottom:6}}>
+                        <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,var(--neon),var(--green))",transition:"width 0.3s ease"}}/>
+                      </div>
+                      <div style={{fontSize:9,color:"var(--muted)"}}>Progress: {pct}%</div>
+                    </div>
+                    <Btn variant={pct===100?"success":"ghost"} size="sm" onClick={()=>claimMission(mission)} disabled={pct<100}>
+                      {pct===100?"Claim":""}
+                    </Btn>
+                  </div>
+                  <div style={{fontSize:9,color:"var(--neon)",marginTop:8}}>Reward: +{mission.reward} ⭐ +{mission.xp} XP</div>
+                </Card>
+              );
+            })}
+          </div>
+        )
+      )}
+
+      {tab==="completed"&&(
+        completedMissions.length===0?(
+          <Card style={{padding:30,textAlign:"center",color:"var(--muted)"}}>
+            <div style={{fontSize:36,marginBottom:10}}>🏆</div>
+            <div style={{fontFamily:'"Exo 2",sans-serif',fontWeight:700}}>No completed missions yet</div>
+          </Card>
+        ):(
+          <div style={{display:"flex",flexDirection:"column",gap:8,paddingBottom:16}}>
+            {completedMissions.map(m=>(
+              <Card key={m.id} style={{padding:12,background:"rgba(26,223,122,0.08)",border:"1px solid #1adf7a44"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:18}}>✓</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:11,fontWeight:700,fontFamily:'"Exo 2",sans-serif'}}>{m.title}</div>
+                    <div style={{fontSize:9,color:"var(--muted)"}}>+{m.reward} ⭐ +{m.xp} XP</div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )
+      )}
+
+      {/* Weekly reset info */}
+      <Card style={{padding:12,background:"rgba(125,232,255,0.06)",border:"1px solid rgba(125,232,255,0.2)"}}>
+        <div style={{fontSize:9,color:"var(--neon2)"}}>💡 New missions available every Monday!</div>
+      </Card>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// CLANS PAGE
+// ═══════════════════════════════════════════
+function ClansPage(){
+  const {data,setData,user,notify}=useApp();
+  const [tab,setTab]=useState(data.clanId?"members":"browse"); // browse, members, chat
+  const [joinDialog,setJoinDialog]=useState(null);
+
+  const currentClan=CLANS.find(c=>c.id===data.clanId);
+
+  const joinClan=(clan)=>{
+    setData(p=>({...p,clanId:clan.id,clanName:clan.name,clanRole:"member"}));
+    notify(`✅ Joined ${clan.name}!`);
+    setJoinDialog(null);
+  };
+
+  const createClan=()=>notify("Coming soon in full release","info");
+
+  if(data.clanId&&currentClan){
+    return(
+      <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:14}} className="page-enter">
+        {/* Clan header */}
+        <Card style={{padding:16,textAlign:"center",background:` linear-gradient(135deg,rgba(181,123,255,0.1),rgba(125,232,255,0.1))`}}>
+          <div style={{fontSize:52,marginBottom:10,animation:"float 3s ease-in-out infinite"}}>{currentClan.banner}</div>
+          <div style={{fontSize:15,fontWeight:900,fontFamily:'"Exo 2",sans-serif',marginBottom:2}}>{currentClan.name}</div>
+          <div style={{fontSize:10,color:"var(--muted)",marginBottom:8}}>Leader: {currentClan.owner} · Level {currentClan.level}</div>
+          <div style={{display:"flex",gap:6,justifyContent:"center",margin:"10px 0"}}>
+            <span style={{background:"var(--a)",color:"#fff",padding:"2px 8px",borderRadius:6,fontSize:9,fontWeight:700}}>👥 {currentClan.members} Members</span>
+            <span style={{background:"var(--border)",color:"var(--muted)",padding:"2px 8px",borderRadius:6,fontSize:9,fontWeight:700}}>⭐ Lvl {currentClan.level}</span>
+          </div>
+        </Card>
+
+        {/* Tabs */}
+        <div style={{display:"flex",gap:6}}>
+          {["members","upgrades","chat"].map(t=>(
+            <Btn key={t} variant={tab===t?"primary":"ghost"} size="sm" style={{flex:1,textTransform:"capitalize",fontSize:11}} onClick={()=>setTab(t)}>
+              {t===("members")?"👥 Members":t===("upgrades")?"⬆️ Upgrades":"💬 Chat"}
+            </Btn>
+          ))}
+        </div>
+
+        {tab==="members"&&(
+          <Card>
+            {[{name:user.name,role:"member",level:data.level,balance:data.balance},{name:"TestPlayer",role:"officer",level:28,balance:15000}].map((m,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:i===0?"1px solid var(--border)":"none"}}>
+                <div style={{width:32,height:32,borderRadius:"50%",background:`linear-gradient(135deg,${["#7b2fff","#ff4eb8"][i%2]},${["#4e2bff","#ff9d00"][i%2]})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",flexShrink:0}}>{m.name.charAt(0)}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:700,fontFamily:'"Exo 2",sans-serif'}}>{m.name}</div>
+                  <div style={{fontSize:9,color:"var(--muted)"}}>LV {m.level} · ⭐{fmt(m.balance)}</div>
+                </div>
+                <span style={{fontSize:8,fontWeight:700,background:m.role==="officer"?"rgba(255,202,40,0.2)":"rgba(123,47,255,0.1)",color:m.role==="officer"?"var(--gold)":"var(--neon)",padding:"2px 8px",borderRadius:6,textTransform:"capitalize"}}>{m.role}</span>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {tab==="upgrades"&&(
+          <div style={{paddingBottom:16}}>
+            <Card style={{padding:14}}>
+              <div style={{fontSize:11,fontWeight:700,fontFamily:'"Exo 2",sans-serif',marginBottom:12}}>Clan Upgrades</div>
+              {[{name:"Better Rewards",desc:"5% bonus earnings",cost:5000,level:1},{name:"Chat Unlock",desc:"50 member messages/day",cost:10000,level:2}].map((u,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i===0?"1px solid var(--border)":"none"}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:11,fontWeight:700}}>{u.name}</div>
+                    <div style={{fontSize:9,color:"var(--muted)"}}>{u.desc}</div>
+                  </div>
+                  <Btn size="sm" variant="ghost">⭐ {u.cost}</Btn>
+                </div>
+              ))}
+            </Card>
+          </div>
+        )}
+
+        {tab==="chat"&&(
+          <Card style={{padding:14}}>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {data.clanMessages.slice(-3).map((m,i)=>(
+                <div key={i} style={{padding:8,background:"var(--bg)",borderRadius:8,fontSize:10}}>
+                  <div style={{fontWeight:700,color:"var(--neon)",marginBottom:2}}>{m.sender}</div>
+                  <div style={{color:"var(--text)"}}>{m.text}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // Browse clans
+  return(
+    <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:14}} className="page-enter">
+      <Btn variant="gold" style={{width:"100%"}} onClick={createClan}>➕ Create New Clan</Btn>
+
+      <div style={{paddingBottom:16}}>
+        <SectionTitle>Available Clans</SectionTitle>
+        {CLANS.filter(c=>c.joinable).map(clan=>(
+          <Card key={clan.id} style={{padding:16,marginBottom:10,cursor:"pointer"}} onClick={()=>setJoinDialog(clan)}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <div style={{fontSize:42,display:"flex",alignItems:"center",justifyContent:"center"}}>{clan.banner}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:900,fontFamily:'"Exo 2",sans-serif',marginBottom:4}}>{clan.name}</div>
+                <div style={{fontSize:10,color:"var(--muted)",marginBottom:6}}>👤 {clan.members} members · ⭐ Level {clan.level}</div>
+                <div style{{fontSize:10,color:"var(--soft)"}}>{clan.description}</div>
+              </div>
+              <Btn size="sm" variant="primary">Join</Btn>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {joinDialog&&(
+        <Card style={{padding:20,background:"rgba(181,123,255,0.1)",border:"2px solid var(--neon)",textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:10}}>{joinDialog.banner}</div>
+          <div style={{fontSize:14,fontWeight:900,fontFamily:'"Exo 2",sans-serif',marginBottom:4}}>Join {joinDialog.name}?</div>
+          <div style={{fontSize:11,color:"var(--muted)",marginBottom:14}}>{joinDialog.description}</div>
+          <div style={{display:"flex",gap:8}}>
+            <Btn variant="ghost" style={{flex:1}} onClick={()=>setJoinDialog(null)}>Cancel</Btn>
+            <Btn style={{flex:1}} onClick={()=>joinClan(joinDialog)}>✓ Join Clan</Btn>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// EVENTS & JACKPOT PAGE
+// ═══════════════════════════════════════════
+function EventsPage(){
+  const {data,setData,notify}=useApp();
+  const [jackpotParticipating,setJackpotParticipating]=useState(false);
+
+  const liveEvents=[
+    {id:"e1",name:"Double Upgrade Chance",icon:"⚡",end:3600,active:true,reward:"2x success rate"},
+    {id:"e2",name:"Lucky Roulette Hour",icon:"🎡",end:1800,active:true,reward:"×3 payout"},
+    {id:"e3",name:"Mythic Drop Event",icon:"👑",end:7200,active:true,reward:"30% Mythic chance"},
+  ];
+
+  const participateJackpot=()=>{
+    const entry=Math.floor(Math.random()*1000)+100;
+    setData(p=>({...p,jackpotBalance:p.jackpotBalance+entry,jackpotEntries:[...p.jackpotEntries,{player:p.username||"You",amount:entry,at:Date.now()}]}));
+    notify(`🎰 Added ${entry} ⭐ to Jackpot!`);
+    setJackpotParticipating(true);
+  };
+
+  const totalJackpot=(data.jackpotEntries||[]).reduce((s,e)=>s+e.amount,0)+Math.floor(Math.random()*50000);
+
+  return(
+    <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:14}} className="page-enter">
+      {/* Global Jackpot */}
+      <Card style={{padding:20,textAlign:"center",background:"linear-gradient(135deg,rgba(255,202,40,0.15),rgba(181,123,255,0.15))",border:"2px solid rgba(255,202,40,0.3)",animation:"jackpotRumble 2s ease-in-out infinite"}}>
+        <div style={{fontSize:12,color:"var(--gold)",fontFamily:'"Exo 2",sans-serif',fontWeight:700,textTransform:"uppercase",marginBottom:8}}>🎰 Global Jackpot</div>
+        <div style={{fontSize:42,fontWeight:900,color:"var(--gold)",fontFamily:"var(--font-mono)",marginBottom:10,textShadow:"0 0 20px rgba(255,202,40,0.5)"}}>⭐{fmt(totalJackpot)}</div>
+        <div style={{fontSize:10,color:"var(--muted)",marginBottom:12}}>Players: {Math.floor(Math.random()*50)+50} | Last: 2 min ago</div>
+        <Btn variant="gold" style={{width:"100%",fontSize:13}} onClick={participateJackpot} disabled={jackpotParticipating}>
+          {jackpotParticipating?"✓ Entered":"🎯 Join Jackpot"}
+        </Btn>
+      </Card>
+
+      {/* Recent jackpot winners */}
+      <div>
+        <SectionTitle>Jackpot Winners (24h)</SectionTitle>
+        <Card>
+          {[{name:"Whale_Master",amount:125400,at:"2m ago"},{name:"LuCk_Man",amount:98600,at:"12m ago"}].map((w,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderBottom:i===0?"1px solid var(--border)":"none"}}>
+              <span style={{fontSize:18,animation:"trophyBounce 2s ease infinite"}}>🏆</span>
+              <div style{{flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,fontFamily:'"Exo 2",sans-serif'}}>{w.name}</div>
+                <div style={{fontSize:9,color:"var(--muted)"}}>{w.at}</div>
+              </div>
+              <div style={{fontSize:12,fontWeight:800,color:"var(--gold)"}}>⭐ {fmt(w.amount)}</div>
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      {/* Live events */}
+      <div>
+        <SectionTitle>⚡ Active Events</SectionTitle>
+        <div style={{display:"flex",flexDirection:"column",gap:8,paddingBottom:16}}>
+          {liveEvents.map(ev=>(
+            <Card key={ev.id} style={{padding:12,background:"rgba(181,123,255,0.08)",border:"1px solid rgba(181,123,255,0.2)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:24,animation:"hologramGlow 2s ease infinite"}}>{ev.icon}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:11,fontWeight:700,fontFamily:'"Exo 2",sans-serif'}}>{ev.name}</div>
+                  <div style={{fontSize:9,color:"var(--neon)"}}>{ev.reward}</div>
+                </div>
+                <div style={{fontSize:9,color:"var(--gold)",fontWeight:700}}>⏱️ {Math.floor(ev.end/60)}m</div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Event history */}
+      <div>
+        <SectionTitle>Recent Events</SectionTitle>
+        <Card style={{padding:14}}>
+          {[{name:"Legendary Case Sale",reward:"50% OFF",status:"Ended 3h ago"},{name:"Level Speed Boost",reward:"2x XP",status:"Ended yesterday"}].map((e,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:i===0?"1px solid var(--border)":"none",fontSize:10}}>
+              <span style={{color:"var(--muted)"}}>{e.status}</span>
+              <span style={{flex:1,fontWeight:700}}>{e.name}</span>
+              <span style({color:"var(--green)",fontWeight:700}>{e.reward}</span>
+            </div>
+          ))}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// ACHIEVEMENTS SHOWCASE
+// ═══════════════════════════════════════════
+function AchievementShowcase(){
+  const {data}=useApp();
+  const earnedCount=data.achievements.filter(a=>a.earned).length;
+
+  return(
+    <div style={{paddingBottom:16}}>
+      <SectionTitle>🏆 Achievements</SectionTitle>
+      <Card style={{padding:14,marginBottom:10}}>
+        <div style={{fontSize:10,color:"var(--muted)",marginBottom:8}}>Unlocked {earnedCount}/{data.achievements.length}</div>
+        <div style={{height:4,background:"var(--border)",borderRadius:99,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${(earnedCount/data.achievements.length)*100}%`,background:"linear-gradient(90deg,var(--green),var(--neon))"}}/></div>
+        </div>
+      </Card>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+        {data.achievements.map(a=>(
+          <div key={a.id} style={{aspect:1,background:a.earned?"rgba(26,223,122,0.1)":"var(--card2)",border:a.earned?"1px solid #1adf7a44":"1px solid var(--border)",borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:8,opacity:a.earned?1:0.4,textAlign:"center",transition:"all 0.2s"}}>
+            <div style={{fontSize:20,marginBottom:4,filter:a.earned?"":"grayscale(100%)"}}>{a.icon}</div>
+            <div style={{fontSize:7,fontWeight:700,color:a.earned?"var(--green)":"var(--muted)",fontFamily:'"Exo 2",sans-serif'}}>{a.title}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ProfilePage(){
   const {user,data,setData,notify}=useApp();
   const [tab,setTab]=useState("stats"); // stats | referral | leaderboard | history
@@ -1579,7 +2219,7 @@ function ProfilePage(){
     notify("Referral link copied! 🔗");
   };
 
-  const TABS=["stats","referral","leaderboard","history"];
+  const TABS=["stats","referral","leaderboard","history","achievements","battlepass"];
 
   return(
     <div style={{padding:"14px 14px 0",display:"flex",flexDirection:"column",gap:14}} className="page-enter">
@@ -1621,6 +2261,18 @@ function ProfilePage(){
                 <div style={{width:18,height:18,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:data.sound?22:2,transition:"left 0.2s"}}/>
               </div>
             </div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+              <span style={{fontSize:12}}>📡 Streamer Mode</span>
+              <div onClick={()=>setData(p=>({...p,streamerMode:!p.streamerMode}))} style={{width:42,height:22,borderRadius:99,background:data.streamerMode?"var(--a)":"var(--border)",position:"relative",cursor:"pointer",transition:"background 0.2s"}}>
+                <div style={{width:18,height:18,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:data.streamerMode?22:2,transition:"left 0.2s"}}/>
+              </div>
+            </div>
+            {data.streamerMode&&(
+              <Card style={{padding:10,background:"rgba(125,232,255,0.08)",border:"1px solid rgba(125,232,255,0.2)",fontSize:9,marginBottom:10}}>
+                <div style={{color:"var(--neon2)",fontWeight:700,marginBottom:4}}>✓ Streamer Mode Active</div>
+                <div style={{color:"var(--muted)"}}>• Balance hidden<br/>• Sensitive data private<br/>• Streamer badge shown</div>
+              </Card>
+            )}
             <Btn variant="danger" style={{width:"100%",fontSize:11}} onClick={()=>{if(window.confirm("Reset all progress?")){ setData(p=>({...defaultData(),referralCode:p.referralCode}));notify("Progress reset!")}}}>🗑️ Reset Progress</Btn>
           </Card>
           {data.rouletteHistory.length>0&&(
@@ -1711,6 +2363,49 @@ function ProfilePage(){
           )}
         </div>
       )}
+
+      {tab==="achievements"&&<AchievementShowcase/>}
+
+      {tab==="battlepass"&&(
+        <div style={{paddingBottom:16}}>
+          <Card style={{padding:18,textAlign:"center",background:"linear-gradient(135deg,rgba(255,202,40,0.15),rgba(181,123,255,0.15))",border:"2px solid rgba(255,202,40,0.3)",marginBottom:14}}>
+            <div style={{fontSize:10,color:"var(--gold)",fontFamily:'"Exo 2",sans-serif',fontWeight:700,textTransform:"uppercase",marginBottom:6}}>🏆 Battle Pass Season 3</div>
+            <div style={{fontSize:11,fontWeight:700,fontFamily:'"Exo 2",sans-serif',marginBottom:2}}>Tier {data.battlePassTier}/50</div>
+            <div style={{fontSize:10,color:"var(--muted)",marginBottom:12}}>{data.premiumPass?"Premium Pass 👑":"Free Pass"} · Ends in 18 days</div>
+            <div style={{height:6,background:"var(--border)",borderRadius:99,overflow:"hidden",marginBottom:8}}>
+              <div style={{height:"100%",width:`${(data.battlePassTier/50)*100}%`,background:"linear-gradient(90deg,var(--gold),var(--green))"}}/>
+            </div>
+            {!data.premiumPass&&(
+              <Btn variant="gold" style={{width:"100%",fontSize:11}}>🔓 Upgrade to Premium — 500 ⭐</Btn>
+            )}
+          </Card>
+
+          <div style={{marginBottom:14}}>
+            <SectionTitle>Upcoming Rewards</SectionTitle>
+            {[
+              {tier:data.battlePassTier+1,free:"100 ⭐",premium:"Epic NFT + 250 ⭐"},
+              {tier:data.battlePassTier+2,free:"Rare Gift",premium:"3 Premium Cases"},
+              {tier:data.battlePassTier+3,free:"200 ⭐",premium:"Cosmetic Skin"},
+            ].map((r,i)=>(
+              <Card key={i} style={{padding:12,marginBottom:8,background:"var(--card2)",border:"1px solid var(--border)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{fontSize:18,fontWeight:800,color:"var(--gold)",fontFamily:"var(--font-mono)"}}>T{r.tier}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>Free: {r.free}</div>
+                    <div style={{fontSize:10,color:"var(--neon)",fontWeight:700}}>Premium: {r.premium}</div>
+                  </div>
+                  <span style={{fontSize:16}}>🎁</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <Card style={{padding:12,background:"rgba(26,223,122,0.08)",border:"1px solid #1adf7a44"}}>
+            <div style={{fontSize:10,color:"var(--green)",fontWeight:700}}>💡 Level up to unlock rewards!</div>
+            <div style={{fontSize:9,color:"var(--muted)",marginTop:4}}>Play games and complete missions to gain Battle Pass XP</div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
@@ -1754,8 +2449,8 @@ function BottomNav({page,setPage}){
 // ═══════════════════════════════════════════
 // APP SHELL
 // ═══════════════════════════════════════════
-const PAGE_MAP={home:HomePage,cases:CasesPage,crash:CrashPage,wheel:WheelPage,pvp:PvpPage,eggs:EggsPage,craft:CraftPage,upgrade:UpgradePage,profile:ProfilePage};
-const PAGE_TITLES={home:"🎰 TonCasino",cases:"🎰 Cases",crash:"🚀 Crash",wheel:"🎡 Roulette",pvp:"⚔️ PvP Battles",eggs:"🥚 Scratch Eggs",craft:"⚗️ Craft",upgrade:"⚡ Upgrade",profile:"👤 Profile"};
+const PAGE_MAP={home:HomePage,cases:CasesPage,crash:CrashPage,wheel:WheelPage,pvp:PvpPage,market:MarketplacePage,missions:MissionsPage,clans:ClansPage,events:EventsPage,profile:ProfilePage};
+const PAGE_TITLES={home:"🎰 TonCasino",cases:"🎰 Cases",crash:"🚀 Crash",wheel:"🎡 Roulette",pvp:"⚔️ PvP",market:"💰 Market",missions:"⚡ Missions",clans:"👥 Clans",events:"🎉 Events",profile:"👤 Profile"};
 
 function App(){
   const [page,setPage]=useState("home");
