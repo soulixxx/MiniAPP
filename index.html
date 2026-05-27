@@ -4,24 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Plush PEPE Case</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;900&display=swap');
-
   :root {
-    --green: #00c853;
-    --green-dark: #007e33;
-    --green-neon: #39ff14;
-    --yellow: #ffd600;
-    --orange: #ff6d00;
-    --bg: #0a1a0a;
-    --bg2: #0f2d0f;
-    --card: #122912;
-    --text: #e8ffe8;
-    --muted: #7aad7a;
-    --rare1: #78c7ff;
-    --rare2: #c47eff;
-    --rare3: #ffd700;
+    --gold: #ffb700;
+    --gold2: #ff6a00;
+    --purple: #9b06ff;
+    --purple2: #e040fb;
+    --pink: #ff0080;
+    --bg: #08010f;
+    --bg2: #120320;
+    --card: #160228;
+    --card2: #1e0338;
+    --text: #f5e6ff;
+    --muted: #9a7ab0;
+    --border: #3d1060;
+    --grad-main: linear-gradient(135deg, #ffb700 0%, #ff6a00 30%, #e040fb 65%, #9b06ff 100%);
+    --grad-text: linear-gradient(90deg, #ffb700, #ff6a00, #e040fb, #9b06ff);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,7 +30,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
@@ -40,687 +41,641 @@
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: 0;
-    opacity: 0.6;
+  }
+
+  .noise {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px;
+    pointer-events: none;
   }
 
   .container {
     position: relative;
     z-index: 1;
-    max-width: 480px;
+    max-width: 440px;
     margin: 0 auto;
-    padding: 0 16px 40px;
+    padding: 0 18px 52px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
   }
 
   .header {
     text-align: center;
-    padding: 28px 0 10px;
+    padding: 32px 0 4px;
+  }
+
+  .logo-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 12px;
+    margin-bottom: 14px;
   }
 
   .header h1 {
-    font-family: 'Bangers', cursive;
-    font-size: 3.2rem;
-    letter-spacing: 3px;
-    color: var(--green-neon);
-    text-shadow:
-      0 0 10px #39ff1488,
-      0 0 30px #39ff1444,
-      3px 3px 0 var(--green-dark);
-    line-height: 1;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1.1;
+    background: var(--grad-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
   }
 
-  .header .subtitle {
-    font-size: 0.95rem;
+  .header .sub {
+    font-size: 0.78rem;
     color: var(--muted);
-    margin-top: 4px;
-    letter-spacing: 2px;
+    margin-top: 6px;
+    letter-spacing: 3px;
     text-transform: uppercase;
   }
 
-  .pepe-emoji {
-    font-size: 2.4rem;
-    display: inline-block;
-    animation: pepe-bounce 1.8s ease-in-out infinite;
-  }
-
-  @keyframes pepe-bounce {
-    0%, 100% { transform: translateY(0) rotate(-5deg); }
-    50% { transform: translateY(-8px) rotate(5deg); }
-  }
-
-  .case-scene {
+  .case-wrap {
     width: 100%;
-    max-width: 340px;
-    aspect-ratio: 1;
-    margin: 20px 0 10px;
+    max-width: 320px;
+    margin: 22px 0 14px;
     position: relative;
-    cursor: pointer;
   }
 
   #case-canvas {
     width: 100%;
-    height: 100%;
-    border-radius: 24px;
+    aspect-ratio: 1;
+    border-radius: 28px;
     display: block;
   }
 
-  .case-glow {
+  .case-ring {
     position: absolute;
-    inset: -8px;
-    border-radius: 32px;
-    background: radial-gradient(ellipse at 50% 80%, #39ff1422 0%, transparent 70%);
-    animation: glow-pulse 2.5s ease-in-out infinite;
-    pointer-events: none;
+    inset: -12px;
+    border-radius: 40px;
+    background: conic-gradient(from 0deg, #ffb700, #ff6a00, #e040fb, #9b06ff, #ffb700);
+    opacity: 0;
+    z-index: -1;
+    filter: blur(18px);
+    animation: ring-spin 4s linear infinite, ring-fade 3s ease-in-out infinite;
   }
 
-  @keyframes glow-pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-  }
+  @keyframes ring-spin { to { transform: rotate(360deg); } }
+  @keyframes ring-fade { 0%,100%{opacity:0.35} 50%{opacity:0.7} }
 
   .stats-bar {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    max-width: 340px;
-    margin-bottom: 16px;
+    max-width: 320px;
+    margin-bottom: 14px;
   }
 
   .stat-chip {
     flex: 1;
     background: var(--card);
-    border: 1px solid #1e4a1e;
-    border-radius: 14px;
-    padding: 10px 8px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 10px 6px;
     text-align: center;
   }
 
   .stat-chip .val {
-    font-family: 'Bangers', cursive;
-    font-size: 1.5rem;
-    color: var(--green-neon);
-    letter-spacing: 1px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: var(--grad-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .stat-chip .lbl {
-    font-size: 0.65rem;
+    font-size: 0.58rem;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    margin-top: 1px;
   }
 
   .open-btn {
     width: 100%;
-    max-width: 340px;
-    padding: 18px;
-    font-family: 'Bangers', cursive;
-    font-size: 1.8rem;
-    letter-spacing: 3px;
-    color: var(--bg);
-    background: linear-gradient(135deg, var(--green-neon) 0%, var(--yellow) 100%);
+    max-width: 320px;
+    padding: 17px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #08010f;
+    background: var(--grad-main);
     border: none;
-    border-radius: 20px;
+    border-radius: 18px;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 4px 24px #39ff1444, 0 2px 8px #0005;
+    transition: transform 0.12s, opacity 0.12s;
+    box-shadow: 0 6px 32px #ff6a0055, 0 2px 8px #9b06ff44;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .open-btn:active {
-    transform: scale(0.96);
-    box-shadow: 0 2px 10px #39ff1422;
-  }
+  .open-btn:active { transform: scale(0.97); opacity: 0.9; }
+  .open-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
 
-  .open-btn:disabled {
-    opacity: 0.5;
-    cursor: default;
-    transform: none;
-  }
-
-  .open-btn .btn-shine {
+  .open-btn .shine {
     position: absolute;
-    top: -50%;
-    left: -60%;
-    width: 40%;
-    height: 200%;
-    background: linear-gradient(105deg, transparent, rgba(255,255,255,0.45), transparent);
-    transform: skewX(-20deg);
-    animation: btn-shine 3s ease-in-out infinite;
+    top: -50%; left: -80%;
+    width: 50%; height: 200%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: skewX(-18deg);
+    animation: shine-pass 3.5s ease-in-out infinite;
   }
 
-  @keyframes btn-shine {
-    0% { left: -60%; }
-    40%, 100% { left: 120%; }
-  }
+  @keyframes shine-pass { 0%{left:-80%} 45%,100%{left:130%} }
 
-  .prizes-grid {
+  .divider {
     width: 100%;
-    max-width: 340px;
-    margin-top: 24px;
+    max-width: 320px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 22px 0 18px;
   }
 
-  .prizes-grid h3 {
-    font-family: 'Bangers', cursive;
-    font-size: 1.3rem;
-    letter-spacing: 2px;
+  .prizes-label {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 4px;
     color: var(--muted);
+    text-transform: uppercase;
     margin-bottom: 12px;
-    text-align: center;
+    align-self: flex-start;
+    width: 100%;
+    max-width: 320px;
   }
 
   .prizes-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    width: 100%;
+    max-width: 320px;
   }
 
   .prize-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 11px;
     background: var(--card);
-    border: 1px solid #1e4a1e;
+    border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 10px 14px;
+    padding: 9px 12px;
+    transition: border-color 0.2s;
   }
 
-  .prize-row .icon { font-size: 1.6rem; width: 32px; text-align: center; }
+  .prize-row:hover { border-color: #6b20a0; }
 
-  .prize-row .info { flex: 1; }
-
-  .prize-row .name {
-    font-size: 0.9rem;
-    font-weight: 900;
-    line-height: 1.2;
-  }
-
-  .prize-row .chance {
-    font-size: 0.72rem;
-    color: var(--muted);
-  }
+  .prize-row .p-icon { font-size: 1.4rem; width: 28px; text-align: center; flex-shrink: 0; }
+  .prize-row .p-info { flex: 1; min-width: 0; }
+  .prize-row .p-name { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prize-row .p-chance { font-size: 0.64rem; color: var(--muted); margin-top: 1px; }
 
   .badge {
-    font-family: 'Bangers', cursive;
-    font-size: 0.8rem;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.55rem;
+    font-weight: 700;
     letter-spacing: 1px;
-    padding: 3px 8px;
+    padding: 3px 7px;
     border-radius: 8px;
+    flex-shrink: 0;
+    text-transform: uppercase;
   }
 
-  .badge-common { background: #2a4a2a; color: #7aff7a; }
-  .badge-rare { background: #1a2a4a; color: var(--rare1); }
-  .badge-epic { background: #2a1a4a; color: var(--rare2); }
-  .badge-legendary { background: #3a2a00; color: var(--rare3); }
+  .b-epic { background: #1e0a3a; color: #d070ff; border: 1px solid #4a1080; }
+  .b-legendary { background: #2a1a00; color: #ffb700; border: 1px solid #604000; }
+  .b-mythic {
+    background: linear-gradient(135deg, #2a0040, #400020);
+    color: #ff70ff;
+    border: 1px solid #8000a0;
+    text-shadow: 0 0 8px #ff70ff88;
+  }
 
   .result-overlay {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 200;
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(8px);
-    padding: 24px;
+    background: rgba(8,1,15,0.92);
+    backdrop-filter: blur(14px);
+    padding: 20px;
   }
 
   .result-overlay.active { display: flex; }
 
   .result-card {
-    background: var(--card);
+    background: var(--card2);
     border-radius: 28px;
-    padding: 36px 28px;
+    padding: 32px 22px 24px;
     text-align: center;
     width: 100%;
-    max-width: 360px;
-    border: 2px solid var(--green-dark);
+    max-width: 350px;
+    border: 1px solid var(--border);
     position: relative;
-    animation: result-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    overflow: hidden;
+    animation: card-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
   }
 
-  @keyframes result-in {
-    from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
-    to { transform: scale(1) rotate(0deg); opacity: 1; }
+  @keyframes card-pop { from{transform:scale(0.6) translateY(30px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--grad-main);
+    opacity: 0;
+    transition: opacity 0.3s;
   }
 
-  .result-card.legendary { border-color: var(--rare3); box-shadow: 0 0 40px #ffd70055; }
-  .result-card.epic { border-color: var(--rare2); box-shadow: 0 0 40px #c47eff44; }
-  .result-card.rare { border-color: var(--rare1); box-shadow: 0 0 40px #78c7ff44; }
+  .result-card.epic::before { opacity: 1; background: linear-gradient(90deg, #9b06ff, #e040fb); }
+  .result-card.legendary::before { opacity: 1; background: linear-gradient(90deg, #ff6a00, #ffb700); }
+  .result-card.mythic::before { opacity: 1; background: var(--grad-main); }
 
-  .result-icon { font-size: 4.5rem; margin-bottom: 8px; display: block; }
+  .result-card.epic { border-color: #4a1080; box-shadow: 0 0 40px #9b06ff33; }
+  .result-card.legendary { border-color: #604000; box-shadow: 0 0 50px #ffb70044; }
+  .result-card.mythic { border-color: #8000a0; box-shadow: 0 0 60px #ff00ff44, 0 0 120px #ff00ff11; }
 
-  .result-img {
-    width: 140px;
-    height: 140px;
+  .r-icon { font-size: 4rem; display: block; margin-bottom: 6px; }
+
+  .r-img {
+    width: 130px; height: 130px;
     object-fit: contain;
-    border-radius: 16px;
-    margin: 0 auto 12px;
+    border-radius: 18px;
+    margin: 0 auto 10px;
     display: block;
+    background: #0d0020;
   }
 
-  .result-rarity {
-    font-family: 'Bangers', cursive;
-    font-size: 1rem;
+  .r-badge-wrap { margin-bottom: 8px; }
+
+  .r-badge {
+    display: inline-block;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
     letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+
+  .r-badge.epic { background: #1e0a3a; color: #d070ff; border: 1px solid #4a1080; }
+  .r-badge.legendary { background: #2a1a00; color: #ffb700; border: 1px solid #604000; }
+  .r-badge.mythic {
+    background: linear-gradient(135deg, #2a0040, #400020);
+    color: #ff80ff;
+    border: 1px solid #8000a0;
+    box-shadow: 0 0 12px #ff00ff44;
+  }
+
+  .r-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1.2;
     margin-bottom: 8px;
   }
 
-  .result-name {
-    font-family: 'Bangers', cursive;
-    font-size: 2rem;
-    letter-spacing: 2px;
-    line-height: 1.1;
-    margin-bottom: 10px;
-    color: var(--green-neon);
+  .r-name.epic { background: linear-gradient(90deg, #9b06ff, #e040fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .r-name.legendary { background: linear-gradient(90deg, #ff6a00, #ffb700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .r-name.mythic { background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .r-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; margin-bottom: 20px; }
+
+  .r-actions { display: flex; gap: 8px; }
+
+  .r-btn-again {
+    flex: 1; padding: 13px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 1px;
+    color: #08010f;
+    background: var(--grad-main);
+    border: none; border-radius: 14px; cursor: pointer;
   }
 
-  .result-desc {
-    font-size: 0.9rem;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-bottom: 20px;
-  }
-
-  .result-actions {
-    display: flex;
-    gap: 10px;
-  }
-
-  .btn-again {
-    flex: 1;
-    padding: 14px;
-    font-family: 'Bangers', cursive;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    background: linear-gradient(135deg, var(--green-neon), var(--yellow));
-    color: var(--bg);
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-  }
-
-  .btn-share {
-    flex: 1;
-    padding: 14px;
-    font-family: 'Bangers', cursive;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
+  .r-btn-share {
+    flex: 1; padding: 13px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 1px;
+    color: var(--text);
     background: transparent;
-    color: var(--green-neon);
-    border: 2px solid var(--green-neon);
-    border-radius: 14px;
-    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 14px; cursor: pointer;
+    transition: border-color 0.2s;
   }
 
-  .confetti-container {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 99;
-    overflow: hidden;
-  }
+  .r-btn-share:hover { border-color: var(--purple2); }
 
-  .confetti-piece {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    opacity: 0;
-  }
+  .confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 199; overflow: hidden; }
+  .confetti-piece { position: absolute; opacity: 0; }
 
-  @keyframes confetti-fall {
-    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  @keyframes cf-fall {
+    0% { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(800deg) scale(0.5); opacity: 0; }
   }
 </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
+<div class="noise"></div>
 <div class="confetti-container" id="confetti-container"></div>
 
 <div class="container">
   <div class="header">
-    <span class="pepe-emoji">🐸</span>
+    <div class="logo-tag">🐸 Telegram Mini App</div>
     <h1>PLUSH PEPE<br>CASE</h1>
-    <p class="subtitle">Telegram Mini App</p>
+    <p class="sub">Open &amp; Win Rare Gifts</p>
   </div>
 
-  <div class="case-scene" id="case-scene">
+  <div class="case-wrap">
+    <div class="case-ring"></div>
     <canvas id="case-canvas"></canvas>
-    <div class="case-glow"></div>
   </div>
 
   <div class="stats-bar">
-    <div class="stat-chip">
-      <div class="val" id="opens-count">0</div>
-      <div class="lbl">Открытий</div>
-    </div>
-    <div class="stat-chip">
-      <div class="val" id="rare-count">0</div>
-      <div class="lbl">Редких</div>
-    </div>
-    <div class="stat-chip">
-      <div class="val" id="luck-val">?</div>
-      <div class="lbl">Удача</div>
-    </div>
+    <div class="stat-chip"><div class="val" id="opens-count">0</div><div class="lbl">Открытий</div></div>
+    <div class="stat-chip"><div class="val" id="rare-count">0</div><div class="lbl">Редких</div></div>
+    <div class="stat-chip"><div class="val" id="luck-val">—</div><div class="lbl">Удача</div></div>
   </div>
 
   <button class="open-btn" id="open-btn" onclick="openCase()">
-    <span class="btn-shine"></span>
-    🎰 ОТКРЫТЬ КЕЙС
+    <span class="shine"></span>
+    🎰 &nbsp;ОТКРЫТЬ КЕЙС
   </button>
 
-  <div class="prizes-grid">
-    <h3>🏆 ПРИЗЫ</h3>
-    <div class="prizes-list">
-      <div class="prize-row">
-        <div class="icon">🧸</div>
-        <div class="info">
-          <div class="name">Плюшевый PEPE</div>
-          <div class="chance">Шанс выпадения: 1%</div>
-        </div>
-        <span class="badge badge-legendary">LEGENDARY</span>
-      </div>
-    </div>
+  <div class="divider"></div>
+
+  <div class="prizes-label">Все призы</div>
+  <div class="prizes-list">
+    <div class="prize-row"><div class="p-icon">⚔️</div><div class="p-info"><div class="p-name">Light Sword</div><div class="p-chance">35%</div></div><span class="badge b-epic">Epic</span></div>
+    <div class="prize-row"><div class="p-icon">🧦</div><div class="p-info"><div class="p-name">Fresh Socks Drumsticks</div><div class="p-chance">25%</div></div><span class="badge b-epic">Epic</span></div>
+    <div class="prize-row"><div class="p-icon">🎃</div><div class="p-info"><div class="p-name">Mad Pumpkin Kinky-Winky</div><div class="p-chance">18%</div></div><span class="badge b-epic">Epic</span></div>
+    <div class="prize-row"><div class="p-icon">✨</div><div class="p-info"><div class="p-name">Party Sparkler Assault</div><div class="p-chance">12%</div></div><span class="badge b-epic">Epic</span></div>
+    <div class="prize-row"><div class="p-icon">🍑</div><div class="p-info"><div class="p-name">Precious Peach Cold Iron</div><div class="p-chance">5%</div></div><span class="badge b-legendary">Legendary</span></div>
+    <div class="prize-row"><div class="p-icon">🧸</div><div class="p-info"><div class="p-name">Плюшевый PEPE</div><div class="p-chance">3%</div></div><span class="badge b-legendary">Legendary</span></div>
+    <div class="prize-row"><div class="p-icon">💎</div><div class="p-info"><div class="p-name">Lapis Lazuli New</div><div class="p-chance">1.5%</div></div><span class="badge b-mythic">Mythic</span></div>
+    <div class="prize-row"><div class="p-icon">🎩</div><div class="p-info"><div class="p-name">Durov's Cap Mossy</div><div class="p-chance">0.5%</div></div><span class="badge b-mythic">Mythic</span></div>
   </div>
 </div>
 
 <div class="result-overlay" id="result-overlay">
   <div class="result-card" id="result-card">
-    <span class="result-icon" id="result-icon"></span>
-    <img class="result-img" id="result-img" src="" alt="" style="display:none">
-    <div class="result-rarity" id="result-rarity"></div>
-    <div class="result-name" id="result-name"></div>
-    <div class="result-desc" id="result-desc"></div>
-    <div class="result-actions">
-      <button class="btn-again" onclick="closeResult()">🔄 ЕЩЁ РАЗ</button>
-      <button class="btn-share" onclick="shareResult()">📤 ПОДЕЛИТЬСЯ</button>
+    <span class="r-icon" id="r-icon"></span>
+    <img class="r-img" id="r-img" src="" alt="" style="display:none" onerror="this.style.display='none';document.getElementById('r-icon').style.display='block'">
+    <div class="r-badge-wrap"><span class="r-badge" id="r-badge"></span></div>
+    <div class="r-name" id="r-name"></div>
+    <div class="r-desc" id="r-desc"></div>
+    <div class="r-actions">
+      <button class="r-btn-again" onclick="closeResult()">🔄 Ещё раз</button>
+      <button class="r-btn-share" onclick="shareResult()">📤 Поделиться</button>
     </div>
   </div>
 </div>
 
 <script>
 const PRIZES = [
-    {
-    id: "light_sword",
-    name: "Светящий меч",
-    icon: "🧸",
-    rarity: "EPIC",
-    rarityClass: "epic",
-    chance: 45,
-    img: "light_sword.png",
-    color: "#ffd700"
-  },
-  {
-    id: "plush_pepe",
-    name: "Плюшевый PEPE",
-    desc: "🎉 ДЖЕКПОТ! Ты выиграл легендарного Плюшевого PEPE! Это невероятно редкий приз!",
-    icon: "🧸",
-    rarity: "LEGENDARY",
-    rarityClass: "legendary",
-    chance: 15,
-    img: "plushpepe.png",
-    color: "#ffd700"
-  }
+  { id:"light_sword",   name:"Light Sword",              desc:"Мощный световой меч — оружие настоящего воина!",                                                       icon:"⚔️",  rarity:"EPIC",      rc:"epic",      chance:35,   img:"light_sword.png",    color:"#d070ff" },
+  { id:"fresh_socks",   name:"Fresh Socks Drumsticks",   desc:"Свежие носки и барабанные палочки — неожиданный эпический дроп!",                                      icon:"🧦",  rarity:"EPIC",      rc:"epic",      chance:25,   img:"freshSocks.png",     color:"#d070ff" },
+  { id:"mad_pumpkin",   name:"Mad Pumpkin Kinky-Winky",  desc:"Безумная тыква с характером. Только для смелых коллекционеров!",                                       icon:"🎃",  rarity:"EPIC",      rc:"epic",      chance:18,   img:"madPumpkin.png",     color:"#d070ff" },
+  { id:"party_spark",   name:"Party Sparkler Assault",   desc:"Взрывной праздничный дроп! Хаос и конфетти в одном флаконе.",                                          icon:"✨",  rarity:"EPIC",      rc:"epic",      chance:12,   img:"partySpalker.png",   color:"#d070ff" },
+  { id:"precious_peach",name:"Precious Peach Cold Iron", desc:"Легендарный персик из холодного железа. Редкость и изящество.",                                        icon:"🍑",  rarity:"LEGENDARY", rc:"legendary", chance:5,    img:"peach.png",          color:"#ffb700" },
+  { id:"plush_pepe",    name:"Плюшевый PEPE",            desc:"🎉 ДЖЕКПОТ! Ты выиграл легендарного Плюшевого PEPE! Невероятно редкий приз!",                          icon:"🧸",  rarity:"LEGENDARY", rc:"legendary", chance:3,    img:"plushpepe.png",      color:"#ffb700" },
+  { id:"lapis_lazuli",  name:"Lapis Lazuli New",         desc:"✨ МИФИК! Лазурит нового поколения — один из редчайших предметов в коллекции!",                        icon:"💎",  rarity:"MYTHIC",    rc:"mythic",    chance:1.5,  img:"lapisLazuliNew.png", color:"#ff70ff" },
+  { id:"durovs_cap",    name:"Durov's Cap Mossy",        desc:"🌟 АБСОЛЮТНЫЙ МИФИК! Легендарная кепка Дурова. Единицы в мире!",                                      icon:"🎩",  rarity:"MYTHIC",    rc:"mythic",    chance:0.5,  img:"durovsCap.png",      color:"#ff70ff" }
 ];
 
-let opensCount = 0;
-let rareCount = 0;
-let isAnimating = false;
-let caseRenderer, caseScene, caseCamera, caseMesh, caseLid, caseGroup;
+let opensCount = 0, rareCount = 0, isAnimating = false;
+let caseRenderer, caseScene, caseCamera, caseGroup, caseMesh, caseLid;
 let bgRenderer, bgScene, bgCamera, bgParticles;
+let caseRotY = 0, lidAngle = 0, lidOpening = false, shakeTime = 0;
 
-function initBgScene() {
+function initBg() {
   bgScene = new THREE.Scene();
   bgCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
   bgCamera.position.z = 5;
-
   bgRenderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true, antialias: false });
   bgRenderer.setSize(window.innerWidth, window.innerHeight);
   bgRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
-  const geometry = new THREE.BufferGeometry();
-  const count = 200;
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-    const g = 0.3 + Math.random() * 0.7;
-    colors[i * 3] = 0;
-    colors[i * 3 + 1] = g;
-    colors[i * 3 + 2] = 0;
+  const geo = new THREE.BufferGeometry();
+  const N = 280;
+  const pos = new Float32Array(N * 3);
+  const col = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    pos[i*3]   = (Math.random()-0.5)*22;
+    pos[i*3+1] = (Math.random()-0.5)*22;
+    pos[i*3+2] = (Math.random()-0.5)*12;
+    const t = Math.random();
+    col[i*3]   = 1.0 * t + 0.6 * (1-t);
+    col[i*3+1] = 0.0 * t + 0.0 * (1-t);
+    col[i*3+2] = 0.5 * t + 1.0 * (1-t);
   }
-
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-  bgParticles = new THREE.Points(geometry, new THREE.PointsMaterial({
-    size: 0.06,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.7
-  }));
-
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  bgParticles = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.05, vertexColors: true, transparent: true, opacity: 0.55 }));
   bgScene.add(bgParticles);
 }
 
-function initCaseScene() {
+function initCase() {
   const canvas = document.getElementById('case-canvas');
-  const w = canvas.clientWidth;
-  const h = canvas.clientHeight;
-
+  const s = canvas.clientWidth;
   caseScene = new THREE.Scene();
-  caseCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  caseCamera.position.set(0, 0.5, 4.5);
+  caseCamera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  caseCamera.position.set(0, 0.6, 5);
   caseCamera.lookAt(0, 0, 0);
-
   caseRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  caseRenderer.setSize(w, h);
+  caseRenderer.setSize(s, s);
   caseRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  caseRenderer.shadowMap.enabled = true;
 
-  const ambientLight = new THREE.AmbientLight(0x224422, 1.5);
-  caseScene.add(ambientLight);
+  caseScene.add(new THREE.AmbientLight(0x220033, 2));
 
-  const greenLight = new THREE.PointLight(0x39ff14, 3, 10);
-  greenLight.position.set(0, 2, 3);
-  caseScene.add(greenLight);
+  const l1 = new THREE.PointLight(0xff6a00, 4, 12);
+  l1.position.set(2, 2, 3);
+  caseScene.add(l1);
 
-  const purpleLight = new THREE.PointLight(0xff00ff, 1.5, 8);
-  purpleLight.position.set(-2, -1, 2);
-  caseScene.add(purpleLight);
+  const l2 = new THREE.PointLight(0x9b06ff, 3, 10);
+  l2.position.set(-2, -1, 2);
+  caseScene.add(l2);
+
+  const l3 = new THREE.PointLight(0xe040fb, 2, 8);
+  l3.position.set(0, 3, -2);
+  caseScene.add(l3);
 
   caseGroup = new THREE.Group();
   caseScene.add(caseGroup);
 
-  const boxGeo = new THREE.BoxGeometry(2, 1.6, 2);
-  const boxMat = new THREE.MeshStandardMaterial({
-    color: 0x0a2a0a,
-    metalness: 0.8,
-    roughness: 0.2,
-    emissive: 0x002200,
-    emissiveIntensity: 0.3
-  });
-  caseMesh = new THREE.Mesh(boxGeo, boxMat);
+  caseMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 1.7, 2.2),
+    new THREE.MeshStandardMaterial({ color: 0x0d0020, metalness: 0.95, roughness: 0.1, emissive: 0x110022, emissiveIntensity: 0.4 })
+  );
   caseMesh.position.y = -0.2;
   caseGroup.add(caseMesh);
 
-  const lidGeo = new THREE.BoxGeometry(2.05, 0.4, 2.05);
-  const lidMat = new THREE.MeshStandardMaterial({
-    color: 0x113311,
-    metalness: 0.9,
-    roughness: 0.15,
-    emissive: 0x003300,
-    emissiveIntensity: 0.5
-  });
-  caseLid = new THREE.Mesh(lidGeo, lidMat);
-  caseLid.position.y = 0.8;
+  caseLid = new THREE.Mesh(
+    new THREE.BoxGeometry(2.26, 0.42, 2.26),
+    new THREE.MeshStandardMaterial({ color: 0x1a0035, metalness: 0.98, roughness: 0.06, emissive: 0x220040, emissiveIntensity: 0.6 })
+  );
+  caseLid.position.y = 0.86;
   caseGroup.add(caseLid);
 
-  const edgeGeo = new THREE.TorusGeometry(1.5, 0.03, 8, 40);
-  const edgeMat = new THREE.MeshStandardMaterial({ color: 0x39ff14, emissive: 0x39ff14, emissiveIntensity: 2 });
-  const edge = new THREE.Mesh(edgeGeo, edgeMat);
-  edge.rotation.x = Math.PI / 2;
-  edge.position.y = 0.6;
-  caseGroup.add(edge);
+  const edgeColors = [0xff6a00, 0xe040fb, 0x9b06ff, 0xffb700];
+  for (let ei = 0; ei < 4; ei++) {
+    const e = new THREE.Mesh(
+      new THREE.TorusGeometry(1.65 - ei * 0.04, 0.022, 8, 48),
+      new THREE.MeshStandardMaterial({ color: edgeColors[ei], emissive: edgeColors[ei], emissiveIntensity: 2.5 })
+    );
+    e.rotation.x = Math.PI / 2;
+    e.position.y = 0.65 + ei * 0.01;
+    caseGroup.add(e);
+  }
 
-  const logoGeo = new THREE.CircleGeometry(0.4, 32);
-  const logoMat = new THREE.MeshStandardMaterial({ color: 0x39ff14, emissive: 0x39ff14, emissiveIntensity: 1.5 });
-  const logo = new THREE.Mesh(logoGeo, logoMat);
+  const logoGeo = new THREE.CircleGeometry(0.5, 6);
+  const logo = new THREE.Mesh(logoGeo, new THREE.MeshStandardMaterial({ color: 0xff6a00, emissive: 0xff6a00, emissiveIntensity: 2 }));
   logo.rotation.x = -Math.PI / 2;
-  logo.position.y = 1.01;
+  logo.position.y = 1.09;
   caseGroup.add(logo);
+
+  const cornerPositions = [[-1,-0.2,-1],[1,-0.2,-1],[-1,-0.2,1],[1,-0.2,1]];
+  cornerPositions.forEach(([x,,z]) => {
+    const c = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08, 8, 8),
+      new THREE.MeshStandardMaterial({ color: 0xe040fb, emissive: 0xe040fb, emissiveIntensity: 3 })
+    );
+    c.position.set(x, 0.66, z);
+    caseGroup.add(c);
+  });
 }
 
-function animateBg() {
-  requestAnimationFrame(animateBg);
-  bgParticles.rotation.y += 0.0004;
-  bgParticles.rotation.x += 0.0002;
+function animBg() {
+  requestAnimationFrame(animBg);
+  bgParticles.rotation.y += 0.0003;
+  bgParticles.rotation.x += 0.00015;
   bgRenderer.render(bgScene, bgCamera);
 }
 
-let caseRotY = 0;
-let lidOpenAngle = 0;
-let lidOpening = false;
-let caseShakeTime = 0;
-
-function animateCase() {
-  requestAnimationFrame(animateCase);
+function animCase() {
+  requestAnimationFrame(animCase);
   const t = Date.now() * 0.001;
-
-  caseRotY += 0.008;
+  caseRotY += 0.006;
   caseGroup.rotation.y = caseRotY;
-  caseGroup.position.y = Math.sin(t * 1.2) * 0.08;
+  caseGroup.position.y = Math.sin(t * 0.9) * 0.1;
+  caseGroup.rotation.x = Math.sin(t * 0.5) * 0.04;
 
   if (lidOpening) {
-    lidOpenAngle = Math.min(lidOpenAngle + 0.04, Math.PI * 0.65);
-    caseLid.position.y = 0.8 + Math.sin(lidOpenAngle) * 0.8;
-    caseLid.rotation.x = -lidOpenAngle;
-    caseLid.position.z = -Math.sin(lidOpenAngle) * 0.8;
+    lidAngle = Math.min(lidAngle + 0.035, Math.PI * 0.7);
+    caseLid.position.y = 0.86 + Math.sin(lidAngle) * 0.9;
+    caseLid.rotation.x = -lidAngle;
+    caseLid.position.z = -Math.sin(lidAngle) * 0.9;
   }
 
-  if (caseShakeTime > 0) {
-    caseGroup.rotation.z = Math.sin(caseShakeTime * 20) * 0.12;
-    caseShakeTime -= 0.05;
-    if (caseShakeTime <= 0) caseGroup.rotation.z = 0;
+  if (shakeTime > 0) {
+    caseGroup.rotation.z = Math.sin(shakeTime * 22) * 0.14;
+    shakeTime -= 0.04;
+    if (shakeTime <= 0) caseGroup.rotation.z = 0;
   }
 
   caseRenderer.render(caseScene, caseCamera);
 }
 
 function getRandPrize() {
-  const roll = Math.random() * 100;
-  let cumulative = 0;
-  const pool = [PRIZES[0], PRIZES[2], PRIZES[3], PRIZES[4], PRIZES[5]];
-  const chances = [45, 30, 15, 9, 1];
-
-  for (let i = 0; i < pool.length; i++) {
-    cumulative += chances[i];
-    if (roll < cumulative) return pool[i];
+  const total = PRIZES.reduce((s, p) => s + p.chance, 0);
+  const roll = Math.random() * total;
+  let cum = 0;
+  for (const p of PRIZES) {
+    cum += p.chance;
+    if (roll < cum) return p;
   }
-  return pool[0];
+  return PRIZES[0];
 }
 
 function openCase() {
   if (isAnimating) return;
   isAnimating = true;
-
-  const btn = document.getElementById('open-btn');
-  btn.disabled = true;
-
-  caseShakeTime = 1;
+  document.getElementById('open-btn').disabled = true;
+  shakeTime = 1;
   lidOpening = false;
-  lidOpenAngle = 0;
-  caseLid.position.y = 0.8;
+  lidAngle = 0;
+  caseLid.position.y = 0.86;
   caseLid.rotation.x = 0;
   caseLid.position.z = 0;
-
+  setTimeout(() => { lidOpening = true; }, 380);
   setTimeout(() => {
-    lidOpening = true;
-  }, 400);
-
-  setTimeout(() => {
-    const prize = getRandPrize();
-    showResult(prize);
+    const p = getRandPrize();
+    showResult(p);
     opensCount++;
-    if (prize.rarityClass !== 'common') rareCount++;
+    if (p.rc !== 'epic') rareCount++;
     document.getElementById('opens-count').textContent = opensCount;
     document.getElementById('rare-count').textContent = rareCount;
-    document.getElementById('luck-val').textContent = opensCount > 0 ? Math.round((rareCount / opensCount) * 100) + '%' : '?';
-  }, 1600);
+    document.getElementById('luck-val').textContent = Math.round((rareCount / opensCount) * 100) + '%';
+  }, 1700);
 }
 
-function showResult(prize) {
-  const overlay = document.getElementById('result-overlay');
+function showResult(p) {
   const card = document.getElementById('result-card');
-  const icon = document.getElementById('result-icon');
-  const img = document.getElementById('result-img');
-  const rarity = document.getElementById('result-rarity');
-  const name = document.getElementById('result-name');
-  const desc = document.getElementById('result-desc');
+  const icon = document.getElementById('r-icon');
+  const img = document.getElementById('r-img');
+  const badge = document.getElementById('r-badge');
+  const name = document.getElementById('r-name');
 
-  card.className = 'result-card ' + prize.rarityClass;
-  rarity.textContent = prize.rarity;
-  rarity.style.color = prize.color;
-  name.textContent = prize.name;
-  desc.textContent = prize.desc;
+  card.className = 'result-card ' + p.rc;
+  badge.textContent = p.rarity;
+  badge.className = 'r-badge ' + p.rc;
+  name.textContent = p.name;
+  name.className = 'r-name ' + p.rc;
+  document.getElementById('r-desc').textContent = p.desc;
 
-  if (prize.img) {
-    icon.style.display = 'none';
-    img.src = prize.img;
-    img.style.display = 'block';
-  } else {
-    icon.textContent = prize.icon;
-    icon.style.display = 'block';
-    img.style.display = 'none';
-  }
+  icon.textContent = p.icon;
+  icon.style.display = 'none';
+  img.src = p.img;
+  img.style.display = 'block';
 
-  overlay.classList.add('active');
+  document.getElementById('result-overlay').classList.add('active');
 
-  if (prize.rarityClass === 'legendary' || prize.rarityClass === 'epic') {
-    spawnConfetti(prize.color);
-  }
+  if (p.rc === 'mythic') spawnConfetti(['#ff00ff','#ffb700','#ff6a00','#ffffff','#9b06ff','#e040fb'], 130);
+  else if (p.rc === 'legendary') spawnConfetti(['#ffb700','#ff6a00','#ffe066','#ffffff'], 80);
+  else spawnConfetti(['#9b06ff','#e040fb','#d070ff'], 40);
 
   if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.HapticFeedback.notificationOccurred(
-      prize.rarityClass === 'legendary' ? 'success' : 'warning'
-    );
+    window.Telegram.WebApp.HapticFeedback.notificationOccurred(p.rc === 'epic' ? 'warning' : 'success');
   }
 }
 
 function closeResult() {
   document.getElementById('result-overlay').classList.remove('active');
   lidOpening = false;
-  lidOpenAngle = 0;
-  caseLid.position.y = 0.8;
+  lidAngle = 0;
+  caseLid.position.y = 0.86;
   caseLid.rotation.x = 0;
   caseLid.position.z = 0;
   isAnimating = false;
-  const btn = document.getElementById('open-btn');
-  btn.disabled = false;
+  document.getElementById('open-btn').disabled = false;
 }
 
 function shareResult() {
-  const name = document.getElementById('result-name').textContent;
-  const rarity = document.getElementById('result-rarity').textContent;
+  const name = document.getElementById('r-name').textContent;
+  const rarity = document.getElementById('r-badge').textContent;
   const text = `🐸 Я открыл Plush PEPE Case и получил ${rarity} приз: ${name}! Попробуй и ты!`;
-
   if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.sendData(JSON.stringify({
-      action: 'share',
-      prize: name,
-      rarity: rarity,
-      text: text
-    }));
+    window.Telegram.WebApp.sendData(JSON.stringify({ action:'share', prize:name, rarity, text }));
   } else if (navigator.share) {
     navigator.share({ text });
   } else {
@@ -729,24 +684,19 @@ function shareResult() {
   }
 }
 
-function spawnConfetti(color) {
+function spawnConfetti(palette, count) {
   const container = document.getElementById('confetti-container');
   container.innerHTML = '';
-  const colors = [color, '#39ff14', '#ffd700', '#ff6d00', '#ff1493'];
-
-  for (let i = 0; i < 60; i++) {
-    const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    const c = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.cssText = `
-      left: ${Math.random() * 100}%;
-      background: ${c};
-      width: ${6 + Math.random() * 8}px;
-      height: ${6 + Math.random() * 8}px;
-      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
-      animation: confetti-fall ${1.5 + Math.random() * 2}s ${Math.random() * 0.5}s ease-in forwards;
-    `;
-    container.appendChild(piece);
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    const c = palette[Math.floor(Math.random() * palette.length)];
+    const size = 5 + Math.random() * 10;
+    const isCircle = Math.random() > 0.4;
+    const dur = 1.2 + Math.random() * 2.2;
+    const delay = Math.random() * 0.7;
+    el.style.cssText = `left:${Math.random()*100}%;top:-10px;width:${size}px;height:${size}px;background:${c};border-radius:${isCircle?'50%':'3px'};animation:cf-fall ${dur}s ${delay}s ease-in forwards;box-shadow:0 0 ${isCircle?6:0}px ${c};`;
+    container.appendChild(el);
   }
 }
 
@@ -756,10 +706,10 @@ if (window.Telegram && window.Telegram.WebApp) {
 }
 
 window.addEventListener('load', () => {
-  initBgScene();
-  initCaseScene();
-  animateBg();
-  animateCase();
+  initBg();
+  initCase();
+  animBg();
+  animCase();
 });
 
 window.addEventListener('resize', () => {
