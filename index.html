@@ -3,700 +3,671 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Plush PEPE Case</title>
+<title>PEPE CASE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-  :root {
-    --gold: #ffb700;
-    --gold2: #ff6a00;
-    --purple: #9b06ff;
-    --purple2: #e040fb;
-    --pink: #ff0080;
-    --bg: #08010f;
-    --bg2: #120320;
-    --card: #160228;
-    --card2: #1e0338;
-    --text: #f5e6ff;
-    --muted: #9a7ab0;
-    --border: #3d1060;
-    --grad-main: linear-gradient(135deg, #ffb700 0%, #ff6a00 30%, #e040fb 65%, #9b06ff 100%);
-    --grad-text: linear-gradient(90deg, #ffb700, #ff6a00, #e040fb, #9b06ff);
-  }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg:    #06040e;
+  --s1:    #0d0820;
+  --s2:    #130b2a;
+  --card:  #160d2e;
+  --card2: #1e0338;
+  --border:rgba(140,80,255,.2);
+  --text:  #f0e8ff;
+  --muted: #7a6a9a;
+  --a1:#ff8c00; --a2:#ff3cac; --a3:#784bff; --a4:#2de2e6;
+  --grad:  linear-gradient(135deg,#ff8c00,#ff3cac,#784bff);
+  --grad2: linear-gradient(90deg,#ff8c00,#ff3cac,#784bff,#2de2e6);
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Space Grotesk', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
+html,body { height:100%; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; position:relative; }
 
-  #bg-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
-  }
+#bg-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; }
 
-  .noise {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    opacity: 0.035;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-size: 200px;
-    pointer-events: none;
-  }
+.grain { position:fixed; inset:0; z-index:1; opacity:.04; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size:200px; }
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 440px;
-    margin: 0 auto;
-    padding: 0 18px 52px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+.page { position:relative; z-index:2; max-width:430px; margin:0 auto; padding:0 16px 60px; display:flex; flex-direction:column; align-items:center; }
 
-  .header {
-    text-align: center;
-    padding: 32px 0 4px;
-  }
+/* PROFILE */
+.profile-bar { width:100%; display:flex; align-items:center; gap:12px; padding:14px 16px; margin-top:16px; background:var(--card); border:1px solid var(--border); border-radius:20px; position:relative; overflow:hidden; }
+.profile-bar::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,140,0,.07),rgba(120,75,255,.07)); pointer-events:none; }
+.avatar-wrap { flex-shrink:0; position:relative; width:48px; height:48px; }
+.avatar-ring { position:absolute; inset:-2px; border-radius:50%; background:conic-gradient(#ff8c00,#ff3cac,#784bff,#2de2e6,#ff8c00); animation:ring-spin 4s linear infinite; }
+@keyframes ring-spin { to { transform:rotate(360deg); } }
+.avatar-inner { position:absolute; inset:2px; border-radius:50%; overflow:hidden; background:var(--s2); display:flex; align-items:center; justify-content:center; }
+.avatar-img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.profile-info { flex:1; min-width:0; }
+.profile-name { font-family:'Syne',sans-serif; font-size:.95rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.profile-handle { font-size:.72rem; color:var(--muted); margin-top:2px; }
+.profile-score { text-align:right; flex-shrink:0; }
+.profile-score .s-val { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.profile-score .s-lbl { font-size:.6rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
 
-  .logo-tag {
-    display: inline-block;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 4px 12px;
-    margin-bottom: 14px;
-  }
+/* HEADER */
+.header { text-align:center; padding:22px 0 4px; width:100%; }
+.header-eyebrow { display:inline-flex; align-items:center; gap:6px; font-size:.62rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); border:1px solid var(--border); border-radius:100px; padding:4px 12px; margin-bottom:12px; }
+.header-eyebrow span { color:var(--a1); }
+.header h1 { font-family:'Syne',sans-serif; font-size:2.4rem; font-weight:800; line-height:.95; letter-spacing:-2px; }
+.header h1 .line1 { display:block; background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; background-size:200% auto; animation:grad-shift 5s linear infinite; }
+@keyframes grad-shift { to { background-position:200% center; } }
+.header h1 .line2 { display:block; color:var(--text); font-size:1rem; letter-spacing:5px; font-weight:700; margin-top:4px; opacity:.45; }
 
-  .header h1 {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 2.4rem;
-    font-weight: 900;
-    line-height: 1.1;
-    background: var(--grad-text);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -1px;
-  }
+/* CASE SELECTOR */
+.cases-section { width:100%; margin-top:20px; }
 
-  .header .sub {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-top: 6px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
+.cases-label { font-family:'Syne',sans-serif; font-size:.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
 
-  .case-wrap {
-    width: 100%;
-    max-width: 320px;
-    margin: 22px 0 14px;
-    position: relative;
-  }
+.cases-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; }
 
-  #case-canvas {
-    width: 100%;
-    aspect-ratio: 1;
-    border-radius: 28px;
-    display: block;
-  }
+.case-card {
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:transform .18s, border-color .18s, box-shadow .18s;
+  background:var(--card);
+  aspect-ratio:.8;
+}
 
-  .case-ring {
-    position: absolute;
-    inset: -12px;
-    border-radius: 40px;
-    background: conic-gradient(from 0deg, #ffb700, #ff6a00, #e040fb, #9b06ff, #ffb700);
-    opacity: 0;
-    z-index: -1;
-    filter: blur(18px);
-    animation: ring-spin 4s linear infinite, ring-fade 3s ease-in-out infinite;
-  }
+.case-card:hover { transform:translateY(-4px) scale(1.02); }
 
-  @keyframes ring-spin { to { transform: rotate(360deg); } }
-  @keyframes ring-fade { 0%,100%{opacity:0.35} 50%{opacity:0.7} }
+.case-card.active {
+  border-color:var(--a2);
+  box-shadow:0 0 22px rgba(255,60,172,.45), 0 0 6px rgba(255,60,172,.2);
+  transform:translateY(-6px) scale(1.04);
+}
 
-  .stats-bar {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    max-width: 320px;
-    margin-bottom: 14px;
-  }
+.case-card.active::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent 40%,rgba(255,60,172,.18) 100%);
+  pointer-events:none;
+}
 
-  .stat-chip {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 10px 6px;
-    text-align: center;
-  }
+.case-img {
+  width:100%; height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform .3s;
+}
 
-  .stat-chip .val {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    background: var(--grad-text);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+.case-card:hover .case-img { transform:scale(1.06); }
+.case-card.active .case-img { transform:scale(1.04); }
 
-  .stat-chip .lbl {
-    font-size: 0.58rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-top: 1px;
-  }
+.case-img-error {
+  width:100%; height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  background:var(--s2);
+  font-size:.65rem;
+  color:var(--muted);
+  letter-spacing:1px;
+}
 
-  .open-btn {
-    width: 100%;
-    max-width: 320px;
-    padding: 17px;
-    font-family: 'Unbounded', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: #08010f;
-    background: var(--grad-main);
-    border: none;
-    border-radius: 18px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.12s, opacity 0.12s;
-    box-shadow: 0 6px 32px #ff6a0055, 0 2px 8px #9b06ff44;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
+.case-img-error .ci-icon { font-size:2rem; }
 
-  .open-btn:active { transform: scale(0.97); opacity: 0.9; }
-  .open-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+.case-overlay {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(6,4,14,.88) 100%);
+  pointer-events:none;
+}
 
-  .open-btn .shine {
-    position: absolute;
-    top: -50%; left: -80%;
-    width: 50%; height: 200%;
-    background: linear-gradient(105deg, transparent, rgba(255,255,255,0.35), transparent);
-    transform: skewX(-18deg);
-    animation: shine-pass 3.5s ease-in-out infinite;
-  }
+.case-info {
+  position:absolute;
+  bottom:0; left:0; right:0;
+  padding:8px 8px 10px;
+}
 
-  @keyframes shine-pass { 0%{left:-80%} 45%,100%{left:130%} }
+.case-name {
+  font-family:'Syne',sans-serif;
+  font-size:.72rem;
+  font-weight:800;
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-  .divider {
-    width: 100%;
-    max-width: 320px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border), transparent);
-    margin: 22px 0 18px;
-  }
+.case-name.c1 { background:linear-gradient(90deg,#ff8c00,#ffce00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.case-name.c2 { background:linear-gradient(90deg,#ff3cac,#784bff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.case-name.c3 { background:linear-gradient(90deg,#2de2e6,#784bff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 
-  .prizes-label {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 0.65rem;
-    letter-spacing: 4px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    align-self: flex-start;
-    width: 100%;
-    max-width: 320px;
-  }
+.case-sub { font-size:.58rem; color:var(--muted); margin-top:2px; }
 
-  .prizes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 100%;
-    max-width: 320px;
-  }
+.case-selected-badge {
+  position:absolute;
+  top:8px; right:8px;
+  background:var(--a2);
+  border-radius:100px;
+  padding:2px 7px;
+  font-family:'Syne',sans-serif;
+  font-size:.52rem;
+  font-weight:800;
+  letter-spacing:1px;
+  opacity:0;
+  transition:opacity .2s;
+  pointer-events:none;
+}
 
-  .prize-row {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 9px 12px;
-    transition: border-color 0.2s;
-  }
+.case-card.active .case-selected-badge { opacity:1; }
 
-  .prize-row:hover { border-color: #6b20a0; }
+/* OPEN BTN */
+.open-btn {
+  width:100%; max-width:398px;
+  padding:16px;
+  font-family:'Syne',sans-serif;
+  font-size:.95rem; font-weight:800; letter-spacing:3px; text-transform:uppercase;
+  color:#06040e;
+  background:var(--grad);
+  border:none; border-radius:16px; cursor:pointer;
+  position:relative; overflow:hidden;
+  transition:transform .12s, opacity .12s;
+  box-shadow:0 8px 40px rgba(255,60,172,.3),0 4px 16px rgba(120,75,255,.2);
+  user-select:none; -webkit-tap-highlight-color:transparent;
+  margin-top:14px;
+}
+.open-btn:active { transform:scale(.97); }
+.open-btn:disabled { opacity:.35; cursor:default; transform:none; }
+.open-btn .sh { position:absolute; top:-60%; left:-80%; width:55%; height:220%; background:linear-gradient(105deg,transparent,rgba(255,255,255,.28),transparent); transform:skewX(-18deg); animation:sh-pass 3s ease-in-out infinite; }
+@keyframes sh-pass { 0%{left:-80%} 40%,100%{left:130%} }
 
-  .prize-row .p-icon { font-size: 1.4rem; width: 28px; text-align: center; flex-shrink: 0; }
-  .prize-row .p-info { flex: 1; min-width: 0; }
-  .prize-row .p-name { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .prize-row .p-chance { font-size: 0.64rem; color: var(--muted); margin-top: 1px; }
+/* STATS */
+.stats-row { display:flex; gap:8px; width:100%; margin:14px 0 0; }
+.stat { flex:1; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:9px 6px; text-align:center; }
+.stat .v { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.stat .l { font-size:.56rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:1px; }
 
-  .badge {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 0.55rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 3px 7px;
-    border-radius: 8px;
-    flex-shrink: 0;
-    text-transform: uppercase;
-  }
+/* PRIZES */
+.section-divider { width:100%; display:flex; align-items:center; gap:10px; margin:22px 0 14px; }
+.section-divider::before,.section-divider::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); }
+.section-divider span { font-size:.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
 
-  .b-epic { background: #1e0a3a; color: #d070ff; border: 1px solid #4a1080; }
-  .b-legendary { background: #2a1a00; color: #ffb700; border: 1px solid #604000; }
-  .b-mythic {
-    background: linear-gradient(135deg, #2a0040, #400020);
-    color: #ff70ff;
-    border: 1px solid #8000a0;
-    text-shadow: 0 0 8px #ff70ff88;
-  }
+.prizes-list { width:100%; display:flex; flex-direction:column; gap:6px; }
+.p-row { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:13px; padding:8px 11px; transition:border-color .2s, transform .15s; }
+.p-row:hover { border-color:rgba(255,60,172,.4); transform:translateX(3px); }
+.p-row .pi { font-size:1.35rem; width:26px; text-align:center; flex-shrink:0; }
+.p-row .pinfo { flex:1; min-width:0; }
+.p-row .pn { font-size:.8rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.p-row .pc { font-size:.62rem; color:var(--muted); margin-top:1px; }
 
-  .result-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(8,1,15,0.92);
-    backdrop-filter: blur(14px);
-    padding: 20px;
-  }
+.badge { font-family:'Syne',sans-serif; font-size:.52rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:3px 7px; border-radius:8px; flex-shrink:0; }
+.b-epic   { background:rgba(120,75,255,.15); color:#a87fff; border:1px solid rgba(120,75,255,.3); }
+.b-legend { background:rgba(255,140,0,.12);  color:#ffb740; border:1px solid rgba(255,140,0,.3); }
+.b-mythic { background:linear-gradient(135deg,rgba(255,60,172,.15),rgba(120,75,255,.15)); color:#ff80e0; border:1px solid rgba(255,60,172,.35); text-shadow:0 0 8px rgba(255,80,220,.5); }
 
-  .result-overlay.active { display: flex; }
+/* RESULT OVERLAY */
+.overlay { position:fixed; inset:0; z-index:300; display:none; align-items:center; justify-content:center; background:rgba(6,4,14,.94); backdrop-filter:blur(18px); padding:20px; }
+.overlay.on { display:flex; }
 
-  .result-card {
-    background: var(--card2);
-    border-radius: 28px;
-    padding: 32px 22px 24px;
-    text-align: center;
-    width: 100%;
-    max-width: 350px;
-    border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-    animation: card-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-  }
+.r-card { background:var(--card2); border-radius:28px; padding:30px 20px 22px; text-align:center; width:100%; max-width:340px; border:1px solid var(--border); position:relative; overflow:hidden; animation:pop-in .45s cubic-bezier(.175,.885,.32,1.275) both; }
+@keyframes pop-in { from{transform:scale(.55) translateY(24px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
 
-  @keyframes card-pop { from{transform:scale(0.6) translateY(30px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+.r-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--grad2); opacity:0; transition:opacity .4s; }
+.r-card.epic::after    { opacity:.7; background:linear-gradient(90deg,#784bff,#ff3cac); }
+.r-card.legendary::after { opacity:1; background:linear-gradient(90deg,#ff8c00,#ffce00); }
+.r-card.mythic::after  { opacity:1; background:var(--grad2); }
+.r-card.epic    { border-color:rgba(120,75,255,.4);  box-shadow:0 0 50px rgba(120,75,255,.2); }
+.r-card.legendary { border-color:rgba(255,140,0,.4);  box-shadow:0 0 60px rgba(255,140,0,.25); }
+.r-card.mythic  { border-color:rgba(255,60,172,.5);  box-shadow:0 0 80px rgba(255,60,172,.3); }
 
-  .result-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--grad-main);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
+.r-case-badge { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.05); border-radius:10px; padding:6px 10px; margin-bottom:16px; border:1px solid var(--border); width:fit-content; margin-left:auto; margin-right:auto; }
+.r-case-thumb { width:28px; height:28px; border-radius:6px; object-fit:cover; background:var(--s2); flex-shrink:0; }
+.r-case-thumb-ph { width:28px; height:28px; border-radius:6px; background:var(--s2); display:flex; align-items:center; justify-content:center; font-size:.8rem; flex-shrink:0; }
+.r-case-label { font-size:.68rem; color:var(--muted); }
+.r-case-label strong { color:var(--text); font-weight:600; }
 
-  .result-card.epic::before { opacity: 1; background: linear-gradient(90deg, #9b06ff, #e040fb); }
-  .result-card.legendary::before { opacity: 1; background: linear-gradient(90deg, #ff6a00, #ffb700); }
-  .result-card.mythic::before { opacity: 1; background: var(--grad-main); }
+.r-user-row { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border-radius:12px; padding:8px 10px; margin-bottom:18px; border:1px solid var(--border); }
+.r-avatar-wrap { width:32px; height:32px; position:relative; flex-shrink:0; }
+.r-avatar-ring { position:absolute; inset:-1.5px; border-radius:50%; background:conic-gradient(#ff8c00,#ff3cac,#784bff,#ff8c00); animation:ring-spin 3s linear infinite; }
+.r-avatar-inner { position:absolute; inset:1.5px; border-radius:50%; overflow:hidden; background:var(--s2); display:flex; align-items:center; justify-content:center; }
+.r-avatar-img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.r-user-text { flex:1; text-align:left; }
+.r-user-name { font-size:.78rem; font-weight:600; }
+.r-user-sub  { font-size:.62rem; color:var(--muted); }
 
-  .result-card.epic { border-color: #4a1080; box-shadow: 0 0 40px #9b06ff33; }
-  .result-card.legendary { border-color: #604000; box-shadow: 0 0 50px #ffb70044; }
-  .result-card.mythic { border-color: #8000a0; box-shadow: 0 0 60px #ff00ff44, 0 0 120px #ff00ff11; }
+.r-prize-icon { font-size:3.8rem; display:block; margin-bottom:6px; }
+.r-img { width:120px; height:120px; object-fit:contain; border-radius:16px; margin:0 auto 10px; display:block; background:rgba(0,0,0,.3); }
 
-  .r-icon { font-size: 4rem; display: block; margin-bottom: 6px; }
+.r-badge-row { margin-bottom:8px; }
+.r-badge { display:inline-block; font-family:'Syne',sans-serif; font-size:.58rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; padding:4px 12px; border-radius:100px; }
+.r-badge.epic    { background:rgba(120,75,255,.15); color:#b090ff; border:1px solid rgba(120,75,255,.35); }
+.r-badge.legendary { background:rgba(255,140,0,.12); color:#ffc060; border:1px solid rgba(255,140,0,.35); }
+.r-badge.mythic  { background:linear-gradient(135deg,rgba(255,60,172,.2),rgba(120,75,255,.2)); color:#ff90e8; border:1px solid rgba(255,60,172,.45); box-shadow:0 0 14px rgba(255,60,172,.3); }
 
-  .r-img {
-    width: 130px; height: 130px;
-    object-fit: contain;
-    border-radius: 18px;
-    margin: 0 auto 10px;
-    display: block;
-    background: #0d0020;
-  }
+.r-name { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; line-height:1.15; margin-bottom:8px; }
+.r-name.epic    { background:linear-gradient(90deg,#784bff,#ff3cac); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.r-name.legendary { background:linear-gradient(90deg,#ff8c00,#ffce00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.r-name.mythic  { background:var(--grad2); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:grad-shift 2s linear infinite; }
 
-  .r-badge-wrap { margin-bottom: 8px; }
+.r-desc { font-size:.8rem; color:var(--muted); line-height:1.55; margin-bottom:18px; }
+.r-actions { display:flex; gap:8px; }
+.r-btn { flex:1; padding:13px; font-family:'Syne',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; border-radius:13px; cursor:pointer; border:none; transition:opacity .15s; }
+.r-btn:active { opacity:.8; }
+.r-btn-open  { color:#06040e; background:var(--grad); }
+.r-btn-share { color:var(--text); background:transparent; border:1px solid var(--border); }
 
-  .r-badge {
-    display: inline-block;
-    font-family: 'Unbounded', sans-serif;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 4px 12px;
-    border-radius: 100px;
-  }
-
-  .r-badge.epic { background: #1e0a3a; color: #d070ff; border: 1px solid #4a1080; }
-  .r-badge.legendary { background: #2a1a00; color: #ffb700; border: 1px solid #604000; }
-  .r-badge.mythic {
-    background: linear-gradient(135deg, #2a0040, #400020);
-    color: #ff80ff;
-    border: 1px solid #8000a0;
-    box-shadow: 0 0 12px #ff00ff44;
-  }
-
-  .r-name {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 1.35rem;
-    font-weight: 900;
-    line-height: 1.2;
-    margin-bottom: 8px;
-  }
-
-  .r-name.epic { background: linear-gradient(90deg, #9b06ff, #e040fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .r-name.legendary { background: linear-gradient(90deg, #ff6a00, #ffb700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .r-name.mythic { background: var(--grad-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-
-  .r-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; margin-bottom: 20px; }
-
-  .r-actions { display: flex; gap: 8px; }
-
-  .r-btn-again {
-    flex: 1; padding: 13px;
-    font-family: 'Unbounded', sans-serif;
-    font-size: 0.78rem; font-weight: 700; letter-spacing: 1px;
-    color: #08010f;
-    background: var(--grad-main);
-    border: none; border-radius: 14px; cursor: pointer;
-  }
-
-  .r-btn-share {
-    flex: 1; padding: 13px;
-    font-family: 'Unbounded', sans-serif;
-    font-size: 0.78rem; font-weight: 700; letter-spacing: 1px;
-    color: var(--text);
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 14px; cursor: pointer;
-    transition: border-color 0.2s;
-  }
-
-  .r-btn-share:hover { border-color: var(--purple2); }
-
-  .confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 199; overflow: hidden; }
-  .confetti-piece { position: absolute; opacity: 0; }
-
-  @keyframes cf-fall {
-    0% { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
-    100% { transform: translateY(105vh) rotate(800deg) scale(0.5); opacity: 0; }
-  }
+/* CONFETTI */
+.confetti-c { position:fixed; inset:0; pointer-events:none; z-index:299; overflow:hidden; }
+.cf { position:absolute; opacity:0; }
+@keyframes cf-drop { 0%{transform:translateY(-15px) rotate(0deg) scale(1);opacity:1} 100%{transform:translateY(110vh) rotate(900deg) scale(.4);opacity:0} }
 </style>
 </head>
 <body>
-
 <canvas id="bg-canvas"></canvas>
-<div class="noise"></div>
-<div class="confetti-container" id="confetti-container"></div>
+<div class="grain"></div>
+<div class="confetti-c" id="confetti"></div>
 
-<div class="container">
+<div class="page">
+
+  <div class="profile-bar" id="profile-bar">
+    <div class="avatar-wrap">
+      <div class="avatar-ring"></div>
+      <div class="avatar-inner">
+        <img class="avatar-img" id="avatar-img" src="" alt="" style="display:none" onerror="showAvatarFallback()">
+        <span id="avatar-ph" style="font-size:.9rem;font-family:'Syne',sans-serif;font-weight:800"></span>
+      </div>
+    </div>
+    <div class="profile-info">
+      <div class="profile-name" id="profile-name">Загрузка...</div>
+      <div class="profile-handle" id="profile-handle">@username</div>
+    </div>
+    <div class="profile-score">
+      <div class="s-val" id="score-val">0</div>
+      <div class="s-lbl">очков</div>
+    </div>
+  </div>
+
   <div class="header">
-    <div class="logo-tag">🐸 Telegram Mini App</div>
-    <h1>PLUSH PEPE<br>CASE</h1>
-    <p class="sub">Open &amp; Win Rare Gifts</p>
+    <div class="header-eyebrow">🐸 <span>Telegram</span> Mini App</div>
+    <h1>
+      <span class="line1">PEPE CASE</span>
+      <span class="line2">CHOOSE &amp; OPEN</span>
+    </h1>
   </div>
 
-  <div class="case-wrap">
-    <div class="case-ring"></div>
-    <canvas id="case-canvas"></canvas>
-  </div>
+  <div class="cases-section">
+    <div class="cases-label">Выбери кейс</div>
+    <div class="cases-grid">
 
-  <div class="stats-bar">
-    <div class="stat-chip"><div class="val" id="opens-count">0</div><div class="lbl">Открытий</div></div>
-    <div class="stat-chip"><div class="val" id="rare-count">0</div><div class="lbl">Редких</div></div>
-    <div class="stat-chip"><div class="val" id="luck-val">—</div><div class="lbl">Удача</div></div>
+      <div class="case-card active" id="case-card-0" onclick="selectCase(0)">
+        <img class="case-img" src="case_1.jpg" alt="Case 1"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="case-img-error" style="display:none"><div class="ci-icon">🔥</div><div>FIRE</div></div>
+        <div class="case-overlay"></div>
+        <div class="case-info">
+          <div class="case-name c1">Fire Case</div>
+          <div class="case-sub">4 предмета</div>
+        </div>
+        <div class="case-selected-badge">✓ ВЫБРАН</div>
+      </div>
+
+      <div class="case-card" id="case-card-1" onclick="selectCase(1)">
+        <img class="case-img" src="case_2.jpg" alt="Case 2"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="case-img-error" style="display:none"><div class="ci-icon">💜</div><div>NEON</div></div>
+        <div class="case-overlay"></div>
+        <div class="case-info">
+          <div class="case-name c2">Neon Case</div>
+          <div class="case-sub">4 предмета</div>
+        </div>
+        <div class="case-selected-badge">✓ ВЫБРАН</div>
+      </div>
+
+      <div class="case-card" id="case-card-2" onclick="selectCase(2)">
+        <img class="case-img" src="case_3.jpg" alt="Case 3"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="case-img-error" style="display:none"><div class="ci-icon">🌊</div><div>DEEP</div></div>
+        <div class="case-overlay"></div>
+        <div class="case-info">
+          <div class="case-name c3">Deep Case</div>
+          <div class="case-sub">3 предмета</div>
+        </div>
+        <div class="case-selected-badge">✓ ВЫБРАН</div>
+      </div>
+
+    </div>
   </div>
 
   <button class="open-btn" id="open-btn" onclick="openCase()">
-    <span class="shine"></span>
-    🎰 &nbsp;ОТКРЫТЬ КЕЙС
+    <span class="sh"></span>
+    🎰 &nbsp;Открыть кейс
   </button>
 
-  <div class="divider"></div>
-
-  <div class="prizes-label">Все призы</div>
-  <div class="prizes-list">
-    <div class="prize-row"><div class="p-icon">⚔️</div><div class="p-info"><div class="p-name">Light Sword</div><div class="p-chance">35%</div></div><span class="badge b-epic">Epic</span></div>
-    <div class="prize-row"><div class="p-icon">🧦</div><div class="p-info"><div class="p-name">Fresh Socks Drumsticks</div><div class="p-chance">25%</div></div><span class="badge b-epic">Epic</span></div>
-    <div class="prize-row"><div class="p-icon">🎃</div><div class="p-info"><div class="p-name">Mad Pumpkin Kinky-Winky</div><div class="p-chance">18%</div></div><span class="badge b-epic">Epic</span></div>
-    <div class="prize-row"><div class="p-icon">✨</div><div class="p-info"><div class="p-name">Party Sparkler Assault</div><div class="p-chance">12%</div></div><span class="badge b-epic">Epic</span></div>
-    <div class="prize-row"><div class="p-icon">🍑</div><div class="p-info"><div class="p-name">Precious Peach Cold Iron</div><div class="p-chance">5%</div></div><span class="badge b-legendary">Legendary</span></div>
-    <div class="prize-row"><div class="p-icon">🧸</div><div class="p-info"><div class="p-name">Плюшевый PEPE</div><div class="p-chance">3%</div></div><span class="badge b-legendary">Legendary</span></div>
-    <div class="prize-row"><div class="p-icon">💎</div><div class="p-info"><div class="p-name">Lapis Lazuli New</div><div class="p-chance">1.5%</div></div><span class="badge b-mythic">Mythic</span></div>
-    <div class="prize-row"><div class="p-icon">🎩</div><div class="p-info"><div class="p-name">Durov's Cap Mossy</div><div class="p-chance">0.5%</div></div><span class="badge b-mythic">Mythic</span></div>
+  <div class="stats-row">
+    <div class="stat"><div class="v" id="st-opens">0</div><div class="l">Открытий</div></div>
+    <div class="stat"><div class="v" id="st-rare">0</div><div class="l">Редких</div></div>
+    <div class="stat"><div class="v" id="st-luck">—</div><div class="l">Удача</div></div>
   </div>
+
+  <div class="section-divider"><span>все призы</span></div>
+  <div class="prizes-list" id="prizes-list"></div>
+
 </div>
 
-<div class="result-overlay" id="result-overlay">
-  <div class="result-card" id="result-card">
-    <span class="r-icon" id="r-icon"></span>
-    <img class="r-img" id="r-img" src="" alt="" style="display:none" onerror="this.style.display='none';document.getElementById('r-icon').style.display='block'">
-    <div class="r-badge-wrap"><span class="r-badge" id="r-badge"></span></div>
+<div class="overlay" id="overlay">
+  <div class="r-card" id="r-card">
+
+    <div class="r-case-badge">
+      <img id="r-case-thumb" class="r-case-thumb" src="" alt="" onerror="this.style.display='none';document.getElementById('r-case-thumb-ph').style.display='flex'">
+      <div id="r-case-thumb-ph" class="r-case-thumb-ph" style="display:none">🎁</div>
+      <div class="r-case-label"><strong id="r-case-name-label">Fire Case</strong></div>
+    </div>
+
+    <div class="r-user-row">
+      <div class="r-avatar-wrap">
+        <div class="r-avatar-ring"></div>
+        <div class="r-avatar-inner">
+          <img class="r-avatar-img" id="r-av-img" src="" alt="" style="display:none">
+          <span id="r-av-ph" style="font-size:.75rem;font-family:'Syne',sans-serif;font-weight:800"></span>
+        </div>
+      </div>
+      <div class="r-user-text">
+        <div class="r-user-name" id="r-uname">Игрок</div>
+        <div class="r-user-sub">получил приз!</div>
+      </div>
+    </div>
+
+    <span class="r-prize-icon" id="r-icon"></span>
+    <img class="r-img" id="r-img" src="" alt="" style="display:none"
+      onerror="this.style.display='none';document.getElementById('r-icon').style.display='block'">
+    <div class="r-badge-row"><span class="r-badge" id="r-badge"></span></div>
     <div class="r-name" id="r-name"></div>
     <div class="r-desc" id="r-desc"></div>
     <div class="r-actions">
-      <button class="r-btn-again" onclick="closeResult()">🔄 Ещё раз</button>
-      <button class="r-btn-share" onclick="shareResult()">📤 Поделиться</button>
+      <button class="r-btn r-btn-open" onclick="closeResult()">🔄 Ещё раз</button>
+      <button class="r-btn r-btn-share" onclick="shareResult()">📤 Поделиться</button>
     </div>
   </div>
 </div>
 
 <script>
-const PRIZES = [
-  { id:"light_sword",   name:"Light Sword",              desc:"Мощный световой меч — оружие настоящего воина!",                                                       icon:"⚔️",  rarity:"EPIC",      rc:"epic",      chance:35,   img:"light_sword.png",    color:"#d070ff" },
-  { id:"fresh_socks",   name:"Fresh Socks Drumsticks",   desc:"Свежие носки и барабанные палочки — неожиданный эпический дроп!",                                      icon:"🧦",  rarity:"EPIC",      rc:"epic",      chance:25,   img:"freshSocks.png",     color:"#d070ff" },
-  { id:"mad_pumpkin",   name:"Mad Pumpkin Kinky-Winky",  desc:"Безумная тыква с характером. Только для смелых коллекционеров!",                                       icon:"🎃",  rarity:"EPIC",      rc:"epic",      chance:18,   img:"madPumpkin.png",     color:"#d070ff" },
-  { id:"party_spark",   name:"Party Sparkler Assault",   desc:"Взрывной праздничный дроп! Хаос и конфетти в одном флаконе.",                                          icon:"✨",  rarity:"EPIC",      rc:"epic",      chance:12,   img:"partySpalker.png",   color:"#d070ff" },
-  { id:"precious_peach",name:"Precious Peach Cold Iron", desc:"Легендарный персик из холодного железа. Редкость и изящество.",                                        icon:"🍑",  rarity:"LEGENDARY", rc:"legendary", chance:5,    img:"peach.png",          color:"#ffb700" },
-  { id:"plush_pepe",    name:"Плюшевый PEPE",            desc:"🎉 ДЖЕКПОТ! Ты выиграл легендарного Плюшевого PEPE! Невероятно редкий приз!",                          icon:"🧸",  rarity:"LEGENDARY", rc:"legendary", chance:3,    img:"plushpepe.png",      color:"#ffb700" },
-  { id:"lapis_lazuli",  name:"Lapis Lazuli New",         desc:"✨ МИФИК! Лазурит нового поколения — один из редчайших предметов в коллекции!",                        icon:"💎",  rarity:"MYTHIC",    rc:"mythic",    chance:1.5,  img:"lapisLazuliNew.png", color:"#ff70ff" },
-  { id:"durovs_cap",    name:"Durov's Cap Mossy",        desc:"🌟 АБСОЛЮТНЫЙ МИФИК! Легендарная кепка Дурова. Единицы в мире!",                                      icon:"🎩",  rarity:"MYTHIC",    rc:"mythic",    chance:0.5,  img:"durovsCap.png",      color:"#ff70ff" }
+const CASES = [
+  {
+    id: 0,
+    name: "Fire Case",
+    img: "case_1.jpg",
+    emoji: "🔥",
+    prizes: [
+      { id:"light_sword",  name:"Light Sword",             desc:"Мощный световой меч — оружие настоящего воина!",                                   icon:"⚔️", rarity:"EPIC",      rc:"epic",      chance:45, img:"light_sword.png",  color:"#a87fff" },
+      { id:"party_spark",  name:"Party Sparkler Assault",  desc:"Взрывной праздничный дроп! Хаос и конфетти в одном флаконе.",                      icon:"✨", rarity:"EPIC",      rc:"epic",      chance:35, img:"partySpalker.png", color:"#a87fff" },
+      { id:"precious_peach",name:"Precious Peach Cold Iron",desc:"Легендарный персик из холодного железа. Редкость и изящество.",                   icon:"🍑", rarity:"LEGENDARY", rc:"legendary", chance:15, img:"peach.png",        color:"#ffc060" },
+      { id:"durovs_cap",   name:"Durov's Cap Mossy",        desc:"🌟 МИФИК! Легендарная кепка Дурова. Единицы в мире!",                             icon:"🎩", rarity:"MYTHIC",    rc:"mythic",    chance:5,  img:"durovsCap.png",   color:"#ff90e8" }
+    ]
+  },
+  {
+    id: 1,
+    name: "Neon Case",
+    img: "case_2.jpg",
+    emoji: "💜",
+    prizes: [
+      { id:"fresh_socks",  name:"Fresh Socks Drumsticks",  desc:"Свежие носки и барабанные палочки — эпический дроп!",                             icon:"🧦", rarity:"EPIC",      rc:"epic",      chance:40, img:"freshSocks.png",   color:"#a87fff" },
+      { id:"mad_pumpkin",  name:"Mad Pumpkin Kinky-Winky", desc:"Безумная тыква с характером. Только для смелых коллекционеров!",                  icon:"🎃", rarity:"EPIC",      rc:"epic",      chance:35, img:"madPumpkin.png",   color:"#a87fff" },
+      { id:"plush_pepe",   name:"Плюшевый PEPE",           desc:"🎉 ДЖЕКПОТ! Ты выиграл легендарного Плюшевого PEPE!",                             icon:"🧸", rarity:"LEGENDARY", rc:"legendary", chance:20, img:"plushpepe.png",    color:"#ffc060" },
+      { id:"lapis_lazuli", name:"Lapis Lazuli New",         desc:"✨ МИФИК! Лазурит нового поколения — один из редчайших предметов!",               icon:"💎", rarity:"MYTHIC",    rc:"mythic",    chance:5,  img:"lapisLazuliNew.png",color:"#ff90e8" }
+    ]
+  },
+  {
+    id: 2,
+    name: "Deep Case",
+    img: "case_3.jpg",
+    emoji: "🌊",
+    prizes: [
+      { id:"mad_pumpkin2", name:"Mad Pumpkin Kinky-Winky", desc:"Безумная тыква с характером. Только для смелых!",                                  icon:"🎃", rarity:"EPIC",      rc:"epic",      chance:50, img:"madPumpkin.png",   color:"#a87fff" },
+      { id:"precious_peach2",name:"Precious Peach Cold Iron",desc:"Легендарный персик из холодного железа.",                                        icon:"🍑", rarity:"LEGENDARY", rc:"legendary", chance:30, img:"peach.png",        color:"#ffc060" },
+      { id:"lapis_lazuli2",name:"Lapis Lazuli New",         desc:"✨ МИФИК! Лазурит нового поколения!",                                              icon:"💎", rarity:"MYTHIC",    rc:"mythic",    chance:20, img:"lapisLazuliNew.png",color:"#ff90e8" }
+    ]
+  }
 ];
 
-let opensCount = 0, rareCount = 0, isAnimating = false;
-let caseRenderer, caseScene, caseCamera, caseGroup, caseMesh, caseLid;
-let bgRenderer, bgScene, bgCamera, bgParticles;
-let caseRotY = 0, lidAngle = 0, lidOpening = false, shakeTime = 0;
+let selectedCase = 0;
+let opensCount = 0, rareCount = 0, score = 0, isAnimating = false;
+let bgRenderer, bgScene, bgCamera, bgParts;
+let userData = { name:"Игрок", handle:"@username", initials:"ИГ" };
 
-function initBg() {
-  bgScene = new THREE.Scene();
-  bgCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-  bgCamera.position.z = 5;
-  bgRenderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true, antialias: false });
-  bgRenderer.setSize(window.innerWidth, window.innerHeight);
-  bgRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+const SCORE_MAP = { epic:10, legendary:50, mythic:200 };
 
-  const geo = new THREE.BufferGeometry();
-  const N = 280;
-  const pos = new Float32Array(N * 3);
-  const col = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    pos[i*3]   = (Math.random()-0.5)*22;
-    pos[i*3+1] = (Math.random()-0.5)*22;
-    pos[i*3+2] = (Math.random()-0.5)*12;
-    const t = Math.random();
-    col[i*3]   = 1.0 * t + 0.6 * (1-t);
-    col[i*3+1] = 0.0 * t + 0.0 * (1-t);
-    col[i*3+2] = 0.5 * t + 1.0 * (1-t);
-  }
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  bgParticles = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.05, vertexColors: true, transparent: true, opacity: 0.55 }));
-  bgScene.add(bgParticles);
+function selectCase(idx) {
+  selectedCase = idx;
+  document.querySelectorAll('.case-card').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  renderPrizeList();
 }
 
-function initCase() {
-  const canvas = document.getElementById('case-canvas');
-  const s = canvas.clientWidth;
-  caseScene = new THREE.Scene();
-  caseCamera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-  caseCamera.position.set(0, 0.6, 5);
-  caseCamera.lookAt(0, 0, 0);
-  caseRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-  caseRenderer.setSize(s, s);
-  caseRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+function renderPrizeList() {
+  const list = document.getElementById('prizes-list');
+  const prizes = CASES[selectedCase].prizes;
+  list.innerHTML = prizes.map(p => {
+    const bClass = p.rc === 'mythic' ? 'b-mythic' : p.rc === 'legendary' ? 'b-legend' : 'b-epic';
+    const total = prizes.reduce((s,x)=>s+x.chance,0);
+    const pct = Math.round(p.chance/total*100);
+    return `<div class="p-row">
+      <div class="pi">${p.icon}</div>
+      <div class="pinfo"><div class="pn">${p.name}</div><div class="pc">${pct}% выпадение</div></div>
+      <span class="badge ${bClass}">${p.rarity}</span>
+    </div>`;
+  }).join('');
+}
 
-  caseScene.add(new THREE.AmbientLight(0x220033, 2));
+/* ─── USER ─── */
+function loadUserData() {
+  const defaultLoad = (name, handle, initials) => {
+    userData = { name, handle, initials };
+    document.getElementById('profile-name').textContent = name;
+    document.getElementById('profile-handle').textContent = handle;
+    document.getElementById('r-uname').textContent = name;
+    generateInitialsAvatar(initials);
+  };
 
-  const l1 = new THREE.PointLight(0xff6a00, 4, 12);
-  l1.position.set(2, 2, 3);
-  caseScene.add(l1);
-
-  const l2 = new THREE.PointLight(0x9b06ff, 3, 10);
-  l2.position.set(-2, -1, 2);
-  caseScene.add(l2);
-
-  const l3 = new THREE.PointLight(0xe040fb, 2, 8);
-  l3.position.set(0, 3, -2);
-  caseScene.add(l3);
-
-  caseGroup = new THREE.Group();
-  caseScene.add(caseGroup);
-
-  caseMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 1.7, 2.2),
-    new THREE.MeshStandardMaterial({ color: 0x0d0020, metalness: 0.95, roughness: 0.1, emissive: 0x110022, emissiveIntensity: 0.4 })
-  );
-  caseMesh.position.y = -0.2;
-  caseGroup.add(caseMesh);
-
-  caseLid = new THREE.Mesh(
-    new THREE.BoxGeometry(2.26, 0.42, 2.26),
-    new THREE.MeshStandardMaterial({ color: 0x1a0035, metalness: 0.98, roughness: 0.06, emissive: 0x220040, emissiveIntensity: 0.6 })
-  );
-  caseLid.position.y = 0.86;
-  caseGroup.add(caseLid);
-
-  const edgeColors = [0xff6a00, 0xe040fb, 0x9b06ff, 0xffb700];
-  for (let ei = 0; ei < 4; ei++) {
-    const e = new THREE.Mesh(
-      new THREE.TorusGeometry(1.65 - ei * 0.04, 0.022, 8, 48),
-      new THREE.MeshStandardMaterial({ color: edgeColors[ei], emissive: edgeColors[ei], emissiveIntensity: 2.5 })
-    );
-    e.rotation.x = Math.PI / 2;
-    e.position.y = 0.65 + ei * 0.01;
-    caseGroup.add(e);
+  if (!window.Telegram || !window.Telegram.WebApp) {
+    defaultLoad("Гость PEPE", "@pepe_player", "ГП");
+    return;
   }
 
-  const logoGeo = new THREE.CircleGeometry(0.5, 6);
-  const logo = new THREE.Mesh(logoGeo, new THREE.MeshStandardMaterial({ color: 0xff6a00, emissive: 0xff6a00, emissiveIntensity: 2 }));
-  logo.rotation.x = -Math.PI / 2;
-  logo.position.y = 1.09;
-  caseGroup.add(logo);
+  const user = window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
+  if (!user) { defaultLoad("PEPE Player", "@player", "PP"); return; }
 
-  const cornerPositions = [[-1,-0.2,-1],[1,-0.2,-1],[-1,-0.2,1],[1,-0.2,1]];
-  cornerPositions.forEach(([x,,z]) => {
-    const c = new THREE.Mesh(
-      new THREE.SphereGeometry(0.08, 8, 8),
-      new THREE.MeshStandardMaterial({ color: 0xe040fb, emissive: 0xe040fb, emissiveIntensity: 3 })
-    );
-    c.position.set(x, 0.66, z);
-    caseGroup.add(c);
-  });
+  const fn = user.first_name || "";
+  const ln = user.last_name  || "";
+  const un = user.username   || "";
+  const fullName = (fn + " " + ln).trim() || "PEPE Player";
+  const handle   = un ? "@" + un : "без username";
+  const initials = ((fn[0]||"")+(ln[0]||fn[1]||"")).toUpperCase() || "?";
+
+  userData = { name:fullName, handle, initials };
+  document.getElementById('profile-name').textContent  = fullName;
+  document.getElementById('profile-handle').textContent = handle;
+  document.getElementById('r-uname').textContent = fullName;
+
+  if (user.photo_url) {
+    tryLoadAvatar(user.photo_url, initials);
+  } else {
+    generateInitialsAvatar(initials);
+  }
+}
+
+function tryLoadAvatar(url, initials) {
+  const img = document.getElementById('avatar-img');
+  img.onload  = () => {
+    document.getElementById('avatar-ph').textContent = '';
+    img.style.display = 'block';
+    const ri = document.getElementById('r-av-img');
+    ri.src = url;
+    ri.onload = () => { document.getElementById('r-av-ph').textContent = ''; ri.style.display = 'block'; };
+  };
+  img.onerror = () => generateInitialsAvatar(initials);
+  img.src = url;
+}
+
+function showAvatarFallback() {
+  document.getElementById('avatar-img').style.display = 'none';
+  generateInitialsAvatar(userData.initials || "?");
+}
+
+function generateInitialsAvatar(initials) {
+  const pairs = [['#ff8c00','#ff3cac'],['#784bff','#2de2e6'],['#ff3cac','#784bff'],['#2de2e6','#ff8c00']];
+  const pair  = pairs[(initials.charCodeAt(0)||0) % pairs.length];
+  const c = document.createElement('canvas');
+  c.width = c.height = 80;
+  const ctx = c.getContext('2d');
+  const g = ctx.createLinearGradient(0,0,80,80);
+  g.addColorStop(0, pair[0]); g.addColorStop(1, pair[1]);
+  ctx.fillStyle = g; ctx.fillRect(0,0,80,80);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 30px Syne,sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(initials.slice(0,2), 40, 42);
+  const dataUrl = c.toDataURL();
+
+  const ai = document.getElementById('avatar-img');
+  ai.src = dataUrl; ai.style.display = 'block';
+  document.getElementById('avatar-ph').textContent = '';
+
+  const ri = document.getElementById('r-av-img');
+  ri.src = dataUrl; ri.style.display = 'block';
+  document.getElementById('r-av-ph').textContent = '';
+}
+
+/* ─── BG ─── */
+function initBg() {
+  bgScene  = new THREE.Scene();
+  bgCamera = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 100);
+  bgCamera.position.z = 5;
+  bgRenderer = new THREE.WebGLRenderer({ canvas:document.getElementById('bg-canvas'), alpha:true, antialias:false });
+  bgRenderer.setSize(innerWidth, innerHeight);
+  bgRenderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+
+  const N = 320, pos = new Float32Array(N*3), col = new Float32Array(N*3);
+  for (let i=0;i<N;i++) {
+    pos[i*3]   = (Math.random()-.5)*24;
+    pos[i*3+1] = (Math.random()-.5)*24;
+    pos[i*3+2] = (Math.random()-.5)*14;
+    const t = Math.random();
+    col[i*3] = 1*t+.47*(1-t); col[i*3+1] = .23*t+.30*(1-t); col[i*3+2] = .5*t+1*(1-t);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',    new THREE.BufferAttribute(col,3));
+  bgParts = new THREE.Points(geo, new THREE.PointsMaterial({ size:.05, vertexColors:true, transparent:true, opacity:.5 }));
+  bgScene.add(bgParts);
 }
 
 function animBg() {
   requestAnimationFrame(animBg);
-  bgParticles.rotation.y += 0.0003;
-  bgParticles.rotation.x += 0.00015;
+  bgParts.rotation.y += .0003; bgParts.rotation.x += .00015;
   bgRenderer.render(bgScene, bgCamera);
 }
 
-function animCase() {
-  requestAnimationFrame(animCase);
-  const t = Date.now() * 0.001;
-  caseRotY += 0.006;
-  caseGroup.rotation.y = caseRotY;
-  caseGroup.position.y = Math.sin(t * 0.9) * 0.1;
-  caseGroup.rotation.x = Math.sin(t * 0.5) * 0.04;
-
-  if (lidOpening) {
-    lidAngle = Math.min(lidAngle + 0.035, Math.PI * 0.7);
-    caseLid.position.y = 0.86 + Math.sin(lidAngle) * 0.9;
-    caseLid.rotation.x = -lidAngle;
-    caseLid.position.z = -Math.sin(lidAngle) * 0.9;
-  }
-
-  if (shakeTime > 0) {
-    caseGroup.rotation.z = Math.sin(shakeTime * 22) * 0.14;
-    shakeTime -= 0.04;
-    if (shakeTime <= 0) caseGroup.rotation.z = 0;
-  }
-
-  caseRenderer.render(caseScene, caseCamera);
-}
-
+/* ─── GAME ─── */
 function getRandPrize() {
-  const total = PRIZES.reduce((s, p) => s + p.chance, 0);
-  const roll = Math.random() * total;
-  let cum = 0;
-  for (const p of PRIZES) {
-    cum += p.chance;
-    if (roll < cum) return p;
-  }
-  return PRIZES[0];
+  const prizes = CASES[selectedCase].prizes;
+  const total  = prizes.reduce((s,p)=>s+p.chance,0);
+  let cum = 0, roll = Math.random()*total;
+  for (const p of prizes) { cum+=p.chance; if (roll<cum) return p; }
+  return prizes[0];
 }
 
 function openCase() {
   if (isAnimating) return;
   isAnimating = true;
   document.getElementById('open-btn').disabled = true;
-  shakeTime = 1;
-  lidOpening = false;
-  lidAngle = 0;
-  caseLid.position.y = 0.86;
-  caseLid.rotation.x = 0;
-  caseLid.position.z = 0;
-  setTimeout(() => { lidOpening = true; }, 380);
+
+  const card = document.getElementById('case-card-' + selectedCase);
+  card.style.transform = 'scale(.93)';
+  setTimeout(() => { card.style.transform = ''; }, 150);
+
   setTimeout(() => {
     const p = getRandPrize();
+    opensCount++; if (p.rc !== 'epic') rareCount++;
+    score += SCORE_MAP[p.rc] || 0;
+    document.getElementById('st-opens').textContent = opensCount;
+    document.getElementById('st-rare').textContent  = rareCount;
+    document.getElementById('st-luck').textContent  = Math.round((rareCount/opensCount)*100)+'%';
+    document.getElementById('score-val').textContent = score;
     showResult(p);
-    opensCount++;
-    if (p.rc !== 'epic') rareCount++;
-    document.getElementById('opens-count').textContent = opensCount;
-    document.getElementById('rare-count').textContent = rareCount;
-    document.getElementById('luck-val').textContent = Math.round((rareCount / opensCount) * 100) + '%';
-  }, 1700);
+  }, 500);
 }
 
 function showResult(p) {
-  const card = document.getElementById('result-card');
-  const icon = document.getElementById('r-icon');
-  const img = document.getElementById('r-img');
-  const badge = document.getElementById('r-badge');
-  const name = document.getElementById('r-name');
+  const caseData = CASES[selectedCase];
+  const thumb = document.getElementById('r-case-thumb');
+  const thumbPh = document.getElementById('r-case-thumb-ph');
+  thumb.src = caseData.img;
+  thumb.style.display = 'block';
+  thumbPh.style.display = 'none';
+  document.getElementById('r-case-name-label').textContent = caseData.name;
 
-  card.className = 'result-card ' + p.rc;
-  badge.textContent = p.rarity;
-  badge.className = 'r-badge ' + p.rc;
-  name.textContent = p.name;
-  name.className = 'r-name ' + p.rc;
+  const card  = document.getElementById('r-card');
+  const icon  = document.getElementById('r-icon');
+  const img   = document.getElementById('r-img');
+  const badge = document.getElementById('r-badge');
+  const name  = document.getElementById('r-name');
+
+  card.className  = 'r-card ' + p.rc;
+  badge.textContent = p.rarity; badge.className = 'r-badge ' + p.rc;
+  name.textContent  = p.name;   name.className  = 'r-name '  + p.rc;
   document.getElementById('r-desc').textContent = p.desc;
 
-  icon.textContent = p.icon;
-  icon.style.display = 'none';
-  img.src = p.img;
-  img.style.display = 'block';
+  icon.textContent = p.icon; icon.style.display = 'none';
+  img.src = p.img; img.style.display = 'block';
 
-  document.getElementById('result-overlay').classList.add('active');
+  document.getElementById('overlay').classList.add('on');
 
-  if (p.rc === 'mythic') spawnConfetti(['#ff00ff','#ffb700','#ff6a00','#ffffff','#9b06ff','#e040fb'], 130);
-  else if (p.rc === 'legendary') spawnConfetti(['#ffb700','#ff6a00','#ffe066','#ffffff'], 80);
-  else spawnConfetti(['#9b06ff','#e040fb','#d070ff'], 40);
+  const cfMap = {
+    epic:      { p:['#784bff','#ff3cac','#a87fff','#fff'], n:50 },
+    legendary: { p:['#ff8c00','#ffce00','#ffe599','#fff'], n:90 },
+    mythic:    { p:['#ff3cac','#ff8c00','#784bff','#2de2e6','#fff'], n:160 }
+  };
+  const cf = cfMap[p.rc];
+  if (cf) spawnConfetti(cf.p, cf.n);
 
-  if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.HapticFeedback.notificationOccurred(p.rc === 'epic' ? 'warning' : 'success');
-  }
+  if (window.Telegram && window.Telegram.WebApp)
+    window.Telegram.WebApp.HapticFeedback.notificationOccurred(p.rc==='epic'?'warning':'success');
 }
 
 function closeResult() {
-  document.getElementById('result-overlay').classList.remove('active');
-  lidOpening = false;
-  lidAngle = 0;
-  caseLid.position.y = 0.86;
-  caseLid.rotation.x = 0;
-  caseLid.position.z = 0;
+  document.getElementById('overlay').classList.remove('on');
   isAnimating = false;
   document.getElementById('open-btn').disabled = false;
 }
 
 function shareResult() {
-  const name = document.getElementById('r-name').textContent;
+  const name   = document.getElementById('r-name').textContent;
   const rarity = document.getElementById('r-badge').textContent;
-  const text = `🐸 Я открыл Plush PEPE Case и получил ${rarity} приз: ${name}! Попробуй и ты!`;
+  const cName  = CASES[selectedCase].name;
+  const text   = `🐸 Открыл ${cName} и получил ${rarity}: ${name}! Попробуй и ты!`;
   if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.sendData(JSON.stringify({ action:'share', prize:name, rarity, text }));
+    window.Telegram.WebApp.sendData(JSON.stringify({ action:'share', prize:name, rarity, caseName:cName, text }));
   } else if (navigator.share) {
     navigator.share({ text });
   } else {
-    navigator.clipboard.writeText(text);
-    alert('Скопировано!');
+    navigator.clipboard.writeText(text); alert('Скопировано!');
   }
 }
 
-function spawnConfetti(palette, count) {
-  const container = document.getElementById('confetti-container');
-  container.innerHTML = '';
-  for (let i = 0; i < count; i++) {
+function spawnConfetti(palette, n) {
+  const c = document.getElementById('confetti');
+  c.innerHTML = '';
+  for (let i=0;i<n;i++) {
     const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    const c = palette[Math.floor(Math.random() * palette.length)];
-    const size = 5 + Math.random() * 10;
-    const isCircle = Math.random() > 0.4;
-    const dur = 1.2 + Math.random() * 2.2;
-    const delay = Math.random() * 0.7;
-    el.style.cssText = `left:${Math.random()*100}%;top:-10px;width:${size}px;height:${size}px;background:${c};border-radius:${isCircle?'50%':'3px'};animation:cf-fall ${dur}s ${delay}s ease-in forwards;box-shadow:0 0 ${isCircle?6:0}px ${c};`;
-    container.appendChild(el);
+    el.className = 'cf';
+    const col  = palette[Math.floor(Math.random()*palette.length)];
+    const size = 4+Math.random()*10;
+    const circ = Math.random()>.4;
+    el.style.cssText = `left:${Math.random()*100}%;top:-8px;width:${size}px;height:${size}px;background:${col};border-radius:${circ?'50%':'3px'};animation:cf-drop ${1+Math.random()*2.4}s ${Math.random()*.8}s ease-in forwards;${circ?`box-shadow:0 0 6px ${col}`:''}`;
+    c.appendChild(el);
   }
 }
 
@@ -706,16 +677,16 @@ if (window.Telegram && window.Telegram.WebApp) {
 }
 
 window.addEventListener('load', () => {
+  loadUserData();
   initBg();
-  initCase();
   animBg();
-  animCase();
+  renderPrizeList();
 });
 
 window.addEventListener('resize', () => {
-  bgCamera.aspect = window.innerWidth / window.innerHeight;
+  bgCamera.aspect = innerWidth/innerHeight;
   bgCamera.updateProjectionMatrix();
-  bgRenderer.setSize(window.innerWidth, window.innerHeight);
+  bgRenderer.setSize(innerWidth, innerHeight);
 });
 </script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
