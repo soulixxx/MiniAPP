@@ -8,276 +8,285 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-
-:root {
-  --bg:    #06040e;
-  --s1:    #0d0820;
-  --s2:    #130b2a;
-  --card:  #160d2e;
-  --card2: #1e0338;
-  --border:rgba(140,80,255,.2);
-  --text:  #f0e8ff;
-  --muted: #7a6a9a;
-  --a1:#ff8c00; --a2:#ff3cac; --a3:#784bff; --a4:#2de2e6;
-  --grad:  linear-gradient(135deg,#ff8c00,#ff3cac,#784bff);
-  --grad2: linear-gradient(90deg,#ff8c00,#ff3cac,#784bff,#2de2e6);
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#06040e;--s1:#0d0820;--s2:#130b2a;--card:#160d2e;--card2:#1a0b32;
+  --border:rgba(140,80,255,.2);--text:#f0e8ff;--muted:#7a6a9a;
+  --a1:#ff8c00;--a2:#ff3cac;--a3:#784bff;--a4:#2de2e6;
+  --grad:linear-gradient(135deg,#ff8c00,#ff3cac,#784bff);
+  --grad2:linear-gradient(90deg,#ff8c00,#ff3cac,#784bff,#2de2e6);
 }
-
-html,body { height:100%; }
-body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; position:relative; }
-
-#bg-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; }
-
-.grain { position:fixed; inset:0; z-index:1; opacity:.04; pointer-events:none;
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;position:relative;}
+#bg-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;}
+.grain{position:fixed;inset:0;z-index:1;opacity:.04;pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
-  background-size:200px; }
+  background-size:200px;}
 
-.page { position:relative; z-index:2; max-width:430px; margin:0 auto; padding:0 16px 60px; display:flex; flex-direction:column; align-items:center; }
+/* MUSIC */
+.music-btn{position:fixed;top:14px;right:14px;z-index:100;width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s,transform .15s;user-select:none;}
+.music-btn:active{transform:scale(.9);}
+.music-btn.playing{border-color:var(--a2);box-shadow:0 0 14px rgba(255,60,172,.4);}
+.music-btn .note-icon{font-size:.95rem;}
+.music-btn .wave{display:none;gap:2px;align-items:flex-end;height:14px;}
+.music-btn.playing .wave{display:flex;}
+.music-btn.playing .note-icon{display:none;}
+.wave-bar{width:3px;border-radius:2px;background:var(--a2);animation:wave-a 1s ease-in-out infinite;}
+.wave-bar:nth-child(1){height:6px;animation-delay:0s}
+.wave-bar:nth-child(2){height:11px;animation-delay:.15s}
+.wave-bar:nth-child(3){height:7px;animation-delay:.3s}
+.wave-bar:nth-child(4){height:13px;animation-delay:.08s}
+@keyframes wave-a{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+
+/* PAGE */
+.page{position:relative;z-index:2;max-width:430px;margin:0 auto;padding:0 16px 60px;display:flex;flex-direction:column;align-items:center;}
 
 /* PROFILE */
-.profile-bar { width:100%; display:flex; align-items:center; gap:12px; padding:14px 16px; margin-top:16px; background:var(--card); border:1px solid var(--border); border-radius:20px; position:relative; overflow:hidden; }
-.profile-bar::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,140,0,.07),rgba(120,75,255,.07)); pointer-events:none; }
-.avatar-wrap { flex-shrink:0; position:relative; width:48px; height:48px; }
-.avatar-ring { position:absolute; inset:-2px; border-radius:50%; background:conic-gradient(#ff8c00,#ff3cac,#784bff,#2de2e6,#ff8c00); animation:ring-spin 4s linear infinite; }
-@keyframes ring-spin { to { transform:rotate(360deg); } }
-.avatar-inner { position:absolute; inset:2px; border-radius:50%; overflow:hidden; background:var(--s2); display:flex; align-items:center; justify-content:center; }
-.avatar-img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.profile-info { flex:1; min-width:0; }
-.profile-name { font-family:'Syne',sans-serif; font-size:.95rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.profile-handle { font-size:.72rem; color:var(--muted); margin-top:2px; }
-.profile-score { text-align:right; flex-shrink:0; }
-.profile-score .s-val { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.profile-score .s-lbl { font-size:.6rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
+.profile-bar{width:100%;display:flex;align-items:center;gap:12px;padding:13px 15px;margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:20px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s;}
+.profile-bar::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,140,0,.06),rgba(120,75,255,.06));pointer-events:none;}
+.profile-bar:hover{border-color:rgba(255,60,172,.35);}
+.avatar-wrap{flex-shrink:0;position:relative;width:46px;height:46px;}
+.avatar-ring{position:absolute;inset:-2px;border-radius:50%;background:conic-gradient(#ff8c00,#ff3cac,#784bff,#2de2e6,#ff8c00);animation:ring-spin 4s linear infinite;}
+@keyframes ring-spin{to{transform:rotate(360deg);}}
+.avatar-inner{position:absolute;inset:2px;border-radius:50%;overflow:hidden;background:var(--s2);display:flex;align-items:center;justify-content:center;}
+.avatar-img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.profile-info{flex:1;min-width:0;}
+.profile-name{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.profile-handle{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.profile-score{text-align:right;flex-shrink:0;}
+.s-val{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.s-lbl{font-size:.55rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+
+/* REF PANEL */
+.ref-panel{width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-top:10px;position:relative;overflow:hidden;}
+.ref-panel::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,140,0,.05),rgba(120,75,255,.05));pointer-events:none;}
+.ref-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.ref-title{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ref-count-badge{background:rgba(255,140,0,.15);border:1px solid rgba(255,140,0,.3);border-radius:100px;padding:3px 10px;font-family:'Syne',sans-serif;font-size:.6rem;font-weight:700;color:var(--a1);}
+.ref-link-row{display:flex;gap:8px;align-items:center;}
+.ref-link-box{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'DM Sans',monospace;}
+.ref-copy-btn{flex-shrink:0;padding:8px 12px;background:var(--grad);border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:.62rem;font-weight:700;color:#06040e;cursor:pointer;transition:opacity .15s,transform .1s;white-space:nowrap;}
+.ref-copy-btn:active{opacity:.8;transform:scale(.95);}
+.ref-stats{display:flex;gap:8px;margin-top:10px;}
+.ref-stat{flex:1;background:var(--s2);border-radius:10px;padding:8px 6px;text-align:center;border:1px solid rgba(255,255,255,.05);}
+.ref-stat .rv{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ref-stat .rl{font-size:.52rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+.ref-bonus-row{display:flex;align-items:center;gap:6px;margin-top:10px;background:rgba(255,60,172,.08);border:1px solid rgba(255,60,172,.2);border-radius:10px;padding:8px 10px;}
+.ref-bonus-icon{font-size:1rem;}
+.ref-bonus-text{font-size:.68rem;color:var(--muted);line-height:1.4;}
+.ref-bonus-text strong{color:var(--text);}
+.ref-invite-btn{width:100%;margin-top:10px;padding:11px;background:transparent;border:1px solid var(--border);border-radius:12px;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);cursor:pointer;transition:border-color .2s,background .2s;}
+.ref-invite-btn:active{background:rgba(255,255,255,.05);}
+.ref-invite-btn:hover{border-color:rgba(255,60,172,.4);}
 
 /* HEADER */
-.header { text-align:center; padding:22px 0 4px; width:100%; }
-.header-eyebrow { display:inline-flex; align-items:center; gap:6px; font-size:.62rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); border:1px solid var(--border); border-radius:100px; padding:4px 12px; margin-bottom:12px; }
-.header-eyebrow span { color:var(--a1); }
-.header h1 { font-family:'Syne',sans-serif; font-size:2.4rem; font-weight:800; line-height:.95; letter-spacing:-2px; }
-.header h1 .line1 { display:block; background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; background-size:200% auto; animation:grad-shift 5s linear infinite; }
-@keyframes grad-shift { to { background-position:200% center; } }
-.header h1 .line2 { display:block; color:var(--text); font-size:1rem; letter-spacing:5px; font-weight:700; margin-top:4px; opacity:.45; }
+.header{text-align:center;padding:20px 0 4px;width:100%;}
+.header-eye{display:inline-flex;align-items:center;gap:6px;font-size:.6rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);border-radius:100px;padding:4px 12px;margin-bottom:11px;}
+.header-eye span{color:var(--a1);}
+.header h1{font-family:'Syne',sans-serif;font-size:2.3rem;font-weight:800;line-height:.95;letter-spacing:-2px;}
+.line1{display:block;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% auto;animation:grad-shift 5s linear infinite;}
+@keyframes grad-shift{to{background-position:200% center;}}
+.line2{display:block;color:var(--text);font-size:.95rem;letter-spacing:5px;font-weight:700;margin-top:4px;opacity:.4;}
 
-/* CASE SELECTOR */
-.cases-section { width:100%; margin-top:20px; }
-
-.cases-label { font-family:'Syne',sans-serif; font-size:.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
-
-.cases-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; }
-
-.case-card {
-  position:relative;
-  border-radius:18px;
-  overflow:hidden;
-  cursor:pointer;
-  border:2px solid transparent;
-  transition:transform .18s, border-color .18s, box-shadow .18s;
-  background:var(--card);
-  aspect-ratio:.8;
-}
-
-.case-card:hover { transform:translateY(-4px) scale(1.02); }
-
-.case-card.active {
-  border-color:var(--a2);
-  box-shadow:0 0 22px rgba(255,60,172,.45), 0 0 6px rgba(255,60,172,.2);
-  transform:translateY(-6px) scale(1.04);
-}
-
-.case-card.active::after {
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg,transparent 40%,rgba(255,60,172,.18) 100%);
-  pointer-events:none;
-}
-
-.case-img {
-  width:100%; height:100%;
-  object-fit:cover;
-  display:block;
-  transition:transform .3s;
-}
-
-.case-card:hover .case-img { transform:scale(1.06); }
-.case-card.active .case-img { transform:scale(1.04); }
-
-.case-img-error {
-  width:100%; height:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  background:var(--s2);
-  font-size:.65rem;
-  color:var(--muted);
-  letter-spacing:1px;
-}
-
-.case-img-error .ci-icon { font-size:2rem; }
-
-.case-overlay {
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg,transparent 50%,rgba(6,4,14,.88) 100%);
-  pointer-events:none;
-}
-
-.case-info {
-  position:absolute;
-  bottom:0; left:0; right:0;
-  padding:8px 8px 10px;
-}
-
-.case-name {
-  font-family:'Syne',sans-serif;
-  font-size:.72rem;
-  font-weight:800;
-  line-height:1.15;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.case-name.c1 { background:linear-gradient(90deg,#ff8c00,#ffce00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.case-name.c2 { background:linear-gradient(90deg,#ff3cac,#784bff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.case-name.c3 { background:linear-gradient(90deg,#2de2e6,#784bff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-
-.case-sub { font-size:.58rem; color:var(--muted); margin-top:2px; }
-
-.case-selected-badge {
-  position:absolute;
-  top:8px; right:8px;
-  background:var(--a2);
-  border-radius:100px;
-  padding:2px 7px;
-  font-family:'Syne',sans-serif;
-  font-size:.52rem;
-  font-weight:800;
-  letter-spacing:1px;
-  opacity:0;
-  transition:opacity .2s;
-  pointer-events:none;
-}
-
-.case-card.active .case-selected-badge { opacity:1; }
+/* CASES */
+.cases-section{width:100%;margin-top:18px;}
+.cases-label{font-family:'Syne',sans-serif;font-size:.58rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;}
+.case-card{position:relative;border-radius:18px;overflow:hidden;cursor:pointer;border:2px solid transparent;aspect-ratio:.78;background:var(--card);transition:transform .22s cubic-bezier(.34,1.56,.64,1),border-color .2s,box-shadow .2s;}
+.case-card:hover{transform:translateY(-5px) scale(1.03);}
+.case-card.active{border-color:var(--a2);box-shadow:0 0 28px rgba(255,60,172,.5);transform:translateY(-7px) scale(1.05);}
+.case-card.active::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(255,60,172,.15) 100%);pointer-events:none;z-index:1;}
+.case-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s;}
+.case-card:hover .case-img,.case-card.active .case-img{transform:scale(1.07);}
+.case-img-fallback{width:100%;height:100%;position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:radial-gradient(ellipse at 50% 40%,var(--s2) 0%,var(--bg) 100%);}
+.case-img-fallback .fb-icons{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;padding:0 6px;}
+.case-img-fallback .fb-icons span{font-size:1.1rem;}
+.case-img-fallback .fb-lbl{font-size:.55rem;color:var(--muted);letter-spacing:1px;font-family:'Syne',sans-serif;font-weight:700;}
+.case-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(6,4,14,.9) 100%);pointer-events:none;}
+.case-info{position:absolute;bottom:0;left:0;right:0;padding:7px 8px 8px;z-index:2;}
+.case-name{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.case-name.c1{background:linear-gradient(90deg,#ff8c00,#ffce00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.case-name.c2{background:linear-gradient(90deg,#ff3cac,#784bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.case-name.c3{background:linear-gradient(90deg,#2de2e6,#784bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.case-sub{font-size:.52rem;color:rgba(255,255,255,.45);margin-top:2px;}
+.case-tick{position:absolute;top:7px;right:7px;background:var(--a2);border-radius:100px;padding:2px 6px;font-family:'Syne',sans-serif;font-size:.48rem;font-weight:800;letter-spacing:1px;opacity:0;transition:opacity .2s;z-index:3;}
+.case-card.active .case-tick{opacity:1;}
 
 /* OPEN BTN */
-.open-btn {
-  width:100%; max-width:398px;
-  padding:16px;
-  font-family:'Syne',sans-serif;
-  font-size:.95rem; font-weight:800; letter-spacing:3px; text-transform:uppercase;
-  color:#06040e;
-  background:var(--grad);
-  border:none; border-radius:16px; cursor:pointer;
-  position:relative; overflow:hidden;
-  transition:transform .12s, opacity .12s;
-  box-shadow:0 8px 40px rgba(255,60,172,.3),0 4px 16px rgba(120,75,255,.2);
-  user-select:none; -webkit-tap-highlight-color:transparent;
-  margin-top:14px;
-}
-.open-btn:active { transform:scale(.97); }
-.open-btn:disabled { opacity:.35; cursor:default; transform:none; }
-.open-btn .sh { position:absolute; top:-60%; left:-80%; width:55%; height:220%; background:linear-gradient(105deg,transparent,rgba(255,255,255,.28),transparent); transform:skewX(-18deg); animation:sh-pass 3s ease-in-out infinite; }
-@keyframes sh-pass { 0%{left:-80%} 40%,100%{left:130%} }
+.open-btn{width:100%;padding:16px;font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#06040e;background:var(--grad);border:none;border-radius:16px;cursor:pointer;position:relative;overflow:hidden;transition:transform .12s,opacity .12s;box-shadow:0 8px 40px rgba(255,60,172,.3),0 4px 16px rgba(120,75,255,.2);margin-top:13px;user-select:none;}
+.open-btn:active{transform:scale(.97);}
+.open-btn:disabled{opacity:.35;cursor:default;transform:none;}
+.open-btn .sh{position:absolute;top:-60%;left:-80%;width:55%;height:220%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);animation:sh-pass 3s ease-in-out infinite;}
+@keyframes sh-pass{0%{left:-80%}40%,100%{left:130%}}
 
 /* STATS */
-.stats-row { display:flex; gap:8px; width:100%; margin:14px 0 0; }
-.stat { flex:1; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:9px 6px; text-align:center; }
-.stat .v { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; background:var(--grad2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.stat .l { font-size:.56rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:1px; }
+.stats-row{display:flex;gap:8px;width:100%;margin:13px 0 0;}
+.stat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:9px 6px;text-align:center;}
+.stat .v{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat .l{font-size:.55rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px;}
 
 /* PRIZES */
-.section-divider { width:100%; display:flex; align-items:center; gap:10px; margin:22px 0 14px; }
-.section-divider::before,.section-divider::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); }
-.section-divider span { font-size:.6rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+.section-divider{width:100%;display:flex;align-items:center;gap:10px;margin:20px 0 12px;}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
+.section-divider span{font-size:.58rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.prizes-list{width:100%;display:flex;flex-direction:column;gap:5px;}
+.p-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:13px;padding:8px 11px;transition:border-color .2s,transform .15s;animation:fade-in .3s ease both;}
+@keyframes fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.p-row:hover{border-color:rgba(255,60,172,.4);transform:translateX(3px);}
+.p-img-wrap{width:42px;height:42px;border-radius:12px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;}
+.p-img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block;}
+.p-emoji{font-size:1.3rem;line-height:1;display:none;}
+.pinfo{flex:1;min-width:0;}
+.pn{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc{font-size:.62rem;color:var(--muted);margin-top:1px;}
+.badge{font-family:'Syne',sans-serif;font-size:.5rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 7px;border-radius:8px;flex-shrink:0;}
+.b-epic{background:rgba(120,75,255,.15);color:#a87fff;border:1px solid rgba(120,75,255,.3);}
+.b-legend{background:rgba(255,140,0,.12);color:#ffb740;border:1px solid rgba(255,140,0,.3);}
+.b-mythic{background:linear-gradient(135deg,rgba(255,60,172,.15),rgba(120,75,255,.15));color:#ff80e0;border:1px solid rgba(255,60,172,.35);text-shadow:0 0 8px rgba(255,80,220,.5);}
 
-.prizes-list { width:100%; display:flex; flex-direction:column; gap:6px; }
-.p-row { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:13px; padding:8px 11px; transition:border-color .2s, transform .15s; }
-.p-row:hover { border-color:rgba(255,60,172,.4); transform:translateX(3px); }
-.p-row .pi { font-size:1.35rem; width:26px; text-align:center; flex-shrink:0; }
-.p-row .pinfo { flex:1; min-width:0; }
-.p-row .pn { font-size:.8rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.p-row .pc { font-size:.62rem; color:var(--muted); margin-top:1px; }
+/* ══════════════ OPENING MODAL ══════════════ */
+.open-modal{position:fixed;inset:0;z-index:400;display:none;align-items:flex-end;justify-content:center;background:rgba(6,4,14,.95);backdrop-filter:blur(22px);}
+.open-modal.on{display:flex;}
+.modal-sheet{width:100%;max-width:430px;background:var(--card2);border-radius:28px 28px 0 0;border-top:1px solid var(--border);padding:0 16px 32px;position:relative;animation:sheet-up .4s cubic-bezier(.34,1.2,.64,1) both;}
+@keyframes sheet-up{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.12);border-radius:2px;margin:12px auto 20px;}
 
-.badge { font-family:'Syne',sans-serif; font-size:.52rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:3px 7px; border-radius:8px; flex-shrink:0; }
-.b-epic   { background:rgba(120,75,255,.15); color:#a87fff; border:1px solid rgba(120,75,255,.3); }
-.b-legend { background:rgba(255,140,0,.12);  color:#ffb740; border:1px solid rgba(255,140,0,.3); }
-.b-mythic { background:linear-gradient(135deg,rgba(255,60,172,.15),rgba(120,75,255,.15)); color:#ff80e0; border:1px solid rgba(255,60,172,.35); text-shadow:0 0 8px rgba(255,80,220,.5); }
+/* PHASES */
+.modal-phase{display:none;flex-direction:column;align-items:center;gap:18px;width:100%;}
+.modal-phase.active{display:flex;}
 
-/* RESULT OVERLAY */
-.overlay { position:fixed; inset:0; z-index:300; display:none; align-items:center; justify-content:center; background:rgba(6,4,14,.94); backdrop-filter:blur(18px); padding:20px; }
-.overlay.on { display:flex; }
+/* Phase: shake */
+.shake-title{font-family:'Syne',sans-serif;font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.shake-case-outer{position:relative;width:160px;height:160px;}
+.shake-glow{position:absolute;inset:-18px;border-radius:50%;background:conic-gradient(#ff8c00,#ff3cac,#784bff,#2de2e6,#ff8c00);filter:blur(22px);opacity:0;animation:glow-build 1.8s ease forwards;z-index:0;}
+@keyframes glow-build{0%{opacity:0}60%{opacity:.45}100%{opacity:.8}}
+.shake-case-img{width:160px;height:160px;object-fit:cover;border-radius:22px;border:2px solid rgba(255,60,172,.3);position:relative;z-index:1;animation:shake-loop .42s ease-in-out infinite;}
+@keyframes shake-loop{0%,100%{transform:rotate(-4.5deg) scale(1.03)}50%{transform:rotate(4.5deg) scale(.97)}}
+.shake-case-fb{width:160px;height:160px;border-radius:22px;background:var(--s2);display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;position:relative;z-index:1;border:2px solid rgba(255,60,172,.3);animation:shake-loop .42s ease-in-out infinite;}
+.shake-fb-icons{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+.shake-fb-icons span{font-size:1.8rem;}
+.shake-label{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:2px;color:var(--muted);animation:lbl-blink 1s ease-in-out infinite;}
+@keyframes lbl-blink{0%,100%{opacity:.35}50%{opacity:1}}
 
-.r-card { background:var(--card2); border-radius:28px; padding:30px 20px 22px; text-align:center; width:100%; max-width:340px; border:1px solid var(--border); position:relative; overflow:hidden; animation:pop-in .45s cubic-bezier(.175,.885,.32,1.275) both; }
-@keyframes pop-in { from{transform:scale(.55) translateY(24px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+/* Phase: reel */
+.reel-title{font-family:'Syne',sans-serif;font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.reel-wrap{width:100%;overflow:hidden;height:90px;border-radius:16px;border:1px solid var(--border);background:var(--card);position:relative;}
+.reel-wrap::before,.reel-wrap::after{content:'';position:absolute;top:0;bottom:0;width:70px;z-index:2;pointer-events:none;}
+.reel-wrap::before{left:0;background:linear-gradient(90deg,var(--card),transparent);}
+.reel-wrap::after{right:0;background:linear-gradient(-90deg,var(--card),transparent);}
+.reel-line{position:absolute;left:50%;top:6px;bottom:6px;width:2px;background:var(--a2);box-shadow:0 0 12px var(--a2);transform:translateX(-50%);z-index:3;border-radius:2px;}
+.reel-track{display:flex;align-items:center;gap:8px;padding:0 calc(50% - 41px);will-change:transform;}
+.reel-item{flex-shrink:0;width:82px;height:76px;border-radius:12px;background:var(--s2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;overflow:hidden;transition:border-color .1s;}
+.reel-item img{width:54px;height:54px;object-fit:contain;border-radius:8px;}
+.reel-item .ri-emoji{font-size:1.9rem;line-height:1;display:none;}
+.reel-item .ri-lbl{font-size:.44rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--muted);text-align:center;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+.reel-item.epic{border-color:rgba(120,75,255,.5);}
+.reel-item.legendary{border-color:rgba(255,140,0,.6);}
+.reel-item.mythic{border-color:rgba(255,60,172,.6);box-shadow:0 0 8px rgba(255,60,172,.25);}
+.reel-item.winner{border-color:var(--a2) !important;box-shadow:0 0 20px rgba(255,60,172,.7) !important;animation:winner-pulse .6s ease-in-out 3;}
+@keyframes winner-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 
-.r-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--grad2); opacity:0; transition:opacity .4s; }
-.r-card.epic::after    { opacity:.7; background:linear-gradient(90deg,#784bff,#ff3cac); }
-.r-card.legendary::after { opacity:1; background:linear-gradient(90deg,#ff8c00,#ffce00); }
-.r-card.mythic::after  { opacity:1; background:var(--grad2); }
-.r-card.epic    { border-color:rgba(120,75,255,.4);  box-shadow:0 0 50px rgba(120,75,255,.2); }
-.r-card.legendary { border-color:rgba(255,140,0,.4);  box-shadow:0 0 60px rgba(255,140,0,.25); }
-.r-card.mythic  { border-color:rgba(255,60,172,.5);  box-shadow:0 0 80px rgba(255,60,172,.3); }
+/* Phase: reveal */
+.reveal-card{width:100%;background:var(--s1);border-radius:24px;padding:22px 18px 18px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden;animation:rev-pop .5s cubic-bezier(.175,.885,.32,1.275) both;}
+@keyframes rev-pop{from{transform:scale(.6) translateY(16px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.reveal-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .4s;}
+.reveal-card.epic::after{opacity:.7;background:linear-gradient(90deg,#784bff,#ff3cac);}
+.reveal-card.legendary::after{opacity:1;background:linear-gradient(90deg,#ff8c00,#ffce00);}
+.reveal-card.mythic::after{opacity:1;background:var(--grad2);}
+.reveal-card.epic{border-color:rgba(120,75,255,.5);box-shadow:0 0 40px rgba(120,75,255,.2);}
+.reveal-card.legendary{border-color:rgba(255,140,0,.5);box-shadow:0 0 50px rgba(255,140,0,.25);}
+.reveal-card.mythic{border-color:rgba(255,60,172,.55);box-shadow:0 0 70px rgba(255,60,172,.3);}
 
-.r-case-badge { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.05); border-radius:10px; padding:6px 10px; margin-bottom:16px; border:1px solid var(--border); width:fit-content; margin-left:auto; margin-right:auto; }
-.r-case-thumb { width:28px; height:28px; border-radius:6px; object-fit:cover; background:var(--s2); flex-shrink:0; }
-.r-case-thumb-ph { width:28px; height:28px; border-radius:6px; background:var(--s2); display:flex; align-items:center; justify-content:center; font-size:.8rem; flex-shrink:0; }
-.r-case-label { font-size:.68rem; color:var(--muted); }
-.r-case-label strong { color:var(--text); font-weight:600; }
+.rv-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.rv-case-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:5px 8px;}
+.rv-case-thumb{width:24px;height:24px;border-radius:6px;object-fit:cover;background:var(--s2);}
+.rv-case-lbl{font-size:.62rem;color:var(--muted);}
+.rv-case-lbl strong{color:var(--text);}
+.rv-user-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:5px 8px;}
+.rv-av-wrap{width:22px;height:22px;position:relative;flex-shrink:0;}
+.rv-av-ring{position:absolute;inset:-1px;border-radius:50%;background:conic-gradient(#ff8c00,#ff3cac,#784bff,#ff8c00);animation:ring-spin 3s linear infinite;}
+.rv-av-inner{position:absolute;inset:1px;border-radius:50%;overflow:hidden;background:var(--s2);}
+.rv-av-img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.rv-user-name-sm{font-size:.62rem;color:var(--text);font-weight:600;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-.r-user-row { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border-radius:12px; padding:8px 10px; margin-bottom:18px; border:1px solid var(--border); }
-.r-avatar-wrap { width:32px; height:32px; position:relative; flex-shrink:0; }
-.r-avatar-ring { position:absolute; inset:-1.5px; border-radius:50%; background:conic-gradient(#ff8c00,#ff3cac,#784bff,#ff8c00); animation:ring-spin 3s linear infinite; }
-.r-avatar-inner { position:absolute; inset:1.5px; border-radius:50%; overflow:hidden; background:var(--s2); display:flex; align-items:center; justify-content:center; }
-.r-avatar-img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.r-user-text { flex:1; text-align:left; }
-.r-user-name { font-size:.78rem; font-weight:600; }
-.r-user-sub  { font-size:.62rem; color:var(--muted); }
+.rv-prize-icon{font-size:3.2rem;display:block;margin-bottom:4px;}
+.rv-img{width:100px;height:100px;object-fit:contain;border-radius:16px;margin:0 auto 8px;display:block;background:rgba(0,0,0,.3);}
+.rv-badge-row{margin-bottom:6px;}
+.rv-badge{display:inline-block;font-family:'Syne',sans-serif;font-size:.54rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:3px 11px;border-radius:100px;}
+.rv-badge.epic{background:rgba(120,75,255,.15);color:#b090ff;border:1px solid rgba(120,75,255,.35);}
+.rv-badge.legendary{background:rgba(255,140,0,.12);color:#ffc060;border:1px solid rgba(255,140,0,.35);}
+.rv-badge.mythic{background:linear-gradient(135deg,rgba(255,60,172,.2),rgba(120,75,255,.2));color:#ff90e8;border:1px solid rgba(255,60,172,.45);box-shadow:0 0 12px rgba(255,60,172,.3);}
+.rv-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;line-height:1.15;margin-bottom:6px;}
+.rv-name.epic{background:linear-gradient(90deg,#784bff,#ff3cac);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.rv-name.legendary{background:linear-gradient(90deg,#ff8c00,#ffce00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.rv-name.mythic{background:var(--grad2);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:grad-shift 2s linear infinite;}
+.rv-desc{font-size:.76rem;color:var(--muted);line-height:1.55;margin-bottom:14px;}
 
-.r-prize-icon { font-size:3.8rem; display:block; margin-bottom:6px; }
-.r-img { width:120px; height:120px; object-fit:contain; border-radius:16px; margin:0 auto 10px; display:block; background:rgba(0,0,0,.3); }
+.rv-actions{display:flex;gap:8px;}
+.rv-btn{flex:1;padding:12px;font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-radius:12px;cursor:pointer;border:none;transition:opacity .15s,transform .1s;}
+.rv-btn:active{opacity:.8;transform:scale(.97);}
+.rv-btn-again{color:#06040e;background:var(--grad);}
+.rv-btn-share{color:var(--text);background:transparent;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:6px;}
+.rv-btn-share:hover{border-color:rgba(255,60,172,.5);}
 
-.r-badge-row { margin-bottom:8px; }
-.r-badge { display:inline-block; font-family:'Syne',sans-serif; font-size:.58rem; font-weight:800; letter-spacing:3px; text-transform:uppercase; padding:4px 12px; border-radius:100px; }
-.r-badge.epic    { background:rgba(120,75,255,.15); color:#b090ff; border:1px solid rgba(120,75,255,.35); }
-.r-badge.legendary { background:rgba(255,140,0,.12); color:#ffc060; border:1px solid rgba(255,140,0,.35); }
-.r-badge.mythic  { background:linear-gradient(135deg,rgba(255,60,172,.2),rgba(120,75,255,.2)); color:#ff90e8; border:1px solid rgba(255,60,172,.45); box-shadow:0 0 14px rgba(255,60,172,.3); }
+/* SHARE MODAL */
+.share-modal{position:fixed;inset:0;z-index:500;display:none;align-items:flex-end;justify-content:center;background:rgba(6,4,14,.9);backdrop-filter:blur(18px);}
+.share-modal.on{display:flex;}
+.share-sheet{width:100%;max-width:430px;background:var(--card2);border-radius:28px 28px 0 0;border-top:1px solid var(--border);padding:0 16px 32px;animation:sheet-up .35s cubic-bezier(.34,1.2,.64,1) both;}
+.share-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 14px;}
+.share-title{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.share-close{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.07);border:none;color:var(--muted);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
-.r-name { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; line-height:1.15; margin-bottom:8px; }
-.r-name.epic    { background:linear-gradient(90deg,#784bff,#ff3cac); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.r-name.legendary { background:linear-gradient(90deg,#ff8c00,#ffce00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.r-name.mythic  { background:var(--grad2); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:grad-shift 2s linear infinite; }
+.share-prize-preview{display:flex;align-items:center;gap:12px;background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px;}
+.spp-img{width:52px;height:52px;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.3);flex-shrink:0;}
+.spp-icon{width:52px;height:52px;border-radius:10px;background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;}
+.spp-info{flex:1;min-width:0;}
+.spp-name{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.spp-rarity{font-size:.62rem;color:var(--muted);margin-top:2px;}
 
-.r-desc { font-size:.8rem; color:var(--muted); line-height:1.55; margin-bottom:18px; }
-.r-actions { display:flex; gap:8px; }
-.r-btn { flex:1; padding:13px; font-family:'Syne',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; border-radius:13px; cursor:pointer; border:none; transition:opacity .15s; }
-.r-btn:active { opacity:.8; }
-.r-btn-open  { color:#06040e; background:var(--grad); }
-.r-btn-share { color:var(--text); background:transparent; border:1px solid var(--border); }
+.share-link-box{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:.68rem;color:var(--muted);word-break:break-all;margin-bottom:12px;font-family:'DM Sans',monospace;}
+
+.share-btns{display:flex;flex-direction:column;gap:8px;}
+.share-btn{width:100%;padding:13px;border-radius:14px;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.share-btn:active{opacity:.8;transform:scale(.97);}
+.share-btn-tg{color:#06040e;background:linear-gradient(135deg,#2de2e6,#784bff);}
+.share-btn-contacts{color:#06040e;background:linear-gradient(135deg,#ff8c00,#ff3cac);}
+.share-btn-copy{color:var(--text);background:transparent;border:1px solid var(--border);}
 
 /* CONFETTI */
-.confetti-c { position:fixed; inset:0; pointer-events:none; z-index:299; overflow:hidden; }
-.cf { position:absolute; opacity:0; }
-@keyframes cf-drop { 0%{transform:translateY(-15px) rotate(0deg) scale(1);opacity:1} 100%{transform:translateY(110vh) rotate(900deg) scale(.4);opacity:0} }
+.confetti-c{position:fixed;inset:0;pointer-events:none;z-index:600;overflow:hidden;}
+.cf{position:absolute;opacity:0;}
+@keyframes cf-drop{0%{transform:translateY(-15px) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(110vh) rotate(900deg) scale(.4);opacity:0}}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);border-radius:100px;padding:10px 20px;font-size:.75rem;font-weight:600;color:var(--text);z-index:700;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
 <div class="grain"></div>
 <div class="confetti-c" id="confetti"></div>
+<div class="toast" id="toast"></div>
+
+<audio id="bg-music" src="main.mp3" loop preload="auto"></audio>
+<div class="music-btn" id="music-btn" onclick="toggleMusic()">
+  <span class="note-icon">🎵</span>
+  <div class="wave">
+    <div class="wave-bar"></div><div class="wave-bar"></div>
+    <div class="wave-bar"></div><div class="wave-bar"></div>
+  </div>
+</div>
 
 <div class="page">
 
-  <div class="profile-bar" id="profile-bar">
+  <!-- PROFILE -->
+  <div class="profile-bar" onclick="toggleRef()">
     <div class="avatar-wrap">
       <div class="avatar-ring"></div>
       <div class="avatar-inner">
-        <img class="avatar-img" id="avatar-img" src="" alt="" style="display:none" onerror="showAvatarFallback()">
-        <span id="avatar-ph" style="font-size:.9rem;font-family:'Syne',sans-serif;font-weight:800"></span>
+        <img class="avatar-img" id="avatar-img" src="" alt="" style="display:none" onerror="if(typeof showAvatarFallback==='function')showAvatarFallback();else{this.style.display='none';}">
+        <span id="avatar-ph" style="font-size:.85rem;font-family:'Syne',sans-serif;font-weight:800;display:flex;align-items:center;justify-content:center;width:100%;height:100%;"></span>
       </div>
     </div>
     <div class="profile-info">
@@ -290,60 +299,64 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
     </div>
   </div>
 
-  <div class="header">
-    <div class="header-eyebrow">🐸 <span>Telegram</span> Mini App</div>
-    <h1>
-      <span class="line1">PEPE CASE</span>
-      <span class="line2">CHOOSE &amp; OPEN</span>
-    </h1>
+  <!-- REF PANEL -->
+  <div class="ref-panel" id="ref-panel" style="display:none">
+    <div class="ref-header">
+      <div class="ref-title">Реферальная программа</div>
+      <div class="ref-count-badge">👥 <span id="ref-count">0</span> друзей</div>
+    </div>
+    <div class="ref-link-row">
+      <div class="ref-link-box" id="ref-link-box">Загрузка...</div>
+      <button class="ref-copy-btn" onclick="copyRefLink()">Копировать</button>
+    </div>
+    <div class="ref-stats">
+      <div class="ref-stat"><div class="rv" id="ref-joined">0</div><div class="rl">Вступили</div></div>
+      <div class="ref-stat"><div class="rv" id="ref-bonus-opens">0</div><div class="rl">Бонус открытий</div></div>
+      <div class="ref-stat"><div class="rv" id="ref-earned">0</div><div class="rl">Заработано ⭐</div></div>
+    </div>
+    <div class="ref-bonus-row">
+      <div class="ref-bonus-icon">🎁</div>
+      <div class="ref-bonus-text"><strong>+1 открытие</strong> за каждого приглашённого друга. Твои друзья получают <strong>бонус 50 очков</strong> при первом открытии.</div>
+    </div>
+    <button class="ref-invite-btn" onclick="inviteFriend()">📲 Пригласить друзей в Telegram</button>
   </div>
 
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-eye">🐸 <span>Telegram</span> Mini App</div>
+    <h1><span class="line1">PEPE CASE</span><span class="line2">CHOOSE &amp; OPEN</span></h1>
+  </div>
+
+  <!-- CASES -->
   <div class="cases-section">
     <div class="cases-label">Выбери кейс</div>
     <div class="cases-grid">
-
-      <div class="case-card active" id="case-card-0" onclick="selectCase(0)">
-        <img class="case-img" src="case_1.jpg" alt="Case 1"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="case-img-error" style="display:none"><div class="ci-icon">🔥</div><div>FIRE</div></div>
+      <div class="case-card active" id="cc0" onclick="selectCase(0)">
+        <img class="case-img" id="ci0" src="case_1.jpg" alt="" onerror="if(typeof caseImgFail==='function')caseImgFail(this,0);">
+        <div class="case-img-fallback" id="cfb0"></div>
         <div class="case-overlay"></div>
-        <div class="case-info">
-          <div class="case-name c1">Fire Case</div>
-          <div class="case-sub">4 предмета</div>
-        </div>
-        <div class="case-selected-badge">✓ ВЫБРАН</div>
+        <div class="case-info"><div class="case-name c1">Fire Case</div><div class="case-sub">4 предмета</div></div>
+        <div class="case-tick">✓ ВЫБРАН</div>
       </div>
-
-      <div class="case-card" id="case-card-1" onclick="selectCase(1)">
-        <img class="case-img" src="case_2.jpg" alt="Case 2"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="case-img-error" style="display:none"><div class="ci-icon">💜</div><div>NEON</div></div>
+      <div class="case-card" id="cc1" onclick="selectCase(1)">
+        <img class="case-img" id="ci1" src="case_2.jpg" alt="" onerror="if(typeof caseImgFail==='function')caseImgFail(this,1);">
+        <div class="case-img-fallback" id="cfb1"></div>
         <div class="case-overlay"></div>
-        <div class="case-info">
-          <div class="case-name c2">Neon Case</div>
-          <div class="case-sub">4 предмета</div>
-        </div>
-        <div class="case-selected-badge">✓ ВЫБРАН</div>
+        <div class="case-info"><div class="case-name c2">Neon Case</div><div class="case-sub">4 предмета</div></div>
+        <div class="case-tick">✓ ВЫБРАН</div>
       </div>
-
-      <div class="case-card" id="case-card-2" onclick="selectCase(2)">
-        <img class="case-img" src="case_3.jpg" alt="Case 3"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="case-img-error" style="display:none"><div class="ci-icon">🌊</div><div>DEEP</div></div>
+      <div class="case-card" id="cc2" onclick="selectCase(2)">
+        <img class="case-img" id="ci2" src="case_3.jpg" alt="" onerror="if(typeof caseImgFail==='function')caseImgFail(this,2);">
+        <div class="case-img-fallback" id="cfb2"></div>
         <div class="case-overlay"></div>
-        <div class="case-info">
-          <div class="case-name c3">Deep Case</div>
-          <div class="case-sub">3 предмета</div>
-        </div>
-        <div class="case-selected-badge">✓ ВЫБРАН</div>
+        <div class="case-info"><div class="case-name c3">Deep Case</div><div class="case-sub">3 предмета</div></div>
+        <div class="case-tick">✓ ВЫБРАН</div>
       </div>
-
     </div>
   </div>
 
-  <button class="open-btn" id="open-btn" onclick="openCase()">
-    <span class="sh"></span>
-    🎰 &nbsp;Открыть кейс
+  <button class="open-btn" id="open-btn" onclick="startOpen()">
+    <span class="sh"></span>🎰 &nbsp;Открыть кейс
   </button>
 
   <div class="stats-row">
@@ -352,341 +365,567 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
     <div class="stat"><div class="v" id="st-luck">—</div><div class="l">Удача</div></div>
   </div>
 
-  <div class="section-divider"><span>все призы</span></div>
+  <div class="section-divider"><span>призы кейса</span></div>
   <div class="prizes-list" id="prizes-list"></div>
 
 </div>
 
-<div class="overlay" id="overlay">
-  <div class="r-card" id="r-card">
+<!-- OPENING MODAL -->
+<div class="open-modal" id="open-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
 
-    <div class="r-case-badge">
-      <img id="r-case-thumb" class="r-case-thumb" src="" alt="" onerror="this.style.display='none';document.getElementById('r-case-thumb-ph').style.display='flex'">
-      <div id="r-case-thumb-ph" class="r-case-thumb-ph" style="display:none">🎁</div>
-      <div class="r-case-label"><strong id="r-case-name-label">Fire Case</strong></div>
-    </div>
-
-    <div class="r-user-row">
-      <div class="r-avatar-wrap">
-        <div class="r-avatar-ring"></div>
-        <div class="r-avatar-inner">
-          <img class="r-avatar-img" id="r-av-img" src="" alt="" style="display:none">
-          <span id="r-av-ph" style="font-size:.75rem;font-family:'Syne',sans-serif;font-weight:800"></span>
+    <!-- phase shake -->
+    <div class="modal-phase active" id="ph-shake">
+      <div class="shake-title">Открытие кейса</div>
+      <div class="shake-case-outer">
+        <div class="shake-glow"></div>
+        <img class="shake-case-img" id="sh-img" src="" alt="" onerror="this.style.display='none';document.getElementById('sh-fb').style.display='flex'">
+        <div class="shake-case-fb" id="sh-fb" style="display:none">
+          <div class="shake-fb-icons" id="sh-fb-icons"></div>
         </div>
       </div>
-      <div class="r-user-text">
-        <div class="r-user-name" id="r-uname">Игрок</div>
-        <div class="r-user-sub">получил приз!</div>
+      <div class="shake-label">Удача решает всё…</div>
+    </div>
+
+    <!-- phase reel -->
+    <div class="modal-phase" id="ph-reel">
+      <div class="reel-title">Крутится барабан...</div>
+      <div class="reel-wrap">
+        <div class="reel-line"></div>
+        <div class="reel-track" id="reel-track"></div>
       </div>
     </div>
 
-    <span class="r-prize-icon" id="r-icon"></span>
-    <img class="r-img" id="r-img" src="" alt="" style="display:none"
-      onerror="this.style.display='none';document.getElementById('r-icon').style.display='block'">
-    <div class="r-badge-row"><span class="r-badge" id="r-badge"></span></div>
-    <div class="r-name" id="r-name"></div>
-    <div class="r-desc" id="r-desc"></div>
-    <div class="r-actions">
-      <button class="r-btn r-btn-open" onclick="closeResult()">🔄 Ещё раз</button>
-      <button class="r-btn r-btn-share" onclick="shareResult()">📤 Поделиться</button>
+    <!-- phase reveal -->
+    <div class="modal-phase" id="ph-reveal">
+      <div class="reveal-card" id="reveal-card">
+
+        <div class="rv-top-row">
+          <div class="rv-case-pill">
+            <img class="rv-case-thumb" id="rv-case-img" src="" alt="" onerror="this.style.display='none'">
+            <div class="rv-case-lbl"><strong id="rv-case-name"></strong></div>
+          </div>
+          <div class="rv-user-pill">
+            <div class="rv-av-wrap">
+              <div class="rv-av-ring"></div>
+              <div class="rv-av-inner">
+                <img class="rv-av-img" id="rv-av-img" src="" alt="">
+              </div>
+            </div>
+            <div class="rv-user-name-sm" id="rv-uname">Игрок</div>
+          </div>
+        </div>
+
+        <span class="rv-prize-icon" id="rv-icon"></span>
+        <img class="rv-img" id="rv-img" src="" alt="" style="display:none"
+          onerror="this.style.display='none';document.getElementById('rv-icon').style.display='block'">
+        <div class="rv-badge-row"><span class="rv-badge" id="rv-badge"></span></div>
+        <div class="rv-name" id="rv-name"></div>
+        <div class="rv-desc" id="rv-desc"></div>
+
+        <div class="rv-actions">
+          <button class="rv-btn rv-btn-again" onclick="closeOpenModal()">🔄 Ещё раз</button>
+          <button class="rv-btn rv-btn-share" onclick="openShareModal()">
+            <span>📤</span><span>Поделиться</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="share-modal" id="share-modal">
+  <div class="share-sheet">
+    <div class="share-header">
+      <div class="share-title">Поделиться призом</div>
+      <button class="share-close" onclick="closeShareModal()">✕</button>
+    </div>
+
+    <div class="share-prize-preview">
+      <img class="spp-img" id="spp-img" src="" alt="" onerror="this.style.display='none';document.getElementById('spp-icon').style.display='flex'">
+      <div class="spp-icon" id="spp-icon" style="display:none"></div>
+      <div class="spp-info">
+        <div class="spp-name" id="spp-name"></div>
+        <div class="spp-rarity" id="spp-rarity"></div>
+      </div>
+    </div>
+
+    <div class="share-link-box" id="share-link-box"></div>
+
+    <div class="share-btns">
+      <button class="share-btn share-btn-tg" onclick="shareTelegram()">
+        ✈️ &nbsp;Поделиться в Telegram
+      </button>
+      <button class="share-btn share-btn-contacts" onclick="shareContacts()">
+        👥 &nbsp;Отправить контактам (@ExtasikvMusic_bot)
+      </button>
+      <button class="share-btn share-btn-copy" onclick="copyShareLink()">
+        📋 &nbsp;Копировать ссылку
+      </button>
     </div>
   </div>
 </div>
 
 <script>
+const BOT_USERNAME = "ExtasikvMusic_bot";
+
 const CASES = [
   {
-    id: 0,
-    name: "Fire Case",
-    img: "case_1.jpg",
-    emoji: "🔥",
-    prizes: [
-      { id:"light_sword",  name:"Light Sword",             desc:"Мощный световой меч — оружие настоящего воина!",                                   icon:"⚔️", rarity:"EPIC",      rc:"epic",      chance:45, img:"light_sword.png",  color:"#a87fff" },
-      { id:"party_spark",  name:"Party Sparkler Assault",  desc:"Взрывной праздничный дроп! Хаос и конфетти в одном флаконе.",                      icon:"✨", rarity:"EPIC",      rc:"epic",      chance:35, img:"partySpalker.png", color:"#a87fff" },
-      { id:"precious_peach",name:"Precious Peach Cold Iron",desc:"Легендарный персик из холодного железа. Редкость и изящество.",                   icon:"🍑", rarity:"LEGENDARY", rc:"legendary", chance:15, img:"peach.png",        color:"#ffc060" },
-      { id:"durovs_cap",   name:"Durov's Cap Mossy",        desc:"🌟 МИФИК! Легендарная кепка Дурова. Единицы в мире!",                             icon:"🎩", rarity:"MYTHIC",    rc:"mythic",    chance:5,  img:"durovsCap.png",   color:"#ff90e8" }
+    id:0, name:"Fire Case", img:"case_1.jpg", emoji:"🔥",
+    prizes:[
+      {id:"light_sword",    name:"Light Sword",              desc:"Мощный световой меч — оружие настоящего воина!",        icon:"⚔️", rarity:"EPIC",      rc:"epic",      chance:45, img:"light_sword.png"},
+      {id:"party_spark",    name:"Party Sparkler Assault",   desc:"Взрывной праздничный дроп! Хаос и конфетти.",           icon:"✨", rarity:"EPIC",      rc:"epic",      chance:35, img:"partySpalker.png"},
+      {id:"precious_peach", name:"Precious Peach Cold Iron", desc:"Легендарный персик из холодного железа.",               icon:"🍑", rarity:"LEGENDARY", rc:"legendary", chance:15, img:"peach.png"},
+      {id:"durovs_cap",     name:"Durov's Cap Mossy",         desc:"🌟 МИФИК! Легендарная кепка Дурова. Единицы в мире!",   icon:"🎩", rarity:"MYTHIC",    rc:"mythic",    chance:5,  img:"durovsCap.png"}
     ]
   },
   {
-    id: 1,
-    name: "Neon Case",
-    img: "case_2.jpg",
-    emoji: "💜",
-    prizes: [
-      { id:"fresh_socks",  name:"Fresh Socks Drumsticks",  desc:"Свежие носки и барабанные палочки — эпический дроп!",                             icon:"🧦", rarity:"EPIC",      rc:"epic",      chance:40, img:"freshSocks.png",   color:"#a87fff" },
-      { id:"mad_pumpkin",  name:"Mad Pumpkin Kinky-Winky", desc:"Безумная тыква с характером. Только для смелых коллекционеров!",                  icon:"🎃", rarity:"EPIC",      rc:"epic",      chance:35, img:"madPumpkin.png",   color:"#a87fff" },
-      { id:"plush_pepe",   name:"Плюшевый PEPE",           desc:"🎉 ДЖЕКПОТ! Ты выиграл легендарного Плюшевого PEPE!",                             icon:"🧸", rarity:"LEGENDARY", rc:"legendary", chance:20, img:"plushpepe.png",    color:"#ffc060" },
-      { id:"lapis_lazuli", name:"Lapis Lazuli New",         desc:"✨ МИФИК! Лазурит нового поколения — один из редчайших предметов!",               icon:"💎", rarity:"MYTHIC",    rc:"mythic",    chance:5,  img:"lapisLazuliNew.png",color:"#ff90e8" }
+    id:1, name:"Neon Case", img:"case_2.jpg", emoji:"💜",
+    prizes:[
+      {id:"fresh_socks",    name:"Fresh Socks Drumsticks",   desc:"Свежие носки и барабанные палочки — эпический дроп!",  icon:"🧦", rarity:"EPIC",      rc:"epic",      chance:40, img:"freshSocks.png"},
+      {id:"mad_pumpkin",    name:"Mad Pumpkin Kinky-Winky",  desc:"Безумная тыква с характером.",                          icon:"🎃", rarity:"EPIC",      rc:"epic",      chance:35, img:"madPumpkin.png"},
+      {id:"plush_pepe",     name:"Плюшевый PEPE",            desc:"🎉 ДЖЕКПОТ! Легендарный Плюшевый PEPE!",                icon:"🧸", rarity:"LEGENDARY", rc:"legendary", chance:20, img:"plushpepe.png"},
+      {id:"lapis_lazuli",   name:"Lapis Lazuli New",          desc:"✨ МИФИК! Лазурит нового поколения!",                   icon:"💎", rarity:"MYTHIC",    rc:"mythic",    chance:5,  img:"lapisLazuliNew.png"}
     ]
   },
   {
-    id: 2,
-    name: "Deep Case",
-    img: "case_3.jpg",
-    emoji: "🌊",
-    prizes: [
-      { id:"mad_pumpkin2", name:"Mad Pumpkin Kinky-Winky", desc:"Безумная тыква с характером. Только для смелых!",                                  icon:"🎃", rarity:"EPIC",      rc:"epic",      chance:50, img:"madPumpkin.png",   color:"#a87fff" },
-      { id:"precious_peach2",name:"Precious Peach Cold Iron",desc:"Легендарный персик из холодного железа.",                                        icon:"🍑", rarity:"LEGENDARY", rc:"legendary", chance:30, img:"peach.png",        color:"#ffc060" },
-      { id:"lapis_lazuli2",name:"Lapis Lazuli New",         desc:"✨ МИФИК! Лазурит нового поколения!",                                              icon:"💎", rarity:"MYTHIC",    rc:"mythic",    chance:20, img:"lapisLazuliNew.png",color:"#ff90e8" }
+    id:2, name:"Deep Case", img:"case_3.jpg", emoji:"🌊",
+    prizes:[
+      {id:"mad_pumpkin2",   name:"Mad Pumpkin Kinky-Winky",  desc:"Безумная тыква с характером.",                          icon:"🎃", rarity:"EPIC",      rc:"epic",      chance:50, img:"madPumpkin.png"},
+      {id:"peach2",         name:"Precious Peach Cold Iron", desc:"Легендарный персик из холодного железа.",               icon:"🍑", rarity:"LEGENDARY", rc:"legendary", chance:30, img:"peach.png"},
+      {id:"lapis2",         name:"Lapis Lazuli New",          desc:"✨ МИФИК! Лазурит нового поколения!",                   icon:"💎", rarity:"MYTHIC",    rc:"mythic",    chance:20, img:"lapisLazuliNew.png"}
     ]
   }
 ];
 
-let selectedCase = 0;
-let opensCount = 0, rareCount = 0, score = 0, isAnimating = false;
+let selectedCase = 0, opensCount = 0, rareCount = 0, score = 0;
+let isAnimating = false, musicPlaying = false;
 let bgRenderer, bgScene, bgCamera, bgParts;
-let userData = { name:"Игрок", handle:"@username", initials:"ИГ" };
-
+let currentPrize = null, refOpen = false;
+let refStats = { count:0, joined:0, bonusOpens:0, earned:0 };
 const SCORE_MAP = { epic:10, legendary:50, mythic:200 };
+let userData = { name:"Игрок", handle:"", uid:"0", initials:"ИГ" };
+
+/* ─── UTILS ─── */
+function showToast(msg, dur=2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+/* ─── MUSIC ─── */
+function toggleMusic() {
+  const audio = document.getElementById('bg-music');
+  const btn   = document.getElementById('music-btn');
+  if (musicPlaying) { audio.pause(); musicPlaying=false; btn.classList.remove('playing'); }
+  else { audio.play().catch(()=>{}); musicPlaying=true; btn.classList.add('playing'); }
+}
+
+/* ─── REF ─── */
+function getRefLink() {
+  return `https://t.me/${BOT_USERNAME}?start=ref_${userData.uid}`;
+}
+
+function toggleRef() {
+  refOpen = !refOpen;
+  const panel = document.getElementById('ref-panel');
+  if (refOpen) {
+    panel.style.display = 'block';
+    panel.style.animation = 'fade-in .3s ease both';
+    document.getElementById('ref-link-box').textContent = getRefLink();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function copyRefLink() {
+  const link = getRefLink();
+  navigator.clipboard.writeText(link).then(()=>showToast('✅ Ссылка скопирована!')).catch(()=>{
+    const t = document.getElementById('ref-link-box');
+    t.select && t.select();
+    showToast('📋 Скопируй ссылку выше');
+  });
+}
+
+function inviteFriend() {
+  const link = getRefLink();
+  const text = encodeURIComponent(`🐸 Открывай кейсы и получай редкие призы! Присоединяйся по моей ссылке:`);
+  const url  = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`;
+  if (window.Telegram?.WebApp) window.Telegram.WebApp.openTelegramLink(url);
+  else window.open(url, '_blank');
+}
+
+function loadRefStats() {
+  const saved = localStorage.getItem('refStats');
+  if (saved) { refStats = JSON.parse(saved); }
+  const params = new URLSearchParams(window.location.search);
+  const startParam = params.get('tgWebAppStartParam') || (window.Telegram?.WebApp?.initDataUnsafe?.start_param) || '';
+  if (startParam.startsWith('ref_')) {
+    const referrerId = startParam.replace('ref_','');
+    if (referrerId && referrerId !== userData.uid) {
+      score += 50;
+      document.getElementById('score-val').textContent = score;
+      showToast('🎁 +50 очков за переход по реф-ссылке!');
+    }
+  }
+  updateRefUI();
+}
+
+function updateRefUI() {
+  document.getElementById('ref-count').textContent   = refStats.count;
+  document.getElementById('ref-joined').textContent  = refStats.joined;
+  document.getElementById('ref-bonus-opens').textContent = refStats.bonusOpens;
+  document.getElementById('ref-earned').textContent  = refStats.earned;
+}
+
+/* ─── CASE IMG FALLBACK ─── */
+function caseImgFail(img, idx) {
+  img.style.display = 'none';
+  const fb = document.getElementById('cfb'+idx);
+  fb.style.display = 'flex';
+  const prizes = CASES[idx].prizes;
+  fb.innerHTML = `<div class="fb-icons">${prizes.map(p=>`<span>${p.icon}</span>`).join('')}</div><div class="fb-lbl">${CASES[idx].name.toUpperCase()}</div>`;
+}
 
 function selectCase(idx) {
   selectedCase = idx;
-  document.querySelectorAll('.case-card').forEach((el, i) => {
-    el.classList.toggle('active', i === idx);
-  });
+  document.querySelectorAll('.case-card').forEach((el,i)=>el.classList.toggle('active',i===idx));
   renderPrizeList();
 }
 
 function renderPrizeList() {
-  const list = document.getElementById('prizes-list');
   const prizes = CASES[selectedCase].prizes;
-  list.innerHTML = prizes.map(p => {
-    const bClass = p.rc === 'mythic' ? 'b-mythic' : p.rc === 'legendary' ? 'b-legend' : 'b-epic';
-    const total = prizes.reduce((s,x)=>s+x.chance,0);
+  const total  = prizes.reduce((s,p)=>s+p.chance,0);
+  const bgMap  = {epic:'rgba(120,75,255,.18)',legendary:'rgba(255,140,0,.14)',mythic:'rgba(255,60,172,.16)'};
+  document.getElementById('prizes-list').innerHTML = prizes.map((p,i)=>{
     const pct = Math.round(p.chance/total*100);
-    return `<div class="p-row">
-      <div class="pi">${p.icon}</div>
+    const bc  = p.rc==='mythic'?'b-mythic':p.rc==='legendary'?'b-legend':'b-epic';
+    const bg  = bgMap[p.rc]||'rgba(120,75,255,.18)';
+    return `<div class="p-row" style="animation-delay:${i*.06}s">
+      <div class="p-img-wrap" data-prize="${p.id}" style="background:${bg};position:relative;">
+        <img class="p-img" src="${p.img}" alt="${p.name}"
+          onload="this.style.opacity='1';this.nextElementSibling.style.display='none'"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:1.55rem;line-height:1;border-radius:10px;">${p.icon}</span>
+      </div>
       <div class="pinfo"><div class="pn">${p.name}</div><div class="pc">${pct}% выпадение</div></div>
-      <span class="badge ${bClass}">${p.rarity}</span>
+      <span class="badge ${bc}">${p.rarity}</span>
     </div>`;
   }).join('');
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.p-img').forEach(img=>{
+      if(img.complete && img.naturalWidth===0){
+        img.style.display='none';
+        const fb=img.nextElementSibling;
+        if(fb) fb.style.display='flex';
+      }
+    });
+  });
 }
 
 /* ─── USER ─── */
 function loadUserData() {
-  const defaultLoad = (name, handle, initials) => {
-    userData = { name, handle, initials };
-    document.getElementById('profile-name').textContent = name;
-    document.getElementById('profile-handle').textContent = handle;
-    document.getElementById('r-uname').textContent = name;
-    generateInitialsAvatar(initials);
+  const def=(n,h,uid,ini)=>{
+    userData={name:n,handle:h,uid,initials:ini};
+    setProfileUI(n,h);
+    generateInitialsAvatar(ini);
+    loadRefStats();
   };
-
-  if (!window.Telegram || !window.Telegram.WebApp) {
-    defaultLoad("Гость PEPE", "@pepe_player", "ГП");
-    return;
-  }
-
-  const user = window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user;
-  if (!user) { defaultLoad("PEPE Player", "@player", "PP"); return; }
-
-  const fn = user.first_name || "";
-  const ln = user.last_name  || "";
-  const un = user.username   || "";
-  const fullName = (fn + " " + ln).trim() || "PEPE Player";
-  const handle   = un ? "@" + un : "без username";
-  const initials = ((fn[0]||"")+(ln[0]||fn[1]||"")).toUpperCase() || "?";
-
-  userData = { name:fullName, handle, initials };
-  document.getElementById('profile-name').textContent  = fullName;
-  document.getElementById('profile-handle').textContent = handle;
-  document.getElementById('r-uname').textContent = fullName;
-
-  if (user.photo_url) {
-    tryLoadAvatar(user.photo_url, initials);
-  } else {
-    generateInitialsAvatar(initials);
-  }
+  if (!window.Telegram?.WebApp) { def("Гость PEPE","@pepe_player","guest","ГП"); return; }
+  const u = window.Telegram.WebApp.initDataUnsafe?.user;
+  if (!u) { def("PEPE Player","@player","0","PP"); return; }
+  const fn=u.first_name||"", ln=u.last_name||"", un=u.username||"";
+  const full=(fn+" "+ln).trim()||"PEPE Player";
+  const handle=un?"@"+un:"без username";
+  const init=((fn[0]||"")+(ln[0]||fn[1]||"")).toUpperCase()||"?";
+  userData={name:full,handle,uid:String(u.id||"0"),initials:init};
+  setProfileUI(full,handle);
+  if (u.photo_url) tryLoadAvatar(u.photo_url,init); else generateInitialsAvatar(init);
+  document.getElementById('rv-uname').textContent = full;
+  loadRefStats();
 }
 
-function tryLoadAvatar(url, initials) {
-  const img = document.getElementById('avatar-img');
-  img.onload  = () => {
-    document.getElementById('avatar-ph').textContent = '';
-    img.style.display = 'block';
-    const ri = document.getElementById('r-av-img');
-    ri.src = url;
-    ri.onload = () => { document.getElementById('r-av-ph').textContent = ''; ri.style.display = 'block'; };
-  };
-  img.onerror = () => generateInitialsAvatar(initials);
-  img.src = url;
+function setProfileUI(name,handle) {
+  document.getElementById('profile-name').textContent  = name;
+  document.getElementById('profile-handle').textContent= handle;
+  document.getElementById('rv-uname').textContent = name;
 }
 
-function showAvatarFallback() {
-  document.getElementById('avatar-img').style.display = 'none';
-  generateInitialsAvatar(userData.initials || "?");
+function tryLoadAvatar(url,init) {
+  const img=document.getElementById('avatar-img');
+  img.onload=()=>{ document.getElementById('avatar-ph').textContent=''; img.style.display='block'; syncAvatars(url); };
+  img.onerror=()=>generateInitialsAvatar(init);
+  img.src=url;
 }
 
-function generateInitialsAvatar(initials) {
-  const pairs = [['#ff8c00','#ff3cac'],['#784bff','#2de2e6'],['#ff3cac','#784bff'],['#2de2e6','#ff8c00']];
-  const pair  = pairs[(initials.charCodeAt(0)||0) % pairs.length];
-  const c = document.createElement('canvas');
-  c.width = c.height = 80;
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0,0,80,80);
-  g.addColorStop(0, pair[0]); g.addColorStop(1, pair[1]);
-  ctx.fillStyle = g; ctx.fillRect(0,0,80,80);
-  ctx.fillStyle = '#fff'; ctx.font = 'bold 30px Syne,sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(initials.slice(0,2), 40, 42);
-  const dataUrl = c.toDataURL();
+function showAvatarFallback() { document.getElementById('avatar-img').style.display='none'; generateInitialsAvatar(userData.initials||"?"); }
 
-  const ai = document.getElementById('avatar-img');
-  ai.src = dataUrl; ai.style.display = 'block';
-  document.getElementById('avatar-ph').textContent = '';
+function generateInitialsAvatar(init) {
+  const pairs=[['#ff8c00','#ff3cac'],['#784bff','#2de2e6'],['#ff3cac','#784bff'],['#2de2e6','#ff8c00']];
+  const pair=pairs[(init.charCodeAt(0)||0)%pairs.length];
+  const cv=document.createElement('canvas'); cv.width=cv.height=80;
+  const ctx=cv.getContext('2d');
+  const g=ctx.createLinearGradient(0,0,80,80);
+  g.addColorStop(0,pair[0]); g.addColorStop(1,pair[1]);
+  ctx.fillStyle=g; ctx.fillRect(0,0,80,80);
+  ctx.fillStyle='#fff'; ctx.font='bold 30px Syne,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(init.slice(0,2),40,42);
+  const url=cv.toDataURL();
+  const ai=document.getElementById('avatar-img');
+  ai.src=url; ai.style.display='block';
+  document.getElementById('avatar-ph').textContent='';
+  syncAvatars(url);
+}
 
-  const ri = document.getElementById('r-av-img');
-  ri.src = dataUrl; ri.style.display = 'block';
-  document.getElementById('r-av-ph').textContent = '';
+function syncAvatars(url) {
+  const ri=document.getElementById('rv-av-img');
+  ri.src=url; ri.style.display='block';
 }
 
 /* ─── BG ─── */
 function initBg() {
-  bgScene  = new THREE.Scene();
-  bgCamera = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 100);
-  bgCamera.position.z = 5;
-  bgRenderer = new THREE.WebGLRenderer({ canvas:document.getElementById('bg-canvas'), alpha:true, antialias:false });
-  bgRenderer.setSize(innerWidth, innerHeight);
-  bgRenderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-
-  const N = 320, pos = new Float32Array(N*3), col = new Float32Array(N*3);
-  for (let i=0;i<N;i++) {
-    pos[i*3]   = (Math.random()-.5)*24;
-    pos[i*3+1] = (Math.random()-.5)*24;
-    pos[i*3+2] = (Math.random()-.5)*14;
-    const t = Math.random();
-    col[i*3] = 1*t+.47*(1-t); col[i*3+1] = .23*t+.30*(1-t); col[i*3+2] = .5*t+1*(1-t);
+  bgScene=new THREE.Scene();
+  bgCamera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,0.1,100);
+  bgCamera.position.z=5;
+  bgRenderer=new THREE.WebGLRenderer({canvas:document.getElementById('bg-canvas'),alpha:true,antialias:false});
+  bgRenderer.setSize(innerWidth,innerHeight);
+  bgRenderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+  const N=320,pos=new Float32Array(N*3),col=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    pos[i*3]=(Math.random()-.5)*24; pos[i*3+1]=(Math.random()-.5)*24; pos[i*3+2]=(Math.random()-.5)*14;
+    const t=Math.random();
+    col[i*3]=1*t+.47*(1-t); col[i*3+1]=.23*t+.30*(1-t); col[i*3+2]=.5*t+1*(1-t);
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  geo.setAttribute('color',    new THREE.BufferAttribute(col,3));
-  bgParts = new THREE.Points(geo, new THREE.PointsMaterial({ size:.05, vertexColors:true, transparent:true, opacity:.5 }));
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  bgParts=new THREE.Points(geo,new THREE.PointsMaterial({size:.05,vertexColors:true,transparent:true,opacity:.5}));
   bgScene.add(bgParts);
 }
 
 function animBg() {
   requestAnimationFrame(animBg);
-  bgParts.rotation.y += .0003; bgParts.rotation.x += .00015;
-  bgRenderer.render(bgScene, bgCamera);
+  bgParts.rotation.y+=.0003; bgParts.rotation.x+=.00015;
+  bgRenderer.render(bgScene,bgCamera);
 }
 
 /* ─── GAME ─── */
-function getRandPrize() {
-  const prizes = CASES[selectedCase].prizes;
-  const total  = prizes.reduce((s,p)=>s+p.chance,0);
-  let cum = 0, roll = Math.random()*total;
-  for (const p of prizes) { cum+=p.chance; if (roll<cum) return p; }
+function getRandPrize(idx) {
+  const prizes=CASES[idx].prizes;
+  const total=prizes.reduce((s,p)=>s+p.chance,0);
+  let cum=0,roll=Math.random()*total;
+  for(const p of prizes){cum+=p.chance;if(roll<cum)return p;}
   return prizes[0];
 }
 
-function openCase() {
-  if (isAnimating) return;
-  isAnimating = true;
-  document.getElementById('open-btn').disabled = true;
-
-  const card = document.getElementById('case-card-' + selectedCase);
-  card.style.transform = 'scale(.93)';
-  setTimeout(() => { card.style.transform = ''; }, 150);
-
-  setTimeout(() => {
-    const p = getRandPrize();
-    opensCount++; if (p.rc !== 'epic') rareCount++;
-    score += SCORE_MAP[p.rc] || 0;
-    document.getElementById('st-opens').textContent = opensCount;
-    document.getElementById('st-rare').textContent  = rareCount;
-    document.getElementById('st-luck').textContent  = Math.round((rareCount/opensCount)*100)+'%';
-    document.getElementById('score-val').textContent = score;
-    showResult(p);
-  }, 500);
+function setPhase(id) {
+  ['ph-shake','ph-reel','ph-reveal'].forEach(pid=>{
+    const el=document.getElementById(pid);
+    el.classList.remove('active');
+    el.style.display='none';
+  });
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.style.display='flex';
 }
 
-function showResult(p) {
-  const caseData = CASES[selectedCase];
-  const thumb = document.getElementById('r-case-thumb');
-  const thumbPh = document.getElementById('r-case-thumb-ph');
-  thumb.src = caseData.img;
-  thumb.style.display = 'block';
-  thumbPh.style.display = 'none';
-  document.getElementById('r-case-name-label').textContent = caseData.name;
+function buildReel(caseIdx, winner) {
+  const prizes=CASES[caseIdx].prizes;
+  const track=document.getElementById('reel-track');
+  track.innerHTML='';
+  track.style.transition='none';
+  track.style.transform='translateX(0)';
+  const items=[];
+  for(let i=0;i<42;i++) items.push(prizes[Math.floor(Math.random()*prizes.length)]);
+  const wp=33; items[wp]=winner;
+  items.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='reel-item '+p.rc;
+    el.innerHTML=`<img src="${p.img}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="ri-emoji">${p.icon}</span><div class="ri-lbl">${p.name}</div>`;
+    track.appendChild(el);
+  });
+  return wp;
+}
 
-  const card  = document.getElementById('r-card');
-  const icon  = document.getElementById('r-icon');
-  const img   = document.getElementById('r-img');
-  const badge = document.getElementById('r-badge');
-  const name  = document.getElementById('r-name');
+function animateReel(wp, cb) {
+  const track=document.getElementById('reel-track');
+  const iW=90;
+  const dist=wp*iW;
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    track.style.transition=`transform 4400ms cubic-bezier(.17,.67,.08,1)`;
+    track.style.transform=`translateX(-${dist}px)`;
+  });});
+  setTimeout(()=>{
+    const items=track.querySelectorAll('.reel-item');
+    if(items[wp]) items[wp].classList.add('winner');
+    if(window.Telegram?.WebApp) window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+    setTimeout(cb,700);
+  },4600);
+}
 
-  card.className  = 'r-card ' + p.rc;
-  badge.textContent = p.rarity; badge.className = 'r-badge ' + p.rc;
-  name.textContent  = p.name;   name.className  = 'r-name '  + p.rc;
-  document.getElementById('r-desc').textContent = p.desc;
+function startOpen() {
+  if(isAnimating) return;
+  isAnimating=true;
+  document.getElementById('open-btn').disabled=true;
 
-  icon.textContent = p.icon; icon.style.display = 'none';
-  img.src = p.img; img.style.display = 'block';
+  const cd=CASES[selectedCase];
+  const winner=getRandPrize(selectedCase);
 
-  document.getElementById('overlay').classList.add('on');
+  document.getElementById('open-modal').classList.add('on');
 
-  const cfMap = {
-    epic:      { p:['#784bff','#ff3cac','#a87fff','#fff'], n:50 },
-    legendary: { p:['#ff8c00','#ffce00','#ffe599','#fff'], n:90 },
-    mythic:    { p:['#ff3cac','#ff8c00','#784bff','#2de2e6','#fff'], n:160 }
+  const si=document.getElementById('sh-img');
+  si.src=cd.img; si.style.display='block';
+  document.getElementById('sh-fb').style.display='none';
+  document.getElementById('sh-fb-icons').innerHTML=cd.prizes.map(p=>`<span>${p.icon}</span>`).join('');
+
+  setPhase('ph-shake');
+  if(window.Telegram?.WebApp) window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+
+  setTimeout(()=>{
+    setPhase('ph-reel');
+    const wp=buildReel(selectedCase,winner);
+    animateReel(wp,()=>showReveal(winner,cd));
+  },2200);
+}
+
+function showReveal(prize, cd) {
+  currentPrize=prize;
+  setPhase('ph-reveal');
+
+  document.getElementById('rv-case-img').src=cd.img;
+  document.getElementById('rv-case-name').textContent=cd.name;
+
+  const card=document.getElementById('reveal-card');
+  const icon=document.getElementById('rv-icon');
+  const img=document.getElementById('rv-img');
+  const badge=document.getElementById('rv-badge');
+  const name=document.getElementById('rv-name');
+
+  card.className='reveal-card '+prize.rc;
+  badge.textContent=prize.rarity; badge.className='rv-badge '+prize.rc;
+  name.textContent=prize.name;   name.className='rv-name '+prize.rc;
+  document.getElementById('rv-desc').textContent=prize.desc;
+
+  icon.textContent=prize.icon; icon.style.display='none';
+  img.src=prize.img; img.style.display='block';
+
+  opensCount++;
+  if(prize.rc!=='epic') rareCount++;
+  score+=SCORE_MAP[prize.rc]||0;
+  document.getElementById('st-opens').textContent=opensCount;
+  document.getElementById('st-rare').textContent=rareCount;
+  document.getElementById('st-luck').textContent=Math.round((rareCount/opensCount)*100)+'%';
+  document.getElementById('score-val').textContent=score;
+
+  const cfMap={
+    epic:{p:['#784bff','#ff3cac','#a87fff','#fff'],n:50},
+    legendary:{p:['#ff8c00','#ffce00','#ffe599','#fff'],n:90},
+    mythic:{p:['#ff3cac','#ff8c00','#784bff','#2de2e6','#fff'],n:160}
   };
-  const cf = cfMap[p.rc];
-  if (cf) spawnConfetti(cf.p, cf.n);
-
-  if (window.Telegram && window.Telegram.WebApp)
-    window.Telegram.WebApp.HapticFeedback.notificationOccurred(p.rc==='epic'?'warning':'success');
+  const cf=cfMap[prize.rc];
+  if(cf) spawnConfetti(cf.p,cf.n);
+  if(window.Telegram?.WebApp) window.Telegram.WebApp.HapticFeedback.notificationOccurred(prize.rc==='epic'?'warning':'success');
 }
 
-function closeResult() {
-  document.getElementById('overlay').classList.remove('on');
-  isAnimating = false;
-  document.getElementById('open-btn').disabled = false;
+function closeOpenModal() {
+  document.getElementById('open-modal').classList.remove('on');
+  document.getElementById('confetti').innerHTML='';
+  isAnimating=false;
+  document.getElementById('open-btn').disabled=false;
 }
 
-function shareResult() {
-  const name   = document.getElementById('r-name').textContent;
-  const rarity = document.getElementById('r-badge').textContent;
-  const cName  = CASES[selectedCase].name;
-  const text   = `🐸 Открыл ${cName} и получил ${rarity}: ${name}! Попробуй и ты!`;
-  if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.sendData(JSON.stringify({ action:'share', prize:name, rarity, caseName:cName, text }));
-  } else if (navigator.share) {
-    navigator.share({ text });
+/* ─── SHARE ─── */
+function buildShareLink() {
+  if(!currentPrize) return `https://t.me/${BOT_USERNAME}`;
+  const prizeId=currentPrize.id;
+  const userId=userData.uid;
+  return `https://t.me/${BOT_USERNAME}?start=prize_${prizeId}_from_${userId}`;
+}
+
+function openShareModal() {
+  if(!currentPrize) return;
+  const link=buildShareLink();
+
+  document.getElementById('spp-img').src=currentPrize.img;
+  document.getElementById('spp-img').style.display='block';
+  const icon=document.getElementById('spp-icon');
+  icon.style.display='none';
+  icon.textContent=currentPrize.icon;
+
+  document.getElementById('spp-name').textContent=currentPrize.name;
+  document.getElementById('spp-rarity').textContent=`${currentPrize.rarity} • ${CASES[selectedCase].name}`;
+  document.getElementById('share-link-box').textContent=link;
+
+  document.getElementById('share-modal').classList.add('on');
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.remove('on');
+}
+
+function shareTelegram() {
+  const link=buildShareLink();
+  const text=encodeURIComponent(`🐸 Я открыл ${CASES[selectedCase].name} в PEPE CASE и получил ${currentPrize.rarity} приз: ${currentPrize.name}! ${currentPrize.icon}\n\nПопробуй сам — может тебе повезёт больше:`);
+  const url=`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`;
+  if(window.Telegram?.WebApp) window.Telegram.WebApp.openTelegramLink(url);
+  else window.open(url,'_blank');
+  closeShareModal();
+}
+
+function shareContacts() {
+  const link=buildShareLink();
+  const text=encodeURIComponent(`🐸 Открыл PEPE CASE и получил ${currentPrize.rarity}: ${currentPrize.name}! ${currentPrize.icon}\nСыграй и ты: ${link}`);
+  const url=`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`;
+  if(window.Telegram?.WebApp) {
+    window.Telegram.WebApp.openTelegramLink(url);
   } else {
-    navigator.clipboard.writeText(text); alert('Скопировано!');
+    window.open(url,'_blank');
   }
+  closeShareModal();
+  refStats.count++;
+  localStorage.setItem('refStats',JSON.stringify(refStats));
+  updateRefUI();
 }
 
-function spawnConfetti(palette, n) {
-  const c = document.getElementById('confetti');
-  c.innerHTML = '';
-  for (let i=0;i<n;i++) {
-    const el = document.createElement('div');
-    el.className = 'cf';
-    const col  = palette[Math.floor(Math.random()*palette.length)];
-    const size = 4+Math.random()*10;
-    const circ = Math.random()>.4;
-    el.style.cssText = `left:${Math.random()*100}%;top:-8px;width:${size}px;height:${size}px;background:${col};border-radius:${circ?'50%':'3px'};animation:cf-drop ${1+Math.random()*2.4}s ${Math.random()*.8}s ease-in forwards;${circ?`box-shadow:0 0 6px ${col}`:''}`;
+function copyShareLink() {
+  const link=buildShareLink();
+  navigator.clipboard.writeText(link).then(()=>{
+    showToast('✅ Ссылка на приз скопирована!');
+    closeShareModal();
+  }).catch(()=>{ showToast('📋 Не удалось скопировать'); });
+}
+
+/* ─── CONFETTI ─── */
+function spawnConfetti(palette,n) {
+  const c=document.getElementById('confetti'); c.innerHTML='';
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div'); el.className='cf';
+    const col=palette[Math.floor(Math.random()*palette.length)];
+    const size=4+Math.random()*10,circ=Math.random()>.4;
+    el.style.cssText=`left:${Math.random()*100}%;top:-8px;width:${size}px;height:${size}px;background:${col};border-radius:${circ?'50%':'3px'};animation:cf-drop ${1+Math.random()*2.4}s ${Math.random()*.8}s ease-in forwards;${circ?`box-shadow:0 0 6px ${col}`:''}`;
     c.appendChild(el);
   }
 }
 
-if (window.Telegram && window.Telegram.WebApp) {
-  window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand();
-}
+/* ─── INIT ─── */
+if(window.Telegram?.WebApp){ window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); }
 
-window.addEventListener('load', () => {
+window.addEventListener('load',()=>{
   loadUserData();
-  initBg();
-  animBg();
+  if(typeof THREE !== 'undefined') { initBg(); animBg(); }
+  else { console.warn('Three.js not loaded, skipping BG animation'); }
   renderPrizeList();
 });
 
-window.addEventListener('resize', () => {
-  bgCamera.aspect = innerWidth/innerHeight;
+window.addEventListener('resize',()=>{
+  if(!bgCamera||!bgRenderer) return;
+  bgCamera.aspect=innerWidth/innerHeight;
   bgCamera.updateProjectionMatrix();
-  bgRenderer.setSize(innerWidth, innerHeight);
+  bgRenderer.setSize(innerWidth,innerHeight);
 });
 </script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
